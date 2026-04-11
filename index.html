@@ -374,6 +374,30 @@
       text-align: center;
       padding: 10px 0;
     }
+    .pm-spark-tabs {
+      display: flex;
+      gap: 4px;
+      margin-top: 6px;
+      justify-content: flex-end;
+    }
+    .pm-spark-tab {
+      background: #11141c;
+      border: 1px solid #1a2034;
+      color: var(--dim);
+      font-size: 10px;
+      font-family: inherit;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      padding: 3px 8px;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    .pm-spark-tab:hover { color: var(--text); border-color: var(--accent-2); }
+    .pm-spark-tab.active {
+      color: #061a2e;
+      background: var(--accent);
+      border-color: var(--accent);
+    }
 
     /* Sections */
     .section {
@@ -602,6 +626,15 @@
       var selectedEl = $("pm-selected");
       var pollTimer = null;
       var currentSlug = null;
+      var currentInterval = "1w";
+      var INTERVALS = ["1d", "1w", "1m", "max"];
+      function tabsHtml(active){
+        return '<div class="pm-spark-tabs" data-role="pm-spark-tabs">'
+          + INTERVALS.map(function(iv){
+              return '<button type="button" class="pm-spark-tab'+(iv===active?' active':'')+'" data-interval="'+iv+'">'+iv+'</button>';
+            }).join("")
+          + '</div>';
+      }
 
       function pct(n){ return (Math.round((n||0) * 1000) / 10) + "%"; }
       function esc(s){ return String(s == null ? "" : s).replace(/[&<>"']/g, function(c){
@@ -632,12 +665,12 @@
                 + '<br><small>' + esc(m.slug) + end + vol + '</small>'
                 + '</button>';
             }).join("");
-            Array.prototype.forEach.call(resultsEl.querySelectorAll(".pm-result"), function(btn){
+            Array.prototype.forEach.call(resultsEl.querySelectorAll(".pm-result"), function(btn){ 
               btn.addEventListener("click", function(){ selectMarket(btn.getAttribute("data-slug")); });
             });
           })
           .catch(function(err){
-            resultsEl.innerHTML = '<div class="pm-empty">Search failed. The backend may be waking up â try again in a few seconds.</div>';
+            resultsEl.innerHTML = '<div class="pm-empty">Search failed. The backend may be waking up â try again in a few seconds.</div>'
           });
       }
 
@@ -663,6 +696,7 @@
           + '<div class="pm-spark" data-role="pm-spark">'
           +   '<div class="pm-spark-head"><span>'+firstOutcome+' Â· price history</span><span data-role="pm-spark-range">loadingâ¦</span></div>'
           +   '<div class="pm-spark-empty">Loading historyâ¦</div>'
+          +   tabsHtml(currentInterval)
           + '</div>'
           + '<div class="pm-meta"><span>'+esc(end)+'</span><span>'+esc(vol)+'</span><span>'+esc(updated)+'</span></div>'
           + '</div>';
@@ -671,10 +705,10 @@
       function renderSpark(data){
         var sparkEl = selectedEl.querySelector('[data-role="pm-spark"]');
         if (!sparkEl) return;
-        var rangeEl = sparkEl.querySelector('[data-role="pm-spark-range"]');
+        var activeIv = (data && data.interval) || currentInterval;
         var points = (data && data.points) || [];
         if (!points.length){
-          sparkEl.innerHTML = '<div class="pm-spark-head"><span>price history</span><span>n/a</span></div><div class="pm-spark-empty">No history available.</div>';
+          sparkEl.innerHTML = '<div class="pm-spark-head"><span>price history</span><span>n/a</span></div><div class="pm-spark-empty">No history available.</div>' + tabsHtml(activeIv);
           return;
         }
         var W = 600, H = 56, PAD = 2;
@@ -695,19 +729,31 @@
         var deltaStr = (delta >= 0 ? "+" : "") + (Math.round(delta * 1000) / 10) + "pp";
         var lo = Math.round(minY * 1000) / 10 + "%";
         var hi = Math.round(maxY * 1000) / 10 + "%";
-        sparkEl.innerHTML = '<div class="pm-spark-head"><span>'+esc((data.outcome || "") + " Â· " + (data.interval || "") + " history")+'</span><span>'+esc(lo + " â " + hi + "  " + deltaStr)+'</span></div>'
-          + '<svg viewBox="0 0 '+W+' '+H+'" preserveAspectRatio="none"><path class="area" d="'+area+'"/><path class="line" d="'+d+'"/></svg>';
+        sparkEl.innerHTML = '<div class="pm-spark-head"><span>'+esc((data.outcome || "") + " Â· " + activeIv + " history")+'</span><span>'+esc(lo + " â " + hi + "  " + deltaStr)+'</span></div>'
+          + '<svg viewBox="0 0 '+W+' '+H+'" preserveAspectRatio="none"><path class="area" d="'+area+'"/><path class="line" d="'+d+'"/></svg>'
+          + tabsHtml(activeIv);
       }
 
-      function fetchHistory(slug){
-        fetch(api + "/polymarket/history/" + encodeURIComponent(slug) + "?interval=1w", { cache: "no-store" })
+      function fetchHistory(slug, interval){
+        var iv = interval || currentInterval || "1w";
+        currentInterval = iv;
+        fetch(api + "/polymarket/history/" + encodeURIComponent(slug) + "?interval=" + encodeURIComponent(iv), { cache: "no-store" })
           .then(function(r){ if (!r.ok) throw new Error("http "+r.status); return r.json(); })
           .then(renderSpark)
           .catch(function(){
             var sparkEl = selectedEl.querySelector('[data-role="pm-spark"]');
-            if (sparkEl) sparkEl.innerHTML = '<div class="pm-spark-head"><span>price history</span><span>error</span></div><div class="pm-spark-empty">History unavailable.</div>';
+            if (sparkEl) sparkEl.innerHTML = '<div class="pm-spark-head"><span>price history</span><span>error</span></div><div class="pm-spark-empty">History unavailable.</div>' + tabsHtml(iv);
           });
       }
+
+      // Delegated click handler for interval tabs
+      document.addEventListener("click", function(ev){
+        var tab = ev.target && ev.target.closest && ev.target.closest('.pm-spark-tab');
+        if (!tab || !selectedEl.contains(tab)) return;
+        var iv = tab.getAttribute("data-interval");
+        if (!iv || !currentSlug || iv === currentInterval) return;
+        fetchHistory(currentSlug, iv);
+      });
 
       function fetchMarket(slug){
         fetch(api + "/polymarket/market/" + encodeURIComponent(slug), { cache: "no-store" })
@@ -720,10 +766,11 @@
 
       function selectMarket(slug){
         currentSlug = slug;
+        currentInterval = "1w";
         if (pollTimer) { clearInterval(pollTimer); pollTimer = null; }
         selectedEl.innerHTML = '<div class="pm-selected"><div class="pm-empty">Loading marketâ¦</div></div>';
         fetchMarket(slug);
-        fetchHistory(slug);
+        fetchHistory(slug, "1w");
         pollTimer = setInterval(function(){
           if (currentSlug) fetchMarket(currentSlug);
         }, 15 * 1000);
