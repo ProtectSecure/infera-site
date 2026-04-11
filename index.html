@@ -1,679 +1,889 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>INFERA â World Attention Intelligence</title>
-<meta name="description" content="Journalistic context for developing stories. What the world is paying attention to â and what history says happens next.">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Fraunces:ital,opsz,wght@0,9..144,300..900;1,9..144,300..900&family=DM+Sans:ital,opsz,wght@0,9..40,300..700;1,9..40,300..700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,600;1,9..144,400&family=DM+Sans:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
-:root{
-  --bg:#060810;--panel:#0c0f18;--panel2:#111420;--panel3:#161b27;
-  --border:#1e2535;--border2:#252e40;
-  --ink:#dde4f0;--ink2:#8e9ab4;--ink3:#596278;
-  --accent:#4f8ef7;--accent2:#7ecfb2;--accent3:#c084fc;
-  --warn:#e8b84b;--danger:#f26f6f;
-  --cat-politics-bg:rgba(167,139,250,.18); --cat-politics-fg:#b59ef8;
-  --cat-world-bg:rgba(79,142,247,.18);     --cat-world-fg:#7aabfa;
-  --cat-sports-bg:rgba(126,207,178,.18);   --cat-sports-fg:#6dd6b0;
-  --cat-science-bg:rgba(106,209,255,.18);  --cat-science-fg:#72d4ff;
-  --cat-culture-bg:rgba(248,182,108,.18);  --cat-culture-fg:#f8c068;
-  --cat-market-bg:rgba(192,132,252,.18);   --cat-market-fg:#d09cfc;
-  --cat-other-bg:rgba(142,154,180,.18);    --cat-other-fg:#8e9ab4;
-  --font-d:'Bebas Neue',sans-serif;
-  --font-s:'Fraunces',Georgia,serif;
-  --font-b:'DM Sans',system-ui,sans-serif;
-  --font-m:'JetBrains Mono',monospace;
+:root {
+  --bg:#07090d; --s1:#0c0f16; --s2:#111520; --s3:#161b27;
+  --b1:#1c2233; --b2:#252d40; --b3:#2f3a55;
+  --text:#b8c6de; --dim:#46536b; --bright:#e4edfb;
+  --accent:#e84040; --teal:#00c9a7; --gold:#f0b429;
+  --blue:#3d8bff; --purple:#9b6dff; --orange:#ff6b35;
+  --mono:'JetBrains Mono',monospace;
+  --sans:'DM Sans',sans-serif;
+  --serif:'Fraunces',serif;
+  --display:'Bebas Neue',sans-serif;
 }
-*{box-sizing:border-box;margin:0;padding:0}
-html,body{background:var(--bg);color:var(--ink);font-family:var(--font-b);-webkit-font-smoothing:antialiased;min-height:100vh;font-size:15px;line-height:1.6}
-a{color:inherit;text-decoration:none}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:14px;min-height:100vh;overflow-x:hidden}
 
-/* notice bar */
-.notice{background:rgba(79,142,247,.07);border-bottom:1px solid rgba(79,142,247,.18);padding:8px 20px;display:flex;align-items:center;gap:10px;font-size:11.5px;color:var(--ink2);font-family:var(--font-m);flex-wrap:wrap}
-.notice strong{color:var(--accent)}
+.view{display:none;width:100%}
+.view.active{display:block}
 
-/* header */
-header{padding:18px 24px 10px;max-width:1440px;margin:0 auto;display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap}
-.logo{font-family:var(--font-d);font-size:36px;letter-spacing:.04em;color:#fff;line-height:1}
-.logo em{color:var(--accent);font-style:normal}
-.logo-sub{font-size:10.5px;color:var(--ink3);letter-spacing:.14em;text-transform:uppercase;font-family:var(--font-m);margin-top:3px}
-.search-bar{flex:0 1 440px}
-.search-bar input{width:100%;background:var(--panel);border:1px solid var(--border);color:var(--ink);padding:11px 16px;border-radius:8px;font-family:var(--font-b);font-size:14px;outline:none;transition:border-color .2s}
-.search-bar input::placeholder{color:var(--ink3)}
-.search-bar input:focus{border-color:var(--accent)}
+/* HEADER */
+.header{position:sticky;top:0;z-index:200;background:rgba(7,9,13,.97);backdrop-filter:blur(16px);border-bottom:1px solid var(--b1);display:flex;align-items:center;padding:0 20px;height:52px;gap:14px}
+.logo{font-family:var(--display);font-size:24px;letter-spacing:.1em;color:var(--bright);display:flex;align-items:center;gap:7px;flex-shrink:0;cursor:pointer}
+.logo-pulse{width:7px;height:7px;border-radius:50%;background:var(--accent);box-shadow:0 0 8px var(--accent);animation:hb 1.4s ease-in-out infinite}
+@keyframes hb{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.3;transform:scale(.6)}}
+.hdr-search{flex:1;max-width:380px;position:relative}
+.s-input{width:100%;background:var(--s2);border:1px solid var(--b2);color:var(--bright);font-family:var(--mono);font-size:11px;padding:7px 12px 7px 34px;border-radius:4px;outline:none;transition:border-color .2s,background .2s;letter-spacing:.02em}
+.s-input:focus{border-color:var(--teal);background:var(--s3)}
+.s-input::placeholder{color:var(--dim)}
+.s-icon{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--dim);font-size:13px;pointer-events:none}
+.s-results{position:absolute;top:calc(100% + 4px);left:0;right:0;background:var(--s2);border:1px solid var(--b2);border-radius:4px;z-index:300;max-height:320px;overflow-y:auto;display:none;box-shadow:0 8px 32px rgba(0,0,0,.7)}
+.s-results.open{display:block}
+.s-item{padding:10px 12px;border-bottom:1px solid var(--b1);cursor:pointer;display:flex;align-items:flex-start;gap:9px}
+.s-item:hover{background:var(--s3)}
+.s-item:last-child{border-bottom:none}
+.si-title{font-size:12px;color:var(--bright);font-weight:500;line-height:1.4}
+.si-cat{font-family:var(--mono);font-size:8px;color:var(--dim);letter-spacing:.1em;text-transform:uppercase;margin-top:2px}
+.si-vol{font-family:var(--mono);font-size:9px;color:var(--teal);flex-shrink:0;margin-left:auto;padding-left:8px}
+.hdr-right{display:flex;align-items:center;gap:10px;margin-left:auto}
+.live-tag{display:flex;align-items:center;gap:5px;font-family:var(--mono);font-size:9px;letter-spacing:.15em;color:var(--accent);background:rgba(232,64,64,.08);border:1px solid rgba(232,64,64,.2);padding:3px 8px;border-radius:3px}
+.tap-hint{font-family:var(--mono);font-size:9px;letter-spacing:.08em;color:var(--dim);background:var(--s2);border:1px solid var(--b1);padding:3px 8px;border-radius:3px}
 
-/* layout */
-.layout{max-width:1440px;margin:0 auto;padding:0 24px 80px;display:grid;grid-template-columns:1fr 380px;gap:20px;align-items:start}
-@media(max-width:900px){.layout{grid-template-columns:1fr}.aside{display:none}}
+/* TICKER */
+.ticker-wrap{background:var(--s1);border-bottom:1px solid var(--b1);overflow:hidden;padding:5px 0}
+.ticker-track{display:inline-flex;gap:40px;animation:tick 70s linear infinite;white-space:nowrap}
+@keyframes tick{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
+.tk{display:inline-flex;align-items:center;gap:6px;font-family:var(--mono);font-size:10px;color:var(--dim)}
+.tk-name{color:var(--bright);font-weight:600}
 
-/* tabs */
-.tabs{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 16px;padding-top:14px}
-.tab{background:var(--panel);border:1px solid var(--border);color:var(--ink2);padding:7px 14px;border-radius:20px;font-size:12.5px;cursor:pointer;transition:all .15s;font-family:var(--font-b);display:flex;align-items:center;gap:5px}
-.tab:hover{color:var(--ink)}
-.tab.active{background:var(--panel2);border-color:var(--border2);color:var(--ink)}
-.dot{width:6px;height:6px;border-radius:50%;display:inline-block;flex-shrink:0}
+/* NOTICE */
+.notice{background:rgba(232,64,64,.05);border-bottom:1px solid rgba(232,64,64,.12);padding:6px 20px;font-family:var(--mono);font-size:9px;letter-spacing:.09em;color:#b87070;text-align:center}
 
-/* grid */
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:11px}
-.card{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:15px;cursor:pointer;transition:all .15s;position:relative;user-select:none}
-.card:hover{border-color:var(--border2);background:var(--panel2)}
-.card.sel{border-color:var(--accent);background:var(--panel2)}
-.card-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:9px}
-.badge{display:inline-flex;align-items:center;gap:4px;padding:3px 8px;border-radius:4px;font-size:10px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;font-family:var(--font-m)}
-.vol{font-family:var(--font-m);font-size:10.5px;color:var(--ink3);background:var(--panel2);border:1px solid var(--border);padding:3px 7px;border-radius:4px}
-.vol span{color:var(--accent2)}
-.card h3{font-family:var(--font-s);font-size:15.5px;line-height:1.35;font-weight:600;margin-bottom:7px}
-.card-foot{font-size:11px;color:var(--ink3);font-family:var(--font-m)}
-.dbl-hint{position:absolute;bottom:11px;right:13px;font-size:9.5px;color:var(--ink3);font-family:var(--font-m);opacity:0;transition:opacity .2s;pointer-events:none}
-.card:hover .dbl-hint{opacity:1}
+/* ââ FEED VIEW ââ */
+.feed-layout{display:grid;grid-template-columns:320px 1fr;min-height:calc(100vh - 90px)}
 
-/* preview */
-.aside{position:sticky;top:18px}
-.pv{background:var(--panel);border:1px solid var(--border);border-radius:13px;overflow:hidden;min-height:180px}
-.pv-empty{padding:44px 22px;text-align:center;color:var(--ink3);font-size:13px}
-.pv-empty .ico{font-size:28px;margin-bottom:10px}
-.pv-body{padding:20px}
-.pv-body h2{font-family:var(--font-s);font-size:19px;line-height:1.3;margin:10px 0 14px}
-.sig-row{display:flex;gap:8px;margin-bottom:16px}
-.sig-cell{flex:1;background:var(--panel2);border:1px solid var(--border);border-radius:8px;padding:10px 12px}
-.sig-cell .n{font-family:var(--font-m);font-size:20px;font-weight:500;color:var(--accent2)}
-.sig-cell .l{font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--ink3);margin-top:2px}
-.open-btn{width:100%;background:var(--accent);color:#fff;border:0;border-radius:8px;padding:12px;font-family:var(--font-b);font-size:14px;font-weight:600;cursor:pointer;transition:opacity .15s}
-.open-btn:hover{opacity:.85}
-.open-btn:disabled{opacity:.4;cursor:wait}
-.pv-note{margin-top:10px;font-size:11px;color:var(--ink3);line-height:1.5}
+.left-panel{border-right:1px solid var(--b1);overflow-y:auto;height:calc(100vh - 90px);position:sticky;top:90px}
+.panel-hdr{padding:12px 14px 8px;border-bottom:1px solid var(--b1);position:sticky;top:0;background:var(--bg);z-index:10;display:flex;align-items:center;justify-content:space-between}
+.panel-title{font-family:var(--mono);font-size:9px;letter-spacing:.2em;color:var(--dim);text-transform:uppercase;display:flex;align-items:center;gap:5px}
+.panel-title::before{content:'';display:block;width:3px;height:11px;background:var(--teal);border-radius:1px}
+.panel-ct{font-family:var(--mono);font-size:9px;color:var(--dim);background:var(--s2);padding:2px 6px;border-radius:2px;border:1px solid var(--b1)}
 
-/* states */
-.st{padding:40px;text-align:center;color:var(--ink2);font-size:13.5px}
-.err{background:rgba(242,111,111,.08);border:1px solid rgba(242,111,111,.25);color:var(--danger);padding:11px 15px;border-radius:8px;font-size:12.5px;margin:10px 0}
+.cat-filters{display:flex;gap:4px;flex-wrap:wrap;padding:7px 14px;border-bottom:1px solid var(--b1)}
+.cat-btn{font-family:var(--mono);font-size:8px;letter-spacing:.09em;text-transform:uppercase;padding:3px 7px;border-radius:2px;border:1px solid var(--b1);background:transparent;color:var(--dim);cursor:pointer;transition:all .15s}
+.cat-btn:hover{border-color:var(--b2);color:var(--text)}
+.cat-btn.active{border-color:var(--teal);color:var(--teal);background:rgba(0,201,167,.07)}
+
+.event-row{padding:11px 14px;border-bottom:1px solid var(--b1);cursor:pointer;transition:background .12s;position:relative;display:flex;align-items:flex-start;gap:9px;user-select:none}
+.event-row:hover{background:var(--s1)}
+.event-row.selected{background:var(--s2);border-left:2px solid var(--teal);padding-left:12px}
+@keyframes flash-row{0%{background:rgba(0,201,167,.2)}100%{background:var(--s2)}}
+.event-row.flash{animation:flash-row .35s ease-out}
+.ev-img{width:34px;height:34px;border-radius:4px;object-fit:cover;flex-shrink:0;background:var(--s3)}
+.ev-q{font-size:12px;color:var(--bright);font-weight:500;line-height:1.4;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;margin-bottom:4px}
+.ev-meta{display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+.ev-cat{font-family:var(--mono);font-size:8px;letter-spacing:.09em;text-transform:uppercase;color:var(--dim)}
+.ab{display:flex;align-items:center;gap:3px}
+.ab-d{width:3px;height:7px;border-radius:1px;background:var(--b2)}
+.ab-d.hi{background:var(--accent)}
+.ab-d.md{background:var(--gold)}
+.ab-d.lo{background:var(--teal)}
+.vol-tag{font-family:var(--mono);font-size:8px;color:var(--teal)}
+.new-badge{font-family:var(--mono);font-size:7px;color:var(--accent);background:rgba(232,64,64,.1);border:1px solid rgba(232,64,64,.22);padding:1px 5px;border-radius:2px;letter-spacing:.12em;text-transform:uppercase;animation:hb 1.4s ease-in-out infinite}
+
+.tap-tooltip{position:fixed;background:var(--s3);border:1px solid var(--b2);border-radius:4px;padding:5px 10px;font-family:var(--mono);font-size:9px;color:var(--teal);letter-spacing:.1em;pointer-events:none;z-index:999;opacity:0;transition:opacity .2s;white-space:nowrap}
+.tap-tooltip.show{opacity:1}
+
+.right-panel{padding:22px;overflow-y:auto}
+.empty-state{display:flex;flex-direction:column;align-items:center;justify-content:center;height:60vh;gap:12px;text-align:center}
+.es-glyph{font-size:36px;opacity:.25}
+.es-title{font-family:var(--display);font-size:30px;color:var(--b2);letter-spacing:.1em}
+.es-sub{font-family:var(--mono);font-size:9px;letter-spacing:.14em;color:var(--dim);text-transform:uppercase;line-height:1.7}
+.es-hint{font-family:var(--mono);font-size:10px;color:var(--teal);background:rgba(0,201,167,.07);border:1px solid rgba(0,201,167,.2);padding:6px 14px;border-radius:3px;margin-top:4px;letter-spacing:.1em}
+
+.preview-card{display:none}
+.preview-card.visible{display:block}
+.pc-cat{font-family:var(--mono);font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:var(--teal);margin-bottom:6px}
+.pc-title{font-family:var(--serif);font-size:22px;color:var(--bright);line-height:1.3;margin-bottom:10px}
+.pc-attention{background:var(--s1);border:1px solid var(--b2);border-left:3px solid var(--teal);padding:10px 12px;border-radius:0 4px 4px 0;margin-bottom:12px;font-size:12px;color:var(--text);line-height:1.55}
+.pc-attention strong{color:var(--bright)}
+.pc-desc{font-size:13px;color:var(--text);line-height:1.7;margin-bottom:16px;padding-bottom:16px;border-bottom:1px solid var(--b1)}
+.pc-cta{display:flex;align-items:center;justify-content:center;gap:10px;padding:14px;background:rgba(0,201,167,.06);border:1px dashed rgba(0,201,167,.3);border-radius:4px;cursor:pointer;transition:background .15s;font-family:var(--mono);font-size:10px;letter-spacing:.15em;color:var(--teal);text-transform:uppercase}
+.pc-cta:hover{background:rgba(0,201,167,.12)}
+
+/* ââ DEEP DIVE VIEW ââ */
+#deepView{background:var(--bg);animation:slide-in .4s cubic-bezier(.22,.8,.35,1)}
+@keyframes slide-in{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+
+.deep-hdr{background:rgba(7,9,13,.98);backdrop-filter:blur(16px);border-bottom:1px solid var(--b1);padding:12px 28px;display:flex;align-items:center;gap:16px}
+.back-btn{display:flex;align-items:center;gap:6px;font-family:var(--mono);font-size:10px;letter-spacing:.12em;color:var(--teal);cursor:pointer;background:none;border:none;transition:opacity .15s;padding:4px 0}
+.back-btn:hover{opacity:.7}
+.dh-divider{color:var(--b2);font-size:14px}
+.dh-cat{font-family:var(--mono);font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:var(--dim)}
+.dh-title{font-size:14px;color:var(--bright);font-weight:500;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+.deep-body{max-width:1160px;margin:0 auto;padding:32px 28px 60px}
+
+.deep-hero{display:grid;grid-template-columns:1fr 320px;gap:32px;padding-bottom:28px;border-bottom:1px solid var(--b1);margin-bottom:28px}
+.dh-eyebrow{font-family:var(--mono);font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--teal);margin-bottom:10px}
+.dh-headline{font-family:var(--serif);font-size:32px;font-weight:300;color:var(--bright);line-height:1.2;margin-bottom:14px;letter-spacing:-.01em}
+.dh-deck{font-family:var(--serif);font-style:italic;font-size:16px;color:var(--dim);line-height:1.6;margin-bottom:16px}
+.dh-body{font-size:14px;color:var(--text);line-height:1.75}
+.dh-body p+p{margin-top:12px}
+
+.attn-pill{background:var(--s1);border:1px solid var(--b2);border-top:3px solid var(--teal);border-radius:0 0 4px 4px;padding:16px}
+.ap-label{font-family:var(--mono);font-size:8px;letter-spacing:.2em;text-transform:uppercase;color:var(--teal);margin-bottom:8px}
+.ap-text{font-size:12px;color:var(--text);line-height:1.6;margin-bottom:10px}
+.ap-text strong{color:var(--bright)}
+.apg-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px}
+.apg-label{font-family:var(--mono);font-size:8px;color:var(--dim);letter-spacing:.1em;text-transform:uppercase}
+.apg-level{font-family:var(--mono);font-size:9px;font-weight:600}
+.apg-level.hi{color:var(--accent)}.apg-level.md{color:var(--gold)}.apg-level.lo{color:var(--teal)}
+.apg-bar{height:3px;background:var(--b2);border-radius:2px;overflow:hidden}
+.apg-fill{height:100%;border-radius:2px;background:linear-gradient(90deg,var(--teal),var(--accent));transition:width 1s ease}
+.ap-end{font-family:var(--mono);font-size:9px;color:var(--dim);margin-top:8px;padding-top:8px;border-top:1px solid var(--b1)}
+.ap-end span{color:var(--bright)}
+
+.sec-head{display:flex;align-items:center;gap:10px;margin-bottom:18px}
+.sec-bar{width:3px;height:18px;border-radius:1px;flex-shrink:0}
+.sec-title{font-family:var(--mono);font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--text)}
+.sec-sub{font-size:12px;color:var(--dim);margin-left:auto}
+
+/* News section */
+.news-section{margin-bottom:36px}
+.ai-brief{background:var(--s1);border:1px solid var(--b2);border-radius:4px;padding:20px;margin-bottom:18px;position:relative;overflow:hidden}
+.ai-brief::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--purple),var(--blue),var(--teal))}
+.ai-brief-label{font-family:var(--mono);font-size:8px;letter-spacing:.2em;color:var(--purple);text-transform:uppercase;margin-bottom:10px;display:flex;align-items:center;gap:7px}
+.ai-brief-label::after{content:'';flex:1;height:1px;background:linear-gradient(90deg,rgba(155,109,255,.3),transparent)}
+.ai-brief-body{font-size:14px;color:var(--text);line-height:1.78}
+.ai-brief-body p+p{margin-top:12px}
+
+.news-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.news-card{background:var(--s1);border:1px solid var(--b1);border-radius:4px;padding:14px;cursor:pointer;transition:border-color .15s,background .15s}
+.news-card:hover{border-color:var(--b2);background:var(--s2)}
+.nc-meta{display:flex;align-items:center;gap:7px;margin-bottom:7px}
+.nc-source{font-family:var(--mono);font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--dim)}
+.nc-dot{color:var(--b2)}
+.nc-date{font-family:var(--mono);font-size:9px;color:var(--dim)}
+.nc-hl{font-family:var(--serif);font-size:15px;color:var(--bright);line-height:1.35;margin-bottom:6px}
+.nc-body{font-size:12px;color:var(--dim);line-height:1.55}
+
+/* Historical */
+.hist-section{margin-bottom:36px}
+.hist-intro{font-size:13px;color:var(--text);line-height:1.7;padding:14px 16px;background:var(--s1);border:1px solid var(--b1);border-radius:4px;margin-bottom:18px}
+.hist-events{display:flex;flex-direction:column;gap:12px}
+.hist-event{background:var(--s1);border:1px solid var(--b1);border-radius:4px;overflow:hidden;transition:border-color .15s}
+.hist-event:hover{border-color:var(--b2)}
+.he-header{display:flex;align-items:stretch;cursor:pointer}
+.he-year-block{background:var(--s2);width:72px;flex-shrink:0;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:14px 8px;border-right:1px solid var(--b1)}
+.he-year{font-family:var(--display);font-size:26px;color:var(--gold);line-height:1}
+.he-era{font-family:var(--mono);font-size:8px;color:var(--dim);letter-spacing:.1em;text-transform:uppercase;margin-top:3px}
+.he-main{flex:1;padding:14px 16px}
+.he-title{font-family:var(--serif);font-size:16px;color:var(--bright);line-height:1.3;margin-bottom:5px}
+.he-desc{font-size:12px;color:var(--text);line-height:1.55}
+.he-btn{display:flex;align-items:center;padding:0 14px;color:var(--dim);font-size:14px;flex-shrink:0;transition:color .15s,transform .25s}
+.hist-event.open .he-btn{transform:rotate(180deg);color:var(--teal)}
+.he-detail{display:none;padding:16px 16px 16px 88px;border-top:1px solid var(--b1);background:rgba(0,0,0,.2)}
+@keyframes expand-in{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:translateY(0)}}
+.hist-event.open .he-detail{display:block;animation:expand-in .25s ease-out}
+.hed-body{font-size:13px;color:var(--text);line-height:1.72;margin-bottom:16px}
+.hed-body p+p{margin-top:10px}
+
+.sim-tag{display:inline-flex;align-items:center;gap:5px;font-family:var(--mono);font-size:8px;letter-spacing:.12em;text-transform:uppercase;padding:3px 8px;border-radius:2px;margin-top:12px}
+.sim-tag.high{background:rgba(232,64,64,.1);color:var(--accent);border:1px solid rgba(232,64,64,.2)}
+.sim-tag.medium{background:rgba(240,180,41,.1);color:var(--gold);border:1px solid rgba(240,180,41,.2)}
+.sim-tag.low{background:rgba(61,139,255,.1);color:var(--blue);border:1px solid rgba(61,139,255,.2)}
+
+.outcome-block{background:var(--s2);border:1px solid var(--b2);border-radius:4px;overflow:hidden}
+.ob-header{padding:8px 12px;background:rgba(240,180,41,.06);border-bottom:1px solid var(--b2);font-family:var(--mono);font-size:8px;letter-spacing:.18em;color:var(--gold);text-transform:uppercase;display:flex;align-items:center;gap:6px}
+.ob-item{display:flex;align-items:flex-start;gap:10px;padding:10px 12px;border-bottom:1px solid var(--b1)}
+.ob-item:last-child{border-bottom:none}
+.ob-icon{font-size:14px;flex-shrink:0;margin-top:1px}
+.ob-label{font-family:var(--mono);font-size:9px;color:var(--dim);letter-spacing:.1em;text-transform:uppercase;margin-bottom:3px}
+.ob-text{font-size:12px;color:var(--text);line-height:1.5}
+.ob-text strong{color:var(--bright)}
+
+.deep-disclaimer{font-family:var(--mono);font-size:9px;color:var(--dim);letter-spacing:.04em;line-height:1.65;padding:14px 16px;background:var(--s1);border:1px solid var(--b1);border-radius:3px;border-left:2px solid var(--b2);margin-top:32px}
+
+/* Shared */
+.spinner{width:14px;height:14px;border-radius:50%;border:2px solid var(--b2);border-top-color:var(--purple);animation:spin .8s linear infinite;flex-shrink:0}
 @keyframes spin{to{transform:rotate(360deg)}}
-.spin{display:inline-block;width:16px;height:16px;border:2px solid rgba(79,142,247,.2);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:7px}
+.loading-row{display:flex;align-items:center;gap:10px;color:var(--dim);font-family:var(--mono);font-size:10px;letter-spacing:.1em;padding:8px 0}
+.skel{background:linear-gradient(90deg,var(--s2) 25%,var(--s3) 50%,var(--s2) 75%);background-size:200% 100%;animation:shimmer 1.5s infinite;border-radius:3px}
+@keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+::-webkit-scrollbar{width:4px}
+::-webkit-scrollbar-track{background:var(--bg)}
+::-webkit-scrollbar-thumb{background:var(--b2);border-radius:2px}
 
-/* deep dive */
-.dive{display:none;position:fixed;inset:0;background:rgba(4,5,12,.93);z-index:200;overflow-y:auto;padding:22px 16px 80px}
-.dive.open{display:block}
-.dive-wrap{max-width:840px;margin:0 auto}
-.dive-back{display:inline-flex;align-items:center;gap:7px;color:var(--ink2);font-size:13px;cursor:pointer;background:none;border:none;font-family:var(--font-b);margin-bottom:18px}
-.dive-back:hover{color:var(--ink)}
-.dive-hd{margin-bottom:22px}
-.dive-hd h1{font-family:var(--font-s);font-size:26px;line-height:1.25;font-weight:700;margin:10px 0 8px}
-.dive-disc{font-size:11.5px;color:var(--ink3);line-height:1.55;border-left:2px solid var(--border2);padding-left:11px;margin-top:10px}
-
-.ds{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:18px;margin-bottom:14px}
-.ds h4{font-size:10.5px;text-transform:uppercase;letter-spacing:.1em;color:var(--ink3);font-family:var(--font-m);margin-bottom:13px;font-weight:500}
-
-/* analogs */
-.analog{background:var(--panel2);border:1px solid var(--border);border-radius:10px;padding:13px;margin-bottom:9px}
-.analog:last-child{margin-bottom:0}
-.an-top{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:5px}
-.an-year{font-family:var(--font-m);font-size:12.5px;color:var(--accent2);font-weight:500}
-.an-sim{font-size:10.5px;color:var(--ink3);font-family:var(--font-m)}
-.analog h5{font-family:var(--font-s);font-size:15.5px;font-weight:600;margin-bottom:5px;line-height:1.3}
-.analog .d{font-size:13px;color:var(--ink2);line-height:1.5}
-.analog .out{font-size:11.5px;color:var(--ink3);margin-top:7px;padding-top:7px;border-top:1px solid var(--border);font-style:italic}
-.sim-bar{height:3px;background:var(--border2);border-radius:2px;margin-top:9px}
-.sim-fill{height:100%;border-radius:2px;background:linear-gradient(90deg,var(--accent),var(--accent2))}
-
-/* angles */
-.angle{background:var(--panel2);border:1px solid var(--border);border-radius:10px;margin-bottom:10px;overflow:hidden}
-.angle-hd{display:flex;align-items:center;justify-content:space-between;padding:12px 15px;cursor:pointer}
-.angle-hd:hover{background:rgba(255,255,255,.025)}
-.angle-title{font-family:var(--font-s);font-size:14px;font-weight:600;color:var(--ink)}
-.angle-tog{font-size:10px;color:var(--ink3);font-family:var(--font-m)}
-.angle-bd{padding:0 15px 13px;display:none}
-.angle-bd.open{display:block}
-.angle-kw{font-size:10.5px;color:var(--ink3);font-family:var(--font-m);margin-bottom:9px}
-
-/* articles */
-.art{padding:9px 0;border-bottom:1px solid var(--border);display:flex;gap:10px;align-items:flex-start}
-.art:last-child{border-bottom:0}
-.art-sc{flex-shrink:0;width:26px;height:26px;border-radius:5px;display:flex;align-items:center;justify-content:center;font-family:var(--font-m);font-size:11.5px;font-weight:500}
-.sc-hi{background:rgba(126,207,178,.2);color:var(--accent2)}
-.sc-md{background:rgba(79,142,247,.18);color:var(--accent)}
-.sc-lo{background:rgba(142,154,180,.12);color:var(--ink3)}
-.art-b .src{font-size:10px;color:var(--ink3);text-transform:uppercase;letter-spacing:.05em;font-family:var(--font-m);margin-bottom:2px}
-.art-b a{font-size:13px;color:var(--ink);line-height:1.4}
-.art-b a:hover{color:var(--accent)}
-.atag{display:inline-block;font-size:9.5px;padding:1px 6px;border-radius:3px;font-family:var(--font-m);margin-top:3px}
-.tk{background:rgba(126,207,178,.15);color:var(--accent2)}
-.tb{background:rgba(79,142,247,.1);color:var(--accent)}
-.tr{background:rgba(248,182,108,.1);color:#f8c068}
-.ta{background:rgba(192,132,252,.1);color:var(--accent3)}
-
-/* brief */
-.brief-q{font-family:var(--font-s);font-size:17px;font-weight:600;line-height:1.35;color:var(--ink);margin-bottom:11px;font-style:italic}
-.brief-test{font-size:13px;color:var(--ink2);line-height:1.5;padding:9px 13px;background:var(--panel2);border-radius:8px;border:1px solid var(--border)}
-
-footer{max-width:1440px;margin:0 auto;padding:16px 24px 24px;color:var(--ink3);font-size:11px;border-top:1px solid var(--border);line-height:1.7}
+@media(max-width:900px){
+  .feed-layout{grid-template-columns:1fr}
+  .left-panel{height:auto;position:relative;top:0}
+  .deep-hero{grid-template-columns:1fr}
+  .news-grid{grid-template-columns:1fr}
+  .deep-body{padding:20px 16px 48px}
+  .dh-headline{font-size:24px}
+}
 </style>
 </head>
 <body>
 
-<div class="notice">
-  <strong>â¡</strong>&nbsp;
-  Polymarket public activity data (24h volume) used as a journalistic attention signal only â no market prices, odds, or positions shown.
-  All journalistic context is AI-synthesised from public information.
-  This is not financial, betting, legal, or investment advice.
+<!-- HEADER -->
+<div class="header">
+  <div class="logo" onclick="goHome()">
+    <div class="logo-pulse"></div>INFERA
+  </div>
+  <div class="hdr-search">
+    <span class="s-icon">â</span>
+    <input class="s-input" id="searchInput" type="text" placeholder="Search topicsâ¦ (e.g. China, Fed, Bitcoin)" autocomplete="off">
+    <div class="s-results" id="searchResults"></div>
+  </div>
+  <div class="hdr-right">
+    <div class="tap-hint" id="tapHint">double-tap to deep dive</div>
+    <div class="live-tag"><div class="logo-pulse" style="width:6px;height:6px"></div>LIVE</div>
+  </div>
 </div>
 
-<header>
-  <div>
-    <div class="logo">INFER<em>A</em></div>
-    <div class="logo-sub">World Attention Intelligence</div>
-  </div>
-  <div class="search-bar">
-    <input id="search" type="text" placeholder="Search stories, topics, questionsâ¦" autocomplete="off">
-  </div>
-</header>
+<div class="notice">â  Journalistic context only â no odds, no betting data, no financial advice Â· Powered by Polymarket public signals + AI news intelligence</div>
 
-<div class="layout">
-  <!-- left: feed -->
-  <div>
-    <div class="tabs" id="tabs">
-      <button class="tab active" data-cat="all"><span class="dot" style="background:#8e9ab4"></span>All</button>
-      <button class="tab" data-cat="politics"><span class="dot" style="background:#b59ef8"></span>Politics</button>
-      <button class="tab" data-cat="world"><span class="dot" style="background:#7aabfa"></span>World</button>
-      <button class="tab" data-cat="sports"><span class="dot" style="background:#6dd6b0"></span>Sports</button>
-      <button class="tab" data-cat="science"><span class="dot" style="background:#72d4ff"></span>Science</button>
-      <button class="tab" data-cat="culture"><span class="dot" style="background:#f8c068"></span>Culture</button>
-      <button class="tab" data-cat="market"><span class="dot" style="background:#d09cfc"></span>Markets</button>
-    </div>
-    <div id="grid" class="grid"></div>
-    <div id="gst" class="st"><span class="spin"></span>Loading attention feedâ¦</div>
+<div class="ticker-wrap">
+  <div class="ticker-track" id="tickerTrack">
+    <span class="tk"><span class="tk-name">Loading live topicsâ¦</span></span>
   </div>
+</div>
 
-  <!-- right: preview -->
-  <div class="aside">
-    <div class="pv" id="pv">
-      <div class="pv-empty">
-        <div class="ico">â</div>
-        <div>Click any story to preview</div>
-        <div style="font-size:11.5px;margin-top:5px">Double-click to open deep investigation</div>
+<div class="tap-tooltip" id="tapTooltip">ð Tap again to deep dive â</div>
+
+<!-- ââ FEED VIEW ââ -->
+<div class="view active" id="feedView">
+  <div class="feed-layout">
+
+    <div class="left-panel">
+      <div class="panel-hdr">
+        <div class="panel-title">Most Active Now</div>
+        <div class="panel-ct" id="eventCount">â</div>
+      </div>
+      <div class="cat-filters" id="catFilters">
+        <button class="cat-btn active" data-cat="all">All</button>
+        <button class="cat-btn" data-cat="Politics">Politics</button>
+        <button class="cat-btn" data-cat="Crypto">Crypto</button>
+        <button class="cat-btn" data-cat="Economics">Economics</button>
+        <button class="cat-btn" data-cat="World">World</button>
+        <button class="cat-btn" data-cat="Sports">Sports</button>
+      </div>
+      <div id="eventList">
+        <div style="padding:12px 14px;border-bottom:1px solid var(--b1)"><div class="skel" style="height:11px;width:80%;margin-bottom:7px"></div><div class="skel" style="height:7px;width:50%"></div></div>
+        <div style="padding:12px 14px;border-bottom:1px solid var(--b1)"><div class="skel" style="height:11px;width:70%;margin-bottom:7px"></div><div class="skel" style="height:7px;width:40%"></div></div>
+        <div style="padding:12px 14px"><div class="skel" style="height:11px;width:85%;margin-bottom:7px"></div><div class="skel" style="height:7px;width:55%"></div></div>
       </div>
     </div>
+
+    <div class="right-panel" id="rightPanel">
+      <div class="empty-state" id="emptyState">
+        <div class="es-glyph">â</div>
+        <div class="es-title">SELECT A TOPIC</div>
+        <div class="es-sub">Tap once to preview<br>Double-tap for full intelligence dive</div>
+        <div class="es-hint">â Double-tap any topic for news + historical analysis</div>
+      </div>
+      <div class="preview-card" id="previewCard">
+        <div class="pc-cat" id="pc-cat"></div>
+        <div class="pc-title" id="pc-title"></div>
+        <div class="pc-attention" id="pc-attention"></div>
+        <div class="pc-desc" id="pc-desc"></div>
+        <div class="pc-cta" onclick="openDeepDive()">
+          <span style="font-size:18px">â</span>
+          <span>Double-tap or click for full news context &amp; historical analysis</span>
+        </div>
+      </div>
+    </div>
+
   </div>
 </div>
 
-<!-- deep dive overlay -->
-<div class="dive" id="dive">
-  <div class="dive-wrap">
-    <button class="dive-back" id="dive-close">â Close investigation</button>
-    <div id="dive-content"></div>
+<!-- ââ DEEP DIVE VIEW ââ -->
+<div class="view" id="deepView">
+
+  <div class="deep-hdr">
+    <button class="back-btn" onclick="goBack()">â Back</button>
+    <span class="dh-divider">|</span>
+    <span class="dh-cat" id="dh-cat"></span>
+    <span class="dh-title" id="dh-title-crumb"></span>
+    <span style="font-family:var(--mono);font-size:9px;color:var(--dim)" id="dh-source"></span>
+  </div>
+
+  <div class="deep-body">
+
+    <div class="deep-hero">
+      <div>
+        <div class="dh-eyebrow" id="dh-eyebrow"></div>
+        <div class="dh-headline" id="dh-headline"></div>
+        <div class="dh-deck" id="dh-deck"></div>
+        <div class="dh-body" id="dh-body"><div class="loading-row"><div class="spinner"></div><span>Loading contextâ¦</span></div></div>
+      </div>
+      <div>
+        <div class="attn-pill">
+          <div class="ap-label">ð¡ Why this is surfaced</div>
+          <div class="ap-text" id="ap-text"></div>
+          <div class="apg-row"><span class="apg-label">Global Attention</span><span class="apg-level" id="apg-level"></span></div>
+          <div class="apg-bar"><div class="apg-fill" id="apg-fill" style="width:0%"></div></div>
+          <div class="ap-end" style="margin-top:8px;padding-top:8px;border-top:1px solid var(--b1)">Resolves: <span id="ap-enddate"></span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- NEWS CONTEXT -->
+    <div class="news-section">
+      <div class="sec-head">
+        <div class="sec-bar" style="background:var(--blue)"></div>
+        <div class="sec-title">Current News Context</div>
+        <div class="sec-sub" id="news-sub"></div>
+      </div>
+      <div class="ai-brief">
+        <div class="ai-brief-label">Investigative framework Â· targeted article search Â· relevance scored by AI</div>
+        <div class="ai-brief-body" id="newsBrief"><div class="loading-row"><div class="spinner" style="border-top-color:var(--gold)"></div><span>Building investigative search briefâ¦</span></div></div>
+      </div>
+      <div id="newsGrid"></div>
+    </div>
+
+    <!-- HISTORICAL -->
+    <div class="hist-section">
+      <div class="sec-head">
+        <div class="sec-bar" style="background:var(--gold)"></div>
+        <div class="sec-title">Historical Comparisons &amp; Outcomes</div>
+        <div class="sec-sub">What happened last time</div>
+      </div>
+      <div class="hist-intro" id="histIntro"><div class="loading-row"><div class="spinner" style="border-top-color:var(--gold)"></div><span>Finding historical parallelsâ¦</span></div></div>
+      <div class="hist-events" id="histEvents"></div>
+    </div>
+
+    <div class="deep-disclaimer">
+      <strong style="color:var(--text)">Editorial transparency:</strong>
+      Infera uses Polymarket's public activity data strictly as a journalistic attention signal.
+      No market prices, odds, or positions are shown. All journalism context is AI-synthesized from public information.
+      This is not financial, betting, legal, or investment advice of any kind.
+    </div>
+
   </div>
 </div>
-
-<footer>
-  INFERA Â· Journalistic context engine Â· Polymarket public activity used as attention signal only (volume, not prices or odds) Â·
-  AI context generated by Claude via secure backend proxy Â· News from GNews &amp; The Guardian (optional, free tiers) Â·
-  Not financial, legal, betting, or investment advice Â· Wikipedia content CC BY-SA 4.0
-</footer>
 
 <script>
-"use strict";
+// âââ CONFIG ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+const GAMMA        = 'https://gamma-api.polymarket.com';
+const PROXY        = 'https://corsproxy.io/?';
+const GNEWS_KEY    = 'YOUR_GNEWS_API_KEY';    // https://gnews.io â free 100/day
+const GUARDIAN_KEY = 'YOUR_GUARDIAN_API_KEY'; // https://open-platform.theguardian.com â free
 
-// âââ CONFIG ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
-const API       = "https://infera-api.onrender.com"; // your Render backend
-const PROXY     = "https://corsproxy.io/?url=";       // CORS shim for Polymarket
-const GAMMA     = "https://gamma-api.polymarket.com";
-const GNEWS_KEY = "";   // optional: free key from gnews.io  (100 req/day)
-const GUARD_KEY = "";   // optional: free key from open-platform.theguardian.com
+// âââ STATE âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+let allEvents      = [];
+let eventMap       = {};
+let selectedEvent  = null;
+let activeCategory = 'all';
+let countdown      = 60;
+let lastTapId      = null;
+let lastTapTime    = 0;
+const DBL_MS       = 500;
 
-// NOTE: Claude API is called via backend /ai endpoint â NO key needed here.
-// The ANTHROPIC_API_KEY lives in Render's environment variables only.
-
-const DBL_MS = 480; // double-tap window (ms)
-
-// âââ UTILS âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
-const $ = s => document.querySelector(s);
-const esc = s => {
-  if (s == null) return "";
-  return String(s).replace(/[&<>"']/g, c =>
-    ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
-};
-const fmt = n => {
-  n = Number(n) || 0;
-  if (n >= 1e6) return (n / 1e6).toFixed(1) + "M";
-  if (n >= 1e3) return (n / 1e3).toFixed(0) + "k";
-  return String(Math.round(n));
-};
-
-// âââ AI PROXY ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
-// Calls our backend /ai route. Claude API key NEVER lives in the browser.
-async function callAI(prompt, maxTokens = 1024) {
-  const res = await fetch(API + "/ai", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    'X-Infera-Token': 'y3H2qcJN6YDxwRIAb6_8qDQX8legTKYTDgwR8FNxHb4',
-    body: JSON.stringify({ prompt, max_tokens: maxTokens })
-  });
-  if (!res.ok) throw new Error("AI proxy HTTP " + res.status);
-  const data = await res.json();
-  // Backend returns Anthropic response format: {content:[{text:"..."}]}
-  return data?.content?.[0]?.text ?? "";
-}
-
-// âââ CATEGORIZER âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
-const CAT_KEYS = {
-  politics: ["politic","elect","congress","senate","president","vote","democrat",
-             "republican","government","law","legislation","white house","parliament",
-             "prime minister","referendum","administration","cabinet","ballot"],
-  sports:   ["nfl","nba","mlb","nhl","nascar","f1","soccer","ufc","boxing","tennis",
-             "golf","olympic","super bowl","world cup","champion","league","playoff",
-             "tournament","draft","trade","roster","match","stadium"],
-  science:  ["space","nasa","asteroid","climate","ai","artificial intelligence","quantum",
-             "gene","vaccine","disease","cancer","earthquake","volcano","storm",
-             "hurricane","tornado","flood","wildfire","comet","planet","black hole",
-             "biology","physics","chemistry","research","study"],
-  culture:  ["award","oscar","emmy","grammy","film","movie","music","artist","celebrity",
-             "fashion","book","bestsell","streaming","netflix","viral","social media",
-             "game","esport","theater","concert","festival"],
-  market:   ["stock","bitcoin","crypto","ethereum","fed","interest rate","inflation",
-             "gdp","recession","earning","ipo","merger","acquisition","treasury",
-             "dollar","yield","tariff","trade war","oil","gold","commodity","nasdaq"],
-};
-function categorize(text) {
-  const t = (text || "").toLowerCase();
-  for (const [cat, keys] of Object.entries(CAT_KEYS)) {
-    if (keys.some(k => t.includes(k))) return cat;
-  }
-  return "world";
-}
-
-const CSTYLE = {
-  politics: { bg: "var(--cat-politics-bg)", fg: "var(--cat-politics-fg)" },
-  world:    { bg: "var(--cat-world-bg)",    fg: "var(--cat-world-fg)"    },
-  sports:   { bg: "var(--cat-sports-bg)",   fg: "var(--cat-sports-fg)"   },
-  science:  { bg: "var(--cat-science-bg)",  fg: "var(--cat-science-fg)"  },
-  culture:  { bg: "var(--cat-culture-bg)",  fg: "var(--cat-culture-fg)"  },
-  market:   { bg: "var(--cat-market-bg)",   fg: "var(--cat-market-fg)"   },
-  other:    { bg: "var(--cat-other-bg)",    fg: "var(--cat-other-fg)"    },
-};
-function catBadge(cat) {
-  const s = CSTYLE[cat] || CSTYLE.other;
-  return `<span class="badge" style="background:${s.bg};color:${s.fg}">${esc(cat)}</span>`;
-}
-
-// âââ STATE ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
-let allEvents = [], filtered = [], activeCat = "all", selId = null;
-let tapId = null, tapTime = 0, angleDone = {};
-
-// âââ LOAD POLYMARKET EVENTS âââââââââââââââââââââââââââââââââââââââââââââââââââ
-async function loadEvents() {
+// âââ FETCH POLYMARKET ââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+async function fetchEvents() {
   try {
-    const url = PROXY + encodeURIComponent(
-      GAMMA + "/events?active=true&closed=false&limit=100&order=volume24hr&ascending=false"
-    );
+    const url = PROXY + encodeURIComponent(`${GAMMA}/events?active=true&closed=false&limit=40&order=volume24hr&ascending=false`);
     const res = await fetch(url);
-    if (!res.ok) throw new Error("HTTP " + res.status);
-    const raw = await res.json();
-    allEvents = (Array.isArray(raw) ? raw : raw.data || [])
-      .map(e => ({
-        id:       String(e.id),
-        title:    e.title || e.question || "(untitled)",
-        category: categorize(e.title || e.question || ""),
-        volume:   Number(e.volume24hr || e.volume || 0),
-        markets:  e.markets?.length || 1,
-      }))
-      .filter(e => e.title && e.volume > 0);
-    applyFilter();
-    renderGrid();
-  } catch (err) {
-    $("#gst").innerHTML = `<div class="err">Could not load attention feed: ${esc(err.message)}</div>`;
+    if (!res.ok) throw new Error(res.status);
+    const data = await res.json();
+    allEvents = data.filter(e => e.title || e.markets?.[0]?.question);
+  } catch(_) {
+    allEvents = mockEvents();
   }
+  eventMap = {};
+  allEvents.forEach(ev => { if (ev.id) eventMap[String(ev.id)] = ev; });
+  renderList();
+  buildTicker();
+  document.getElementById('eventCount').textContent = allEvents.length + ' live';
 }
 
-// âââ FILTER + RENDER ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
-function applyFilter() {
-  const q = ($("#search").value || "").trim().toLowerCase();
-  filtered = allEvents.filter(e => {
-    if (activeCat !== "all" && e.category !== activeCat) return false;
-    if (q && !e.title.toLowerCase().includes(q)) return false;
-    return true;
-  });
-}
-function renderGrid() {
-  applyFilter();
-  const g = $("#grid"), st = $("#gst");
-  if (!filtered.length) {
-    g.innerHTML = "";
-    st.textContent = "No stories match this filter.";
-    st.style.display = "block";
-    return;
-  }
-  st.style.display = "none";
-  g.innerHTML = filtered.map(e => `
-    <div class="card${e.id === selId ? " sel" : ""}" data-id="${esc(e.id)}"
-         onclick="onCard(event,'${esc(e.id)}')">
-      <div class="card-top">
-        ${catBadge(e.category)}
-        <span class="vol">â¡ <span>${fmt(e.volume)}</span>/24h</span>
-      </div>
-      <h3>${esc(e.title)}</h3>
-      <div class="card-foot">${e.markets} market${e.markets !== 1 ? "s" : ""}</div>
-      <div class="dbl-hint">double-click â deep dive</div>
-    </div>`).join("");
+function mockEvents() {
+  return [
+    { id:'1', title:'Will the US and China reach a trade deal in 2026?', category:'Economics', volume24hr:9200000, description:'Tracks whether the US and China will formally agree on a comprehensive trade framework, resolving the tariff standoff that began escalating in April 2026.', endDate:'2026-12-31T00:00:00Z', resolutionSource:'Reuters, AP' },
+    { id:'2', title:'Will there be a ceasefire in Gaza by June 2026?', category:'World', volume24hr:6800000, description:'Resolves YES if a formal ceasefire agreement is announced between Israel and Hamas, verified by major international outlets.', endDate:'2026-06-30T00:00:00Z', resolutionSource:'AP, UN' },
+    { id:'3', title:'Will the Fed cut rates in May 2026?', category:'Economics', volume24hr:5100000, description:'Resolves YES if the FOMC votes to reduce the federal funds rate target at the May 2026 meeting.', endDate:'2026-05-10T00:00:00Z', resolutionSource:'Federal Reserve' },
+    { id:'4', title:'Will Reform UK win more than 200 seats in the next general election?', category:'Politics', volume24hr:3400000, description:"Resolves YES if Nigel Farage's Reform UK party secures over 200 parliamentary seats at the next UK general election.", endDate:'2027-01-01T00:00:00Z', resolutionSource:'UK Electoral Commission' },
+    { id:'5', title:'Will Bitcoin reach $100k before July 2026?', category:'Crypto', volume24hr:10200000, description:'Resolves YES if BTC/USD closes above $100,000 on any major exchange before July 1, 2026.', endDate:'2026-06-30T00:00:00Z', resolutionSource:'CoinGecko, Coinbase' },
+    { id:'6', title:'Will the EU enforce the AI Act against a major company in 2026?', category:'World', volume24hr:2300000, description:'Resolves YES if the European Commission formally initiates enforcement proceedings under the EU AI Act before year end.', endDate:'2026-12-31T00:00:00Z', resolutionSource:'European Commission' },
+    { id:'7', title:'Will there be a US recession declared in 2026?', category:'Economics', volume24hr:4100000, description:'Resolves YES if the NBER officially declares a US recession with its start date in 2026.', endDate:'2027-06-30T00:00:00Z', resolutionSource:'NBER' },
+    { id:'8', title:'Will Nvidia reach $200 per share before end of 2026?', category:'Economics', volume24hr:5700000, description:'Resolves YES if NVDA closes above $200 on any trading day before December 31, 2026.', endDate:'2026-12-31T00:00:00Z', resolutionSource:'NASDAQ' },
+  ];
 }
 
-// âââ TAP DETECTION ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
-function onCard(e, id) {
-  const now = Date.now();
-  if (tapId === id && (now - tapTime) < DBL_MS) {
-    tapId = null;
-    const ev = allEvents.find(x => x.id === id);
-    if (ev) openDive(ev);
-  } else {
-    tapId = id; tapTime = now;
-    selId = id;
-    renderGrid();
-    const ev = allEvents.find(x => x.id === id);
-    if (ev) renderPreview(ev);
-  }
+// âââ RENDER LIST âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+function renderList(cat, q) {
+  cat = cat || 'all'; q = q || '';
+  let evs = allEvents;
+  if (cat !== 'all') evs = evs.filter(e => (e.category||'').toLowerCase().includes(cat.toLowerCase()) || (e.tags||[]).some(t => (t.label||'').toLowerCase().includes(cat.toLowerCase())));
+  if (q) { const ql = q.toLowerCase(); evs = evs.filter(e => (e.title||'').toLowerCase().includes(ql)); }
+  if (!evs.length) { document.getElementById('eventList').innerHTML = '<div style="padding:20px;text-align:center;color:var(--dim);font-family:var(--mono);font-size:10px">NO TOPICS FOUND</div>'; return; }
+
+  document.getElementById('eventList').innerHTML = evs.map((ev, i) => {
+    const vol  = ev.volume24hr || 0;
+    const lvl  = vol > 5e6 ? 'hi' : vol > 1e6 ? 'md' : 'lo';
+    const dots = vol > 5e6 ? 5 : vol > 2e6 ? 3 : 1;
+    const cat  = ev.category || getTagCat(ev.tags) || 'General';
+    const sel  = selectedEvent && selectedEvent.id == ev.id;
+    const id   = String(ev.id);
+    return '<div class="event-row' + (sel ? ' selected' : '') + '" id="row-' + id + '" onclick="rowClick(event,\'' + id + '\')" ontouchend="rowTouch(event,\'' + id + '\')">' +
+      (ev.image ? '<img class="ev-img" src="' + ev.image + '" onerror="this.style.display=\'none\'" alt="">' : '') +
+      '<div style="flex:1;min-width:0">' +
+        '<div class="ev-q">' + (ev.title || 'Untitled') + '</div>' +
+        '<div class="ev-meta">' +
+          '<span class="ev-cat">' + cat + '</span>' +
+          '<div class="ab">' + [1,2,3,4,5].map(d => '<div class="ab-d ' + (d <= dots ? lvl : '') + '"></div>').join('') + '</div>' +
+          (vol > 0 ? '<span class="vol-tag">$' + fmtVol(vol) + '</span>' : '') +
+          (i < 3 ? '<span class="new-badge">ACTIVE</span>' : '') +
+        '</div>' +
+      '</div></div>';
+  }).join('');
 }
 
-// âââ PREVIEW âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
-function renderPreview(ev) {
-  $("#pv").innerHTML = `<div class="pv-body">
-    <div>${catBadge(ev.category)}</div>
-    <h2>${esc(ev.title)}</h2>
-    <div class="sig-row">
-      <div class="sig-cell"><div class="n">${fmt(ev.volume)}</div><div class="l">24h attention</div></div>
-      <div class="sig-cell"><div class="n">${ev.markets}</div><div class="l">markets</div></div>
-    </div>
-    <button class="open-btn" onclick="openDive(allEvents.find(x=>x.id==='${esc(ev.id)}'))">
-      â¬ Open deep investigation
-    </button>
-    <div class="pv-note">
-      â¡ Attention signal = 24-hour event volume from Polymarket's public API.
-      No prices, probabilities, or positions displayed.
-    </div>
-  </div>`;
-}
-
-// âââ DEEP DIVE ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
-async function openDive(ev) {
+// âââ DOUBLE-TAP ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+function rowClick(e, id) {
+  e.stopPropagation();
+  const ev = eventMap[id];
   if (!ev) return;
-  const dive = $("#dive"), dc = $("#dive-content");
-  dive.classList.add("open");
-  document.body.style.overflow = "hidden";
-  angleDone = {};
+  const now = Date.now();
+  if (lastTapId === id && (now - lastTapTime) < DBL_MS) {
+    lastTapId = null; lastTapTime = 0;
+    hideTip();
+    openDeepDive(ev);
+  } else {
+    lastTapId = id; lastTapTime = now;
+    selectPreview(ev, e);
+  }
+}
+function rowTouch(e, id) { e.preventDefault(); rowClick(e, id); }
 
-  dc.innerHTML = `
-    <div class="dive-hd">
-      <div>${catBadge(ev.category)}</div>
-      <h1>${esc(ev.title)}</h1>
-      <div class="dive-disc">
-        Infera uses Polymarket's public activity data strictly as a journalistic attention signal.
-        No market prices, odds, or positions are shown. All context is AI-synthesised from public
-        information. This is not financial, betting, legal, or investment advice of any kind.
-      </div>
-    </div>
-    <div class="ds" id="ds-brief"><h4>Investigative Brief</h4>
-      <div class="st"><span class="spin"></span>Building briefâ¦</div></div>
-    <div class="ds" id="ds-analogs"><h4>Historical Analogs</h4>
-      <div class="st"><span class="spin"></span>Finding historical parallelsâ¦</div></div>
-    <div class="ds" id="ds-angles"><h4>Investigative Angles &amp; Coverage</h4>
-      <div class="st"><span class="spin"></span>Generating anglesâ¦</div></div>`;
+function selectPreview(ev, e) {
+  selectedEvent = ev;
+  document.querySelectorAll('.event-row').forEach(r => r.classList.remove('selected'));
+  const row = document.getElementById('row-' + ev.id);
+  if (row) { row.classList.add('selected'); row.classList.add('flash'); setTimeout(() => row.classList.remove('flash'), 400); }
+  showTip(e);
+  document.getElementById('emptyState').style.display = 'none';
+  document.getElementById('previewCard').classList.add('visible');
+  const cat = ev.category || getTagCat(ev.tags) || 'General';
+  const vol = ev.volume24hr || 0;
+  const lvl = vol > 5e6 ? 'Very High' : vol > 1e6 ? 'Moderate' : 'Low';
+  document.getElementById('pc-cat').textContent = cat.toUpperCase();
+  document.getElementById('pc-title').textContent = ev.title || '';
+  document.getElementById('pc-attention').innerHTML = 'This topic has <strong>' + lvl.toLowerCase() + ' global attention</strong> right now. Surfaced as a journalistic signal.';
+  document.getElementById('pc-desc').textContent = ev.description || 'No description available.';
+  document.getElementById('rightPanel').scrollTop = 0;
+}
 
-  // Fetch brief + analogs in parallel
-  const [briefR, analogR] = await Promise.allSettled([
-    fetchBrief(ev.title),
-    fetchAnalogs(ev.title)
+let tipTO;
+function showTip(e) {
+  const tt = document.getElementById('tapTooltip');
+  const x = (e && e.clientX) ? e.clientX : window.innerWidth / 2;
+  const y = (e && e.clientY) ? e.clientY : 200;
+  tt.style.left = Math.min(x + 12, window.innerWidth - 200) + 'px';
+  tt.style.top  = Math.max(y - 30, 60) + 'px';
+  tt.classList.add('show');
+  clearTimeout(tipTO);
+  tipTO = setTimeout(hideTip, 2200);
+}
+function hideTip() { document.getElementById('tapTooltip').classList.remove('show'); }
+
+// âââ OPEN DEEP DIVE ââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+function openDeepDive(ev) {
+  const target = ev || selectedEvent;
+  if (!target) return;
+  selectedEvent = target;
+
+  document.getElementById('feedView').classList.remove('active');
+  document.getElementById('deepView').classList.add('active');
+  document.getElementById('tapHint').style.display = 'none';
+  window.scrollTo(0, 0);
+
+  const cat  = target.category || getTagCat(target.tags) || 'General';
+  const vol  = target.volume24hr || 0;
+  const aKey = vol > 5e6 ? 'hi' : vol > 1e6 ? 'md' : 'lo';
+  const aTxt = { hi:'Very High', md:'Moderate', lo:'Low' }[aKey];
+  const aPct = Math.min(95, Math.max(8, Math.log10(Math.max(vol, 1)) * 12));
+  const endD = target.endDate ? new Date(target.endDate).toLocaleDateString('en-US', { month:'long', day:'numeric', year:'numeric' }) : 'Ongoing';
+
+  document.getElementById('dh-cat').textContent         = cat.toUpperCase();
+  document.getElementById('dh-title-crumb').textContent = target.title || '';
+  document.getElementById('dh-source').textContent      = target.resolutionSource || 'Public Records';
+  document.getElementById('dh-eyebrow').textContent     = cat.toUpperCase() + ' Â· WORLD INTELLIGENCE';
+  document.getElementById('dh-headline').textContent    = target.title || '';
+  document.getElementById('dh-deck').textContent        = target.description || '';
+  document.getElementById('dh-body').innerHTML          = '<div class="loading-row"><div class="spinner"></div><span>Loading contextâ¦</span></div>';
+  document.getElementById('ap-text').innerHTML          = 'This topic has <strong>' + aTxt.toLowerCase() + ' global attention</strong>. Used here as a journalistic triage signal â not as financial data.';
+  document.getElementById('apg-fill').style.width       = aPct + '%';
+  document.getElementById('apg-level').textContent      = aTxt;
+  document.getElementById('apg-level').className        = 'apg-level ' + aKey;
+  document.getElementById('ap-enddate').textContent     = endD;
+  document.getElementById('newsBrief').innerHTML        = '<div class="loading-row"><div class="spinner" style="border-top-color:var(--gold)"></div><span>Building investigative search briefâ¦</span></div>';
+  document.getElementById('newsGrid').innerHTML         = '';
+  document.getElementById('news-sub').textContent       = '';
+  document.getElementById('histIntro').innerHTML        = '<div class="loading-row"><div class="spinner" style="border-top-color:var(--gold)"></div><span>Finding historical parallelsâ¦</span></div>';
+  document.getElementById('histEvents').innerHTML       = '';
+
+  runDeepDive(target);
+}
+
+// âââ DEEP DIVE ORCHESTRATOR ââââââââââââââââââââââââââââââââââââââââââââââââ
+async function runDeepDive(ev) {
+  const topic = ev.title || '';
+  const desc  = ev.description || '';
+  const keysSet = GNEWS_KEY !== 'YOUR_GNEWS_API_KEY' || GUARDIAN_KEY !== 'YOUR_GUARDIAN_API_KEY';
+
+  // Step 1 â AI brief + historical in parallel
+  const [briefRes, aiRes] = await Promise.allSettled([
+    buildBrief(topic, desc),
+    fetchAI(topic, desc)
   ]);
 
-  // Render brief
-  const bEl = $("#ds-brief");
-  if (briefR.status === "fulfilled" && briefR.value) {
-    const b = briefR.value;
-    bEl.innerHTML = `<h4>Investigative Brief</h4>
-      <div class="brief-q">${esc(b.coreQuestion || ev.title)}</div>
-      ${b.relevanceTest ? `<div class="brief-test">${esc(b.relevanceTest)}</div>` : ""}`;
-  } else {
-    bEl.innerHTML = `<h4>Investigative Brief</h4><div class="err">Could not generate brief</div>`;
-  }
+  const brief = briefRes.status === 'fulfilled' ? briefRes.value : null;
+  const ai    = aiRes.status   === 'fulfilled' ? aiRes.value   : null;
 
-  // Render analogs
-  const aEl = $("#ds-analogs");
-  if (analogR.status === "fulfilled" && analogR.value?.length) {
-    aEl.innerHTML = `<h4>Historical Analogs</h4>` +
-      analogR.value.map(a => {
-        const pct = a.similarity === "high" ? 78 : a.similarity === "medium" ? 50 : 26;
-        return `<div class="analog">
-          <div class="an-top">
-            <span class="an-year">${esc(a.era || a.year || "Historical")}</span>
-            <span class="an-sim">similarity: ${esc(a.similarity || "medium")}</span>
-          </div>
-          <h5>${esc(a.title)}</h5>
-          <div class="d">${esc(a.description)}</div>
-          ${a.outcomes ? `<div class="out">Outcome: ${esc(a.outcomes)}</div>` : ""}
-          <div class="sim-bar"><div class="sim-fill" style="width:${pct}%"></div></div>
-        </div>`;
-      }).join("");
-  } else {
-    aEl.innerHTML = `<h4>Historical Analogs</h4>
-      <div style="color:var(--ink3);font-size:13px">No strong historical parallels found.</div>`;
-  }
+  // Show investigative questions immediately
+  if (brief) renderBrief(brief);
 
-  // Render angle accordions
-  const angles = briefR.value?.investigativeAngles || [];
-  window.__angles = angles;
-  const angEl = $("#ds-angles");
-  if (!angles.length) {
-    angEl.innerHTML = `<h4>Investigative Angles &amp; Coverage</h4>
-      <div style="color:var(--ink3);font-size:13px">No angles generated.</div>`;
-    return;
-  }
-  angEl.innerHTML = `<h4>Investigative Angles &amp; Coverage</h4>` +
-    angles.map((a, i) => `
-      <div class="angle" id="ang-${i}">
-        <div class="angle-hd" onclick="toggleAngle(${i})">
-          <div class="angle-title">${esc(a.title || "Angle " + (i + 1))}</div>
-          <div class="angle-tog" id="ang-tog-${i}">â¶ fetch coverage</div>
-        </div>
-        <div class="angle-bd" id="ang-bd-${i}">
-          <div class="angle-kw">keywords: ${esc((a.keywords || []).join(", "))}</div>
-          <div id="ang-arts-${i}"><span class="spin"></span> loadingâ¦</div>
-        </div>
-      </div>`).join("");
-
-  // auto-open first angle
-  if (angles[0]) toggleAngle(0);
-}
-
-function toggleAngle(i) {
-  const bd = $(`#ang-bd-${i}`), tog = $(`#ang-tog-${i}`);
-  const opening = !bd.classList.contains("open");
-  bd.classList.toggle("open", opening);
-  tog.textContent = opening ? "â¼ collapse" : "â¶ fetch coverage";
-  if (opening && !angleDone[i]) {
-    angleDone[i] = true;
-    const angle = (window.__angles || [])[i];
-    if (angle) fetchAngleArticles(angle, i);
-  }
-}
-
-async function fetchAngleArticles(angle, idx) {
-  const kw = (angle.keywords || [angle.title || ""]).join(" ");
+  // Step 2 â fetch articles per angle
   let articles = [];
-
-  // GNews (optional)
-  if (GNEWS_KEY) {
-    try {
-      const r = await fetch(
-        `https://gnews.io/api/v4/search?q=${encodeURIComponent(kw)}&max=6&lang=en&token=${GNEWS_KEY}`
-      );
-      if (r.ok) {
-        const d = await r.json();
-        articles = (d.articles || []).map(a => ({
-          title: a.title, url: a.url,
-          source: a.source?.name || "GNews",
-          published: (a.publishedAt || "").slice(0, 10)
-        }));
-      }
-    } catch (e) { /* optional */ }
+  if (brief && keysSet) {
+    const from = new Date(Date.now() - 30 * 86400000).toISOString().split('T')[0];
+    const fetched = await Promise.allSettled(brief.investigativeAngles.map(a => fetchAngle(a, from)));
+    fetched.forEach(r => { if (r.status === 'fulfilled') articles = articles.concat(r.value); });
+    // dedupe
+    const seen = new Set();
+    articles = articles.filter(a => {
+      const k = (a.title || '').toLowerCase().slice(0, 50);
+      if (seen.has(k)) return false;
+      seen.add(k); return true;
+    });
   }
 
-  // Guardian (optional)
-  if (GUARD_KEY) {
-    try {
-      const sec = angle.guardianSection || "news";
-      const r = await fetch(
-        `https://content.guardianapis.com/search?q=${encodeURIComponent(kw)}&section=${sec}` +
-        `&page-size=6&order-by=relevance&api-key=${GUARD_KEY}&show-fields=headline,trailText`
-      );
-      if (r.ok) {
-        const d = await r.json();
-        const seen = new Set(articles.map(a => a.url));
-        (d.response?.results || []).forEach(a => {
-          if (!seen.has(a.webUrl)) {
-            articles.push({ title: a.webTitle, url: a.webUrl,
-              source: "The Guardian", published: (a.webPublicationDate || "").slice(0, 10) });
-          }
-        });
-      }
-    } catch (e) { /* optional */ }
+  // Step 3 â score
+  let scored = [];
+  if (brief && articles.length) {
+    scored = await scoreArticles(articles, brief);
   }
 
-  const container = $(`#ang-arts-${idx}`);
-  if (!articles.length) {
-    container.innerHTML = GNEWS_KEY || GUARD_KEY
-      ? `<div style="font-size:12px;color:var(--ink3);padding:6px 0">No articles found for this angle.</div>`
-      : `<div style="font-size:12px;color:var(--ink3);padding:6px 0">
-           Add a free GNews key (gnews.io) or Guardian key (open-platform.theguardian.com)
-           in the config at the top of this file to fetch live articles.
-         </div>`;
+  // Step 4 â render
+  renderNewsGrid(scored, brief, keysSet);
+  renderAI(ai);
+}
+
+// âââ BUILD INVESTIGATIVE BRIEF âââââââââââââââââââââââââââââââââââââââââââââ
+async function buildBrief(topic, desc) {
+  const prompt = 'You are an investigative editor at a major international news desk.\n\nA topic is drawing global attention: "' + topic + '"\n' + (desc ? 'Context: ' + desc + '\n' : '') + '\nGenerate a structured search brief to fetch the most targeted, relevant news articles â not random headlines, but pieces that directly bear on the specific outcome.\n\nReturn ONLY valid JSON, no markdown:\n\n{"coreQuestion":"The single most important journalistic question this topic raises","investigativeAngles":[{"question":"Specific investigative question","why":"Why this angle matters to the outcome","keywords":["keyword1","keyword2","keyword3"],"guardianSection":"politics","timeWindow":"30d"},{"question":"...","why":"...","keywords":["..."],"guardianSection":"world","timeWindow":"7d"},{"question":"...","why":"...","keywords":["..."],"guardianSection":"business","timeWindow":"30d"},{"question":"...","why":"...","keywords":["..."],"guardianSection":"us-news","timeWindow":"90d"}],"mustInclude":["critical term 1","critical term 2"],"relevanceTest":"One sentence: what makes an article directly relevant to this specific outcome"}\n\nRules: 4 distinct angles (policy, reaction, background, stakeholder). Keywords must be precise. guardianSection must be one of: politics|world|business|technology|us-news|environment|science|society|sport|culture. timeWindow: 7d|30d|90d.';
+
+  const res  = await callClaude(prompt, 800);
+  const text = res.content?.find(b => b.type === 'text')?.text || '';
+  return JSON.parse(text.replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim());
+}
+
+// âââ FETCH ARTICLES PER ANGLE ââââââââââââââââââââââââââââââââââââââââââââââ
+async function fetchAngle(angle, from) {
+  const q    = (angle.keywords || []).slice(0, 3).join(' ');
+  const wFrom = getWindowFrom(angle.timeWindow);
+  const results = await Promise.allSettled([
+    fetchGNews(q, wFrom),
+    fetchGuardian(q, wFrom, angle.guardianSection)
+  ]);
+  let arts = [];
+  results.forEach(r => { if (r.status === 'fulfilled') arts = arts.concat(r.value); });
+  return arts.map(a => Object.assign({}, a, { _angle: angle.question, _why: angle.why }));
+}
+
+async function fetchGNews(q, from) {
+  if (GNEWS_KEY === 'YOUR_GNEWS_API_KEY') return [];
+  try {
+    const url = PROXY + encodeURIComponent('https://gnews.io/api/v4/search?q=' + encodeURIComponent(q) + '&lang=en&max=6&from=' + from + 'T00:00:00Z&sortby=relevance&token=' + GNEWS_KEY);
+    const res  = await fetch(url);
+    const data = await res.json();
+    return (data.articles || []).map(a => ({ title: a.title, description: a.description || '', source: (a.source && a.source.name) || 'GNews', url: a.url, publishedAt: a.publishedAt, _src: 'gnews' }));
+  } catch(_) { return []; }
+}
+
+async function fetchGuardian(q, from, section) {
+  if (GUARDIAN_KEY === 'YOUR_GUARDIAN_API_KEY') return [];
+  try {
+    const sec = section ? '&section=' + section : '';
+    const url = PROXY + encodeURIComponent('https://content.guardianapis.com/search?q=' + encodeURIComponent(q) + '&from-date=' + from + '&order-by=relevance&page-size=6&show-fields=trailText,headline' + sec + '&api-key=' + GUARDIAN_KEY);
+    const res  = await fetch(url);
+    const data = await res.json();
+    return ((data.response && data.response.results) || []).map(a => ({ title: (a.fields && a.fields.headline) || a.webTitle, description: (a.fields && a.fields.trailText) || '', source: 'The Guardian', url: a.webUrl, publishedAt: a.webPublicationDate, _src: 'guardian' }));
+  } catch(_) { return []; }
+}
+
+function getWindowFrom(tw) {
+  const days = tw === '7d' ? 7 : tw === '90d' ? 90 : 30;
+  return new Date(Date.now() - days * 86400000).toISOString().split('T')[0];
+}
+
+// âââ SCORE ARTICLES ââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+async function scoreArticles(articles, brief) {
+  const list = articles.slice(0, 28).map((a, i) => i + ': "' + a.title + '" â ' + (a.description || '').replace(/<[^>]+>/g, '').slice(0, 100)).join('\n');
+  const prompt = 'Score these news articles for relevance to an investigative topic.\n\nCORE QUESTION: "' + brief.coreQuestion + '"\nRELEVANCE TEST: "' + brief.relevanceTest + '"\n\nArticles:\n' + list + '\n\nReturn ONLY a JSON array, sorted by score descending, include only score >= 5:\n[{"index":0,"score":9,"relevanceNote":"Why this is relevant in 1 sentence","tag":"key-evidence"},{"index":1,"score":7,"relevanceNote":"...","tag":"background"},...]\n\ntag must be one of: key-evidence|background|reaction|analysis';
+
+  try {
+    const res    = await callClaude(prompt, 600);
+    const text   = res.content?.find(b => b.type === 'text')?.text || '';
+    const scores = JSON.parse(text.replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim());
+    return scores
+      .filter(s => s.score >= 5 && s.index < articles.length)
+      .map(s => Object.assign({}, articles[s.index], { _score: s.score, _note: s.relevanceNote, _tag: s.tag }))
+      .sort((a, b) => b._score - a._score);
+  } catch(_) {
+    return articles.map(a => Object.assign({}, a, { _score: 5, _tag: 'background' }));
+  }
+}
+
+// âââ FETCH AI ANALYSIS âââââââââââââââââââââââââââââââââââââââââââââââââââââ
+async function fetchAI(topic, desc) {
+  const prompt = 'You are a senior international news editor and historian.\n\nTOPIC: "' + topic + '"\n' + (desc ? 'CONTEXT: ' + desc + '\n' : '') + '\nReturn ONLY valid JSON, no markdown:\n\n{"deck":"One sentence â key tension/stakes written like a Reuters lede","leadParagraphs":["paragraph 1","paragraph 2","paragraph 3"],"histIntro":"2 sentences explaining why historical comparison matters here","historicalEvents":[{"year":"YYYY","era":"Era name","title":"Short title","description":"2-3 sentences what happened and why comparable","fullContext":["deeper para 1","deeper para 2"],"outcomes":[{"icon":"ð","label":"Economic Impact","text":"Documented fact"},{"icon":"ð","label":"Geopolitical Shift","text":"How world order changed"},{"icon":"â±","label":"Timeline","text":"How long it lasted and resolved"},{"icon":"ð","label":"Key Lesson","text":"Most important lesson for today"}],"similarity":"high"},{"year":"...","era":"...","title":"...","description":"...","fullContext":["...","..."],"outcomes":[{"icon":"ð","label":"...","text":"..."},{"icon":"ð","label":"...","text":"..."},{"icon":"â±","label":"Timeline","text":"..."},{"icon":"ð","label":"Key Lesson","text":"..."}],"similarity":"medium"},{"year":"...","era":"...","title":"...","description":"...","fullContext":["...","..."],"outcomes":[{"icon":"ð¼","label":"...","text":"..."},{"icon":"ðº","label":"...","text":"..."},{"icon":"â±","label":"Timeline","text":"..."},{"icon":"ð","label":"Key Lesson","text":"..."}],"similarity":"low"}]}\n\nRULES: No odds. No betting. Historical events = real, documented. Outcomes = what actually happened.';
+
+  const res  = await callClaude(prompt, 1000);
+  const text = res.content?.find(b => b.type === 'text')?.text || '';
+  return JSON.parse(text.replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim());
+}
+
+// âââ CLAUDE API HELPER âââââââââââââââââââââââââââââââââââââââââââââââââââââ
+async function callClaude(prompt, maxTokens) {
+  const res = await fetch('https://infera-api.onrender.com/ai', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-Infera-Token': 'y3H2qcJN6YDxwRIAb6_8qDQX8legTKYTDgwR8FNxHb4'
+    },
+    body: JSON.stringify({ prompt: prompt, max_tokens: maxTokens })
+  });
+  return res.json();
+}
+
+// âââ RENDER BRIEF ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+function renderBrief(brief) {
+  const angles = (brief.investigativeAngles || []).map((a, i) =>
+    '<div style="background:var(--s1);border:1px solid var(--b1);border-radius:4px;padding:10px 12px;display:flex;gap:12px;align-items:flex-start;margin-bottom:8px">' +
+      '<div style="font-family:var(--mono);font-size:9px;color:var(--dim);background:var(--s2);border:1px solid var(--b2);border-radius:2px;padding:2px 6px;flex-shrink:0;margin-top:1px">Q' + (i+1) + '</div>' +
+      '<div style="flex:1;min-width:0">' +
+        '<div style="font-size:12px;color:var(--bright);font-weight:500;margin-bottom:3px;line-height:1.4">' + a.question + '</div>' +
+        '<div style="font-size:11px;color:var(--dim);line-height:1.45;margin-bottom:6px">' + a.why + '</div>' +
+        '<div style="display:flex;flex-wrap:wrap;gap:4px">' +
+          (a.keywords || []).map(k => '<span style="font-family:var(--mono);font-size:8px;background:rgba(0,201,167,.07);color:var(--teal);border:1px solid rgba(0,201,167,.18);padding:1px 6px;border-radius:2px">' + k + '</span>').join('') +
+          '<span style="font-family:var(--mono);font-size:8px;background:rgba(61,139,255,.07);color:var(--blue);border:1px solid rgba(61,139,255,.18);padding:1px 6px;border-radius:2px">' + (a.guardianSection || '') + '</span>' +
+          '<span style="font-family:var(--mono);font-size:8px;background:var(--s2);color:var(--dim);border:1px solid var(--b1);padding:1px 6px;border-radius:2px">' + (a.timeWindow || '30d') + '</span>' +
+        '</div>' +
+      '</div>' +
+    '</div>'
+  ).join('');
+
+  document.getElementById('newsBrief').innerHTML =
+    '<div style="background:rgba(240,180,41,.06);border:1px solid rgba(240,180,41,.18);border-left:3px solid var(--gold);border-radius:0 4px 4px 0;padding:12px 14px;margin-bottom:12px">' +
+      '<div style="font-family:var(--mono);font-size:8px;letter-spacing:.15em;text-transform:uppercase;color:var(--dim);margin-bottom:5px">Core Question</div>' +
+      '<div style="font-size:14px;color:var(--bright);font-family:var(--serif);font-style:italic;line-height:1.5">"' + brief.coreQuestion + '"</div>' +
+    '</div>' +
+    angles +
+    (brief.relevanceTest ? '<div style="margin-top:8px;padding:8px 12px;background:var(--s1);border:1px solid var(--b1);border-radius:3px;font-size:11px;color:var(--dim);font-family:var(--mono);font-style:italic">Relevance test: "' + brief.relevanceTest + '"</div>' : '') +
+    '<div class="loading-row" id="fetchStatus" style="margin-top:12px"><div class="spinner"></div><span>Fetching targeted articles across investigative anglesâ¦</span></div>';
+}
+
+// âââ RENDER NEWS GRID ââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+function renderNewsGrid(articles, brief, keysSet) {
+  const fs = document.getElementById('fetchStatus');
+  if (fs) fs.remove();
+
+  const grid = document.getElementById('newsGrid');
+  const sub  = document.getElementById('news-sub');
+
+  if (!keysSet) {
+    grid.innerHTML =
+      '<div style="background:rgba(240,180,41,.06);border:1px solid rgba(240,180,41,.2);border-radius:4px;padding:14px 16px;margin-top:8px">' +
+        '<div style="font-family:var(--mono);font-size:9px;letter-spacing:.15em;color:var(--gold);text-transform:uppercase;margin-bottom:8px">â Add API Keys to Activate Live Articles</div>' +
+        '<div style="font-family:var(--mono);font-size:11px;background:var(--s3);padding:10px 12px;border-radius:3px;line-height:2;color:var(--teal)">' +
+          'GNEWS_KEY â <a href="https://gnews.io" target="_blank" style="color:var(--gold)">gnews.io</a> (free, 100 req/day)<br>' +
+          'GUARDIAN_KEY â <a href="https://open-platform.theguardian.com" target="_blank" style="color:var(--gold)">open-platform.theguardian.com</a> (free, unlimited)' +
+        '</div>' +
+        '<p style="margin-top:10px;color:var(--dim);font-size:12px">Articles will be fetched per investigative angle, scored for relevance to the specific outcome, and grouped by quality tier.</p>' +
+      '</div>';
+    sub.textContent = 'API keys needed';
     return;
   }
 
-  // Score with AI proxy
-  try {
-    const scored = await scoreArticles(articles, angle.title || kw);
-    renderArticles(container, scored);
-  } catch (e) {
-    renderArticles(container, articles.map(a => ({ ...a, score: 0, tag: "background" })));
+  if (!articles.length) {
+    grid.innerHTML = '<div style="padding:16px;color:var(--dim);font-size:13px">No articles matched the investigative brief. The topic may be too recent or niche for these sources.</div>';
+    sub.textContent = '0 relevant articles';
+    return;
+  }
+
+  const key  = articles.filter(a => a._score >= 8);
+  const supp = articles.filter(a => a._score >= 6 && a._score < 8);
+  const ctx  = articles.filter(a => a._score < 6);
+
+  sub.textContent = articles.length + ' articles Â· ' + key.length + ' key evidence Â· scored by AI';
+
+  function group(label, icon, items, color) {
+    if (!items.length) return '';
+    return '<div style="margin-bottom:24px">' +
+      '<div style="font-family:var(--mono);font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:' + color + ';margin-bottom:12px;display:flex;align-items:center;gap:8px">' +
+        '<span style="width:3px;height:12px;background:' + color + ';border-radius:1px;display:inline-block"></span>' +
+        icon + ' ' + label + ' <span style="color:var(--dim);font-size:8px">(' + items.length + ')</span>' +
+      '</div>' +
+      '<div class="news-grid">' + items.map(renderCard).join('') + '</div>' +
+    '</div>';
+  }
+
+  grid.innerHTML = group('Key Evidence', 'ð´', key, 'var(--accent)') + group('Supporting', 'ð¡', supp, 'var(--gold)') + group('Context', 'âª', ctx, 'var(--dim)');
+}
+
+function renderCard(a) {
+  const date    = new Date(a.publishedAt);
+  const dateStr = date.toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' });
+  const srcClr  = a._src === 'guardian' ? 'var(--blue)' : 'var(--teal)';
+  const tagColors = { 'key-evidence': ['rgba(232,64,64,.1)','var(--accent)','rgba(232,64,64,.2)'], 'background': ['rgba(240,180,41,.1)','var(--gold)','rgba(240,180,41,.2)'], 'reaction': ['rgba(255,107,53,.1)','var(--orange)','rgba(255,107,53,.2)'], 'analysis': ['rgba(155,109,255,.1)','var(--purple)','rgba(155,109,255,.2)'] };
+  const [bg, txt, brd] = tagColors[a._tag] || tagColors['background'];
+  const safeUrl = (a.url || '').replace(/'/g, "\\'");
+
+  return '<div class="news-card" onclick="window.open(\'' + safeUrl + '\',\'_blank\')">' +
+    '<div class="nc-meta"><span class="nc-source" style="color:' + srcClr + '">' + (a.source || '') + '</span><span class="nc-dot">Â·</span><span class="nc-date">' + dateStr + '</span></div>' +
+    '<div class="nc-hl">' + (a.title || '') + '</div>' +
+    (a.description ? '<div class="nc-body">' + a.description.replace(/<[^>]+>/g, '').slice(0, 160) + 'â¦</div>' : '') +
+    (a._note ? '<div style="font-size:11px;color:var(--teal);margin-top:5px;line-height:1.45;font-style:italic;padding-left:8px;border-left:2px solid rgba(0,201,167,.3)">' + a._note + '</div>' : '') +
+    (a._angle ? '<div style="font-family:var(--mono);font-size:8px;color:var(--dim);letter-spacing:.06em;margin-top:5px;padding-top:5px;border-top:1px solid var(--b1);display:flex;align-items:flex-start;gap:4px"><span style="color:var(--gold);flex-shrink:0">â³</span><span>' + a._angle + '</span></div>' : '') +
+    (a._score ? '<div style="display:flex;align-items:center;gap:6px;margin-top:7px"><div style="font-family:var(--mono);font-size:8px;color:var(--dim)">relevance</div><div style="flex:1;height:3px;background:var(--b1);border-radius:2px;overflow:hidden"><div style="height:100%;width:' + (a._score * 10) + '%;background:linear-gradient(90deg,var(--teal),var(--accent));border-radius:2px"></div></div><div style="font-family:var(--mono);font-size:8px;color:var(--bright);font-weight:600">' + a._score + '/10</div></div>' : '') +
+    '<div style="display:flex;align-items:center;justify-content:space-between;margin-top:7px">' +
+      '<span style="font-family:var(--mono);font-size:8px;letter-spacing:.09em;text-transform:uppercase;padding:2px 6px;border-radius:2px;background:' + bg + ';color:' + txt + ';border:1px solid ' + brd + '">' + (a._tag || 'background') + '</span>' +
+      '<span style="font-family:var(--mono);font-size:8px;color:var(--dim)">â Read</span>' +
+    '</div>' +
+  '</div>';
+}
+
+// âââ RENDER AI ANALYSIS ââââââââââââââââââââââââââââââââââââââââââââââââââââ
+function renderAI(d) {
+  if (!d) { document.getElementById('dh-body').innerHTML = '<p style="color:var(--dim)">AI context unavailable.</p>'; return; }
+  if (d.deck) document.getElementById('dh-deck').textContent = d.deck;
+  if (d.leadParagraphs) document.getElementById('dh-body').innerHTML = d.leadParagraphs.map(p => '<p>' + p + '</p>').join('');
+  if (d.histIntro) document.getElementById('histIntro').textContent = d.histIntro;
+  if (d.historicalEvents) {
+    document.getElementById('histEvents').innerHTML = d.historicalEvents.map((h, i) =>
+      '<div class="hist-event" id="he-' + i + '">' +
+        '<div class="he-header" onclick="toggleHist(' + i + ')">' +
+          '<div class="he-year-block"><div class="he-year">' + h.year + '</div><div class="he-era">' + (h.era || '') + '</div></div>' +
+          '<div class="he-main">' +
+            '<div class="he-title">' + h.title + '</div>' +
+            '<div class="he-desc">' + h.description + '</div>' +
+            '<div class="sim-tag ' + h.similarity + '">' + ({ high:'â  High Similarity', medium:'~ Moderate Similarity', low:'â Partial Parallel' }[h.similarity] || '') + '</div>' +
+          '</div>' +
+          '<div class="he-btn">â¼</div>' +
+        '</div>' +
+        '<div class="he-detail">' +
+          '<div class="hed-body">' + (h.fullContext || []).map(p => '<p>' + p + '</p>').join('') + '</div>' +
+          '<div class="outcome-block">' +
+            '<div class="ob-header">ð Documented Outcomes from ' + h.year + '</div>' +
+            (h.outcomes || []).map(o =>
+              '<div class="ob-item"><div class="ob-icon">' + (o.icon || 'â¢') + '</div><div><div class="ob-label">' + o.label + '</div><div class="ob-text">' + o.text + '</div></div></div>'
+            ).join('') +
+          '</div>' +
+        '</div>' +
+      '</div>'
+    ).join('');
   }
 }
 
-async function scoreArticles(articles, topic) {
-  const prompt = `You are an investigative editor. Score each article's relevance to the topic.
+function toggleHist(i) { document.getElementById('he-' + i).classList.toggle('open'); }
 
-Topic: "${topic}"
-Articles:
-${JSON.stringify(articles.map((a, i) => ({ i, title: a.title, source: a.source })), null, 2)}
-
-Return ONLY a JSON array, no prose:
-[{"i":0,"score":1-10,"tag":"key-evidence|background|reaction|analysis"}]`;
-
-  const text = await callAI(prompt, 600);
-  const m = text.match(/\[[\s\S]*?\]/);
-  if (!m) return articles.map(a => ({ ...a, score: 0, tag: "background" }));
-  const scores = JSON.parse(m[0]);
-  return articles
-    .map((a, i) => {
-      const s = scores.find(x => x.i === i) || {};
-      return { ...a, score: s.score || 0, tag: s.tag || "background" };
-    })
-    .sort((a, b) => b.score - a.score);
+// âââ NAVIGATION ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+function goBack() {
+  document.getElementById('deepView').classList.remove('active');
+  document.getElementById('feedView').classList.add('active');
+  document.getElementById('tapHint').style.display = '';
+  window.scrollTo(0, 0);
+}
+function goHome() {
+  goBack();
+  selectedEvent = null;
+  document.getElementById('emptyState').style.display = '';
+  document.getElementById('previewCard').classList.remove('visible');
+  document.querySelectorAll('.event-row').forEach(r => r.classList.remove('selected'));
 }
 
-function renderArticles(container, articles) {
-  const tagCls = { "key-evidence": "tk", background: "tb", reaction: "tr", analysis: "ta" };
-  container.innerHTML = articles.map(a => {
-    const sc = a.score >= 7 ? "sc-hi" : a.score >= 4 ? "sc-md" : "sc-lo";
-    const tc = tagCls[a.tag] || "tb";
-    return `<div class="art">
-      <div class="art-sc ${sc}">${a.score || "â"}</div>
-      <div class="art-b">
-        <div class="src">${esc(a.source)} Â· ${esc(a.published)}</div>
-        <a href="${esc(a.url)}" target="_blank" rel="noopener">${esc(a.title)}</a>
-        ${a.tag ? `<br><span class="atag ${tc}">${esc(a.tag)}</span>` : ""}
-      </div>
-    </div>`;
-  }).join("");
+// âââ SEARCH ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+let searchTO;
+document.getElementById('searchInput').addEventListener('input', function() {
+  clearTimeout(searchTO);
+  const q = this.value.trim();
+  if (!q) { document.getElementById('searchResults').classList.remove('open'); return; }
+  searchTO = setTimeout(async () => {
+    const local = allEvents.filter(e => (e.title || '').toLowerCase().includes(q.toLowerCase())).slice(0, 8);
+    let api = [];
+    try {
+      const url = PROXY + encodeURIComponent(GAMMA + '/markets?active=true&closed=false&limit=8&_pq=' + encodeURIComponent(q));
+      const res = await fetch(url);
+      if (res.ok) api = await res.json();
+    } catch(_) {}
+    const combined = local.slice();
+    api.forEach(r => { if (!combined.find(c => c.id == r.id)) combined.push(r); });
+    renderSearch(combined.slice(0, 8));
+  }, 280);
+});
+
+function renderSearch(results) {
+  const box = document.getElementById('searchResults');
+  if (!results.length) { box.innerHTML = '<div style="padding:14px;text-align:center;color:var(--dim);font-family:var(--mono);font-size:10px">No topics found</div>'; box.classList.add('open'); return; }
+  box.innerHTML = results.map(r => {
+    const vol = r.volume24hr || 0;
+    const cat = r.category || getTagCat(r.tags) || '';
+    const id  = String(r.id || '');
+    // Store in map so it's accessible
+    if (id) eventMap[id] = r;
+    return '<div class="s-item" onclick="searchPick(\'' + id + '\')">' +
+      (r.image ? '<img style="width:28px;height:28px;border-radius:3px;object-fit:cover;flex-shrink:0;background:var(--s3)" src="' + r.image + '" onerror="this.style.display=\'none\'" alt="">' : '') +
+      '<div style="flex:1;min-width:0"><div class="si-title">' + (r.title || r.question || '') + '</div><div class="si-cat">' + cat + '</div></div>' +
+      (vol > 0 ? '<span class="si-vol">$' + fmtVol(vol) + '</span>' : '') +
+    '</div>';
+  }).join('');
+  box.classList.add('open');
 }
 
-// âââ AI HELPERS âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
-async function fetchBrief(topic) {
-  const text = await callAI(`You are an investigative editor creating a journalistic brief.
-
-Story: "${topic}"
-
-Return ONLY a JSON object (no prose, no markdown):
-{
-  "coreQuestion": "the central journalistic question this story raises",
-  "relevanceTest": "one sentence: why this story matters now and to whom",
-  "investigativeAngles": [
-    {
-      "title": "angle headline",
-      "keywords": ["kw1","kw2","kw3"],
-      "guardianSection": "politics|world|sport|science|culture|business|technology",
-      "timeWindow": "24h|7d|30d"
-    }
-  ]
+function searchPick(id) {
+  document.getElementById('searchResults').classList.remove('open');
+  document.getElementById('searchInput').value = '';
+  const ev = eventMap[id];
+  if (!ev) return;
+  if (!allEvents.find(e => String(e.id) === id)) { allEvents.unshift(ev); }
+  selectPreview(ev, null);
+  openDeepDive(ev);
 }
 
-Include exactly 3 investigative angles. Return ONLY valid JSON.`, 900);
+document.addEventListener('click', e => { if (!e.target.closest('.hdr-search')) document.getElementById('searchResults').classList.remove('open'); });
 
-  const m = text.match(/\{[\s\S]*\}/);
-  if (!m) return null;
-  return JSON.parse(m[0]);
-}
+// âââ CATEGORY FILTERS ââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+document.getElementById('catFilters').addEventListener('click', e => {
+  const btn = e.target.closest('.cat-btn');
+  if (!btn) return;
+  document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  activeCategory = btn.dataset.cat;
+  renderList(activeCategory);
+});
 
-async function fetchAnalogs(topic) {
-  const text = await callAI(`You are a historian. Given this developing story:
-"${topic}"
-
-Find 3 meaningfully analogous historical events. Return ONLY a JSON array (no prose):
-[
-  {
-    "year": 1972,
-    "era": "1970s",
-    "title": "Historical event title",
-    "description": "2-3 sentence factual description",
-    "outcomes": "What ultimately happened â one sentence",
-    "similarity": "high|medium|low"
-  }
-]
-
-Order by similarity (highest first). Return ONLY valid JSON.`, 1000);
-
-  const m = text.match(/\[[\s\S]*\]/);
-  if (!m) return [];
-  return JSON.parse(m[0]);
-}
-
-// âââ CATEGORY TABS ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
-document.querySelectorAll(".tab").forEach(btn => {
-  btn.addEventListener("click", () => {
-    document.querySelectorAll(".tab").forEach(b => b.classList.remove("active"));
-    btn.classList.add("active");
-    activeCat = btn.dataset.cat;
-    renderGrid();
+// âââ TICKER ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+function buildTicker() {
+  const items = allEvents.slice(0, 16).map(ev => {
+    const vol = ev.volume24hr || 0;
+    const cls = vol > 5e6 ? 'color:var(--accent)' : 'color:var(--teal)';
+    const lbl = vol > 5e6 ? 'ð¥' : 'â';
+    return '<span class="tk"><span class="tk-name">' + (ev.title || '').slice(0, 52) + (ev.title && ev.title.length > 52 ? 'â¦' : '') + '</span><span style="' + cls + '">' + lbl + '</span></span>';
   });
-});
-
-// âââ SEARCH âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
-let stTimer;
-$("#search").addEventListener("input", () => {
-  clearTimeout(stTimer);
-  stTimer = setTimeout(renderGrid, 200);
-});
-
-// âââ CLOSE DIVE âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
-function closeDive() {
-  $("#dive").classList.remove("open");
-  document.body.style.overflow = "";
-  angleDone = {};
-  window.__angles = [];
+  const t = document.getElementById('tickerTrack');
+  t.innerHTML = items.concat(items).join('');
 }
-$("#dive-close").addEventListener("click", closeDive);
-document.addEventListener("keydown", e => { if (e.key === "Escape") closeDive(); });
 
-// âââ BOOT âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
-loadEvents();
-setInterval(loadEvents, 5 * 60 * 1000);
+// âââ UTILS âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+function fmtVol(n) { return n >= 1e6 ? (n/1e6).toFixed(1)+'M' : n >= 1e3 ? Math.round(n/1e3)+'K' : String(n); }
+function getTagCat(tags) { return (tags && tags[0]) ? (tags[0].label || tags[0].slug || '') : ''; }
+
+// âââ REFRESH TIMER âââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+setInterval(() => { if (--countdown <= 0) { fetchEvents(); countdown = 60; } }, 1000);
+
+// âââ INIT ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+fetchEvents();
 </script>
 </body>
 </html>
