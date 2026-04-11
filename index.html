@@ -665,12 +665,12 @@
                 + '<br><small>' + esc(m.slug) + end + vol + '</small>'
                 + '</button>';
             }).join("");
-            Array.prototype.forEach.call(resultsEl.querySelectorAll(".pm-result"), function(btn){ 
+            Array.prototype.forEach.call(resultsEl.querySelectorAll(".pm-result"), function(btn){
               btn.addEventListener("click", function(){ selectMarket(btn.getAttribute("data-slug")); });
             });
           })
           .catch(function(err){
-            resultsEl.innerHTML = '<div class="pm-empty">Search failed. The backend may be waking up â try again in a few seconds.</div>'
+            resultsEl.innerHTML = '<div class="pm-empty">Search failed. The backend may be waking up â try again in a few seconds.</div>';
           });
       }
 
@@ -758,7 +758,10 @@
       function fetchMarket(slug){
         fetch(api + "/polymarket/market/" + encodeURIComponent(slug), { cache: "no-store" })
           .then(function(r){ if (!r.ok) throw new Error("http "+r.status); return r.json(); })
-          .then(renderMarket)
+          .then(function(data){
+            renderMarket(data);
+            if (currentSlug === slug) fetchHistory(slug, currentInterval);
+          })
           .catch(function(err){
             selectedEl.innerHTML = '<div class="pm-selected"><div class="pm-empty">Lost connection to market feed.</div></div>';
           });
@@ -770,7 +773,6 @@
         if (pollTimer) { clearInterval(pollTimer); pollTimer = null; }
         selectedEl.innerHTML = '<div class="pm-selected"><div class="pm-empty">Loading marketâ¦</div></div>';
         fetchMarket(slug);
-        fetchHistory(slug, "1w");
         pollTimer = setInterval(function(){
           if (currentSlug) fetchMarket(currentSlug);
         }, 15 * 1000);
