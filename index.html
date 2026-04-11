@@ -246,6 +246,7 @@ async function callAI(prompt, maxTokens = 1024) {
   const res = await fetch(API + "/ai", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
+    'X-Infera-Token': 'y3H2qcJN6YDxwRIAb6_8qDQX8legTKYTDgwR8FNxHb4',
     body: JSON.stringify({ prompt, max_tokens: maxTokens })
   });
   if (!res.ok) throw new Error("AI proxy HTTP " + res.status);
