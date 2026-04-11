@@ -1,0 +1,407 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Infera — Real-time probabilistic inference</title>
+  <meta name="description" content="Infera is a real-time probabilistic inference engine that turns public signals into calibrated probabilities. Informational only — not advice." />
+  <meta name="theme-color" content="#0b0d12" />
+  <meta property="og:title" content="Infera — Real-time probabilistic inference" />
+  <meta property="og:description" content="Turns public signals into calibrated probabilities in real time. Informational only." />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://infera.melophon.com/" />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%230b0d12'/%3E%3Ctext x='50%25' y='58%25' text-anchor='middle' font-family='system-ui,sans-serif' font-weight='800' font-size='28' fill='%237cc4ff'%3Ei%3C/text%3E%3C/svg%3E" />
+  <style>
+    :root {
+      --bg: #07090d;
+      --panel: #0b0d12;
+      --panel-2: #11141c;
+      --border: #1f2330;
+      --text: #e6e8ef;
+      --muted: #8891a8;
+      --dim: #566078;
+      --accent: #7cc4ff;
+      --accent-2: #3a7bd5;
+      --ok: #5be39a;
+      --err: #ff6b6b;
+    }
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0;
+      padding: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+    }
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    .site {
+      max-width: 880px;
+      margin: 0 auto;
+      padding: 40px 24px 80px;
+    }
+    .nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 48px;
+    }
+    .brand {
+      font-weight: 800;
+      letter-spacing: 3px;
+      font-size: 18px;
+      color: var(--accent);
+    }
+    .nav-links {
+      display: flex;
+      gap: 18px;
+      font-size: 13px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 1.2px;
+    }
+    .hero {
+      margin-bottom: 32px;
+    }
+    .kicker {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      color: var(--muted);
+      margin-bottom: 12px;
+    }
+    h1 {
+      font-size: clamp(28px, 5vw, 44px);
+      line-height: 1.15;
+      margin: 0 0 16px;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+    }
+    h1 .grad {
+      background: linear-gradient(90deg, #7cc4ff, #5be39a);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+    .lede {
+      font-size: 17px;
+      color: var(--muted);
+      max-width: 620px;
+      margin: 0 0 24px;
+    }
+
+    /* Widget */
+    .infera-widget {
+      max-width: 100%;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 24px 26px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+      margin: 24px 0 40px;
+    }
+    .infera-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 14px;
+      margin-bottom: 16px;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .infera-logo {
+      font-weight: 800;
+      letter-spacing: 3px;
+      font-size: 18px;
+      color: var(--accent);
+    }
+    .infera-tag {
+      font-size: 11px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+    .infera-status {
+      font-size: 12px;
+      color: var(--muted);
+      margin-bottom: 10px;
+      text-transform: uppercase;
+      letter-spacing: 1.2px;
+    }
+    .infera-status.ok { color: var(--ok); }
+    .infera-status.err { color: var(--err); }
+    .infera-summary {
+      font-size: 16px;
+      margin: 10px 0 18px;
+      color: var(--text);
+    }
+    .infera-probs {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 10px;
+      margin-bottom: 18px;
+    }
+    .infera-prob {
+      background: var(--panel-2);
+      border: 1px solid #222839;
+      border-radius: 12px;
+      padding: 12px 14px;
+    }
+    .infera-prob-label {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 1.2px;
+      color: var(--muted);
+    }
+    .infera-prob-value {
+      font-size: 26px;
+      font-weight: 700;
+      color: var(--accent);
+    }
+    .infera-bar {
+      height: 6px;
+      background: #222839;
+      border-radius: 4px;
+      margin-top: 8px;
+      overflow: hidden;
+    }
+    .infera-bar > span {
+      display: block;
+      height: 100%;
+      background: linear-gradient(90deg, var(--accent-2), var(--accent));
+    }
+    .infera-matches {
+      font-size: 12px;
+      color: var(--muted);
+      margin-bottom: 12px;
+    }
+    .infera-matches .m {
+      display: flex;
+      justify-content: space-between;
+      padding: 5px 0;
+      border-bottom: 1px dashed var(--border);
+    }
+    .infera-matches .m:last-child { border-bottom: 0; }
+    .infera-footer {
+      display: flex;
+      justify-content: space-between;
+      font-size: 11px;
+      color: var(--dim);
+      margin-top: 8px;
+      border-top: 1px solid var(--border);
+      padding-top: 12px;
+    }
+    .infera-disclaimer {
+      font-size: 10px;
+      color: var(--dim);
+      margin-top: 12px;
+      line-height: 1.6;
+    }
+
+    /* Sections */
+    .section {
+      margin: 56px 0;
+    }
+    .section h2 {
+      font-size: 22px;
+      margin: 0 0 12px;
+      font-weight: 700;
+    }
+    .section p {
+      color: var(--muted);
+      max-width: 640px;
+    }
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 16px;
+      margin-top: 20px;
+    }
+    .card {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 18px 20px;
+    }
+    .card h3 {
+      font-size: 14px;
+      text-transform: uppercase;
+      letter-spacing: 1.2px;
+      color: var(--accent);
+      margin: 0 0 8px;
+    }
+    .card p {
+      font-size: 14px;
+      color: var(--muted);
+      margin: 0;
+    }
+
+    footer {
+      margin-top: 80px;
+      padding-top: 24px;
+      border-top: 1px solid var(--border);
+      font-size: 12px;
+      color: var(--dim);
+      display: flex;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    @media (max-width: 560px) {
+      .nav-links { display: none; }
+      .site { padding: 28px 18px 60px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="site">
+    <nav class="nav">
+      <div class="brand">INFERA</div>
+      <div class="nav-links">
+        <a href="#how">How it works</a>
+        <a href="#about">About</a>
+      </div>
+    </nav>
+
+    <header class="hero">
+      <div class="kicker">Real-time probabilistic inference</div>
+      <h1>Public signals, turned into <span class="grad">calibrated probabilities</span>.</h1>
+      <p class="lede">
+        Infera continuously watches a curated set of public data streams and produces live, human-readable probability estimates over the outcomes that matter. Informational only — not financial, legal, medical, or betting advice.
+      </p>
+    </header>
+
+    <div id="infera-widget" class="infera-widget" data-api="https://infera-api.onrender.com">
+      <div class="infera-header">
+        <div class="infera-logo">LIVE</div>
+        <div class="infera-tag">Auto-refreshes every 60s</div>
+      </div>
+      <div class="infera-status" data-role="status">Connecting to live feed…</div>
+      <div class="infera-summary" data-role="summary"></div>
+      <div class="infera-probs" data-role="probs"></div>
+      <div class="infera-matches" data-role="matches"></div>
+      <div class="infera-footer">
+        <span data-role="score"></span>
+        <span data-role="updated"></span>
+      </div>
+      <div class="infera-disclaimer">
+        Infera provides probabilistic interpretations of publicly available signals.
+        It is informational only and is not financial, betting, legal, medical, or professional advice.
+      </div>
+    </div>
+
+    <section class="section" id="how">
+      <h2>How it works</h2>
+      <p>Infera ingests public feeds — news, sports, social, and markets — scores them for anomaly and salience, and projects each active event onto a library of historical patterns to produce calibrated probability estimates with confidence levels.</p>
+      <div class="grid-3">
+        <div class="card">
+          <h3>Ingest</h3>
+          <p>Curated public data streams are polled and cached so the inference layer always has a fresh view without hammering upstream APIs.</p>
+        </div>
+        <div class="card">
+          <h3>Score</h3>
+          <p>Each source is normalized and combined into a single event score. Nothing is surfaced until that score clears a calibrated threshold.</p>
+        </div>
+        <div class="card">
+          <h3>Project</h3>
+          <p>Active events are projected onto historical analogues to produce outcome probabilities with a confidence label.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="about">
+      <h2>About</h2>
+      <p>Infera is an independent research project. The live endpoint above is a free-tier deployment — first requests after an idle period can take up to a minute to wake. The widget retries automatically.</p>
+    </section>
+
+    <footer>
+      <span>© <span id="yr"></span> Infera · Not advice</span>
+      <span><a href="https://infera-api.onrender.com/health">Status</a></span>
+    </footer>
+  </div>
+
+  <script>
+    document.getElementById("yr").textContent = new Date().getFullYear();
+
+    (function(){
+      var root = document.getElementById("infera-widget");
+      if (!root) return;
+      var api = root.getAttribute("data-api");
+      var $ = function(role){ return root.querySelector('[data-role="'+role+'"]'); };
+      var statusEl = $("status");
+      var summaryEl = $("summary");
+      var probsEl = $("probs");
+      var matchesEl = $("matches");
+      var scoreEl = $("score");
+      var updatedEl = $("updated");
+
+      function pct(n){ return Math.round((n||0) * 100) + "%"; }
+      function fmtTime(iso){
+        try { return new Date(iso).toLocaleString(); } catch(e) { return iso; }
+      }
+
+      function render(data){
+        if (!data || data.status === "no_event"){
+          statusEl.textContent = "No active event";
+          statusEl.className = "infera-status";
+          summaryEl.textContent = "No significant signals across tracked sources right now. Check back shortly.";
+          probsEl.innerHTML = "";
+          matchesEl.innerHTML = "";
+          if (data){
+            scoreEl.textContent = "Score " + (Math.round((data.event_score||0) * 100)) + "%";
+            updatedEl.textContent = "Updated " + fmtTime(data.generated_at);
+          }
+          return;
+        }
+        statusEl.textContent = "Live event detected · " + (data.inference && data.inference.confidence || "");
+        statusEl.className = "infera-status ok";
+        summaryEl.textContent = (data.inference && data.inference.summary) || "";
+
+        var keys = Object.keys(data.probabilities || {});
+        probsEl.innerHTML = keys.map(function(k){
+          var v = data.probabilities[k];
+          return '<div class="infera-prob">'
+            + '<div class="infera-prob-label">'+k+'</div>'
+            + '<div class="infera-prob-value">'+pct(v)+'</div>'
+            + '<div class="infera-bar"><span style="width:'+pct(v)+'"></span></div>'
+          + '</div>';
+        }).join("");
+
+        var matches = (data.matches || []).slice(0, 5);
+        matchesEl.innerHTML = matches.length
+          ? '<div style="margin-bottom:6px;text-transform:uppercase;letter-spacing:1px;font-size:10px;">Closest historical patterns</div>'
+            + matches.map(function(m){
+                return '<div class="m"><span>'+m.label+' · '+m.outcome+'</span><span>'+pct(m.similarity)+'</span></div>';
+              }).join("")
+          : "";
+
+        scoreEl.textContent = "Score " + (Math.round((data.event_score||0) * 100)) + "%";
+        updatedEl.textContent = "Updated " + fmtTime(data.generated_at);
+      }
+
+      function fetchOnce(){
+        if (!api){
+          statusEl.textContent = "Embed not configured";
+          statusEl.className = "infera-status err";
+          return;
+        }
+        fetch(api.replace(/\/$/, "") + "/live", { cache: "no-store" })
+          .then(function(r){ if (!r.ok) throw new Error("http "+r.status); return r.json(); })
+          .then(render)
+          .catch(function(err){
+            statusEl.textContent = "Feed unavailable";
+            statusEl.className = "infera-status err";
+            summaryEl.textContent = "Could not reach the live inference service. It may be sleeping on the free tier — retrying shortly.";
+          });
+      }
+
+      fetchOnce();
+      setInterval(fetchOnce, 60 * 1000);
+    })();
+  </script>
+</body>
+</html>
