@@ -3,10 +3,10 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Infera — Real-time probabilistic inference</title>
-  <meta name="description" content="Infera is a real-time probabilistic inference engine that turns public signals into calibrated probabilities. Informational only — not advice." />
+  <title>Infera â Real-time probabilistic inference</title>
+  <meta name="description" content="Infera is a real-time probabilistic inference engine that turns public signals into calibrated probabilities. Informational only â not advice." />
   <meta name="theme-color" content="#0b0d12" />
-  <meta property="og:title" content="Infera — Real-time probabilistic inference" />
+  <meta property="og:title" content="Infera â Real-time probabilistic inference" />
   <meta property="og:description" content="Turns public signals into calibrated probabilities in real time. Informational only." />
   <meta property="og:type" content="website" />
   <meta property="og:url" content="https://infera.melophon.com/" />
@@ -335,6 +335,45 @@
       border-top: 1px solid var(--border);
       padding-top: 10px;
     }
+    .pm-spark {
+      margin: 14px 0 6px;
+      padding: 10px 12px 6px;
+      background: #0c101a;
+      border: 1px solid #1a2034;
+      border-radius: 10px;
+    }
+    .pm-spark-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      font-size: 11px;
+      color: var(--dim);
+      margin-bottom: 6px;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+    .pm-spark svg {
+      display: block;
+      width: 100%;
+      height: 56px;
+    }
+    .pm-spark path.line {
+      fill: none;
+      stroke: var(--accent);
+      stroke-width: 1.8;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+    .pm-spark path.area {
+      fill: rgba(93, 216, 255, 0.12);
+      stroke: none;
+    }
+    .pm-spark .pm-spark-empty {
+      font-size: 11px;
+      color: var(--dim);
+      text-align: center;
+      padding: 10px 0;
+    }
 
     /* Sections */
     .section {
@@ -405,7 +444,7 @@
       <div class="kicker">Real-time probabilistic inference</div>
       <h1>Public signals, turned into <span class="grad">calibrated probabilities</span>.</h1>
       <p class="lede">
-        Infera continuously watches a curated set of public data streams and produces live, human-readable probability estimates over the outcomes that matter. Informational only — not financial, legal, medical, or betting advice.
+        Infera continuously watches a curated set of public data streams and produces live, human-readable probability estimates over the outcomes that matter. Informational only â not financial, legal, medical, or betting advice.
       </p>
     </header>
 
@@ -414,7 +453,7 @@
         <div class="infera-logo">LIVE</div>
         <div class="infera-tag">Auto-refreshes every 60s</div>
       </div>
-      <div class="infera-status" data-role="status">Connecting to live feed…</div>
+      <div class="infera-status" data-role="status">Connecting to live feedâ¦</div>
       <div class="infera-summary" data-role="summary"></div>
       <div class="infera-probs" data-role="probs"></div>
       <div class="infera-matches" data-role="matches"></div>
@@ -430,9 +469,9 @@
 
     <div id="pm-picker" class="pm-picker" data-api="https://infera-api.onrender.com">
       <h2>Track a Polymarket market</h2>
-      <p class="pm-sub">Search any active market, click to track. Shows Polymarket's current implied probability. Informational only — not betting advice.</p>
+      <p class="pm-sub">Search any active market, click to track. Shows Polymarket's current implied probability. Informational only â not betting advice.</p>
       <div class="pm-search">
-        <input type="text" data-role="pm-q" placeholder="Search markets (e.g. election, fed, bitcoin)…" />
+        <input type="text" data-role="pm-q" placeholder="Search markets (e.g. election, fed, bitcoin)â¦" />
         <button type="button" data-role="pm-go">Search</button>
       </div>
       <div class="pm-results" data-role="pm-results"></div>
@@ -444,7 +483,7 @@
 
     <section class="section" id="how">
       <h2>How it works</h2>
-      <p>Infera ingests public feeds — news, sports, social, and markets — scores them for anomaly and salience, and projects each active event onto a library of historical patterns to produce calibrated probability estimates with confidence levels.</p>
+      <p>Infera ingests public feeds â news, sports, social, and markets â scores them for anomaly and salience, and projects each active event onto a library of historical patterns to produce calibrated probability estimates with confidence levels.</p>
       <div class="grid-3">
         <div class="card">
           <h3>Ingest</h3>
@@ -463,11 +502,11 @@
 
     <section class="section" id="about">
       <h2>About</h2>
-      <p>Infera is an independent research project. The live endpoint above is a free-tier deployment — first requests after an idle period can take up to a minute to wake. The widget retries automatically.</p>
+      <p>Infera is an independent research project. The live endpoint above is a free-tier deployment â first requests after an idle period can take up to a minute to wake. The widget retries automatically.</p>
     </section>
 
     <footer>
-      <span>© <span id="yr"></span> Infera · Not advice</span>
+      <span>Â© <span id="yr"></span> Infera Â· Not advice</span>
       <span><a href="https://infera-api.onrender.com/health">Status</a></span>
     </footer>
   </div>
@@ -505,7 +544,7 @@
           }
           return;
         }
-        statusEl.textContent = "Live event detected · " + (data.inference && data.inference.confidence || "");
+        statusEl.textContent = "Live event detected Â· " + (data.inference && data.inference.confidence || "");
         statusEl.className = "infera-status ok";
         summaryEl.textContent = (data.inference && data.inference.summary) || "";
 
@@ -523,7 +562,7 @@
         matchesEl.innerHTML = matches.length
           ? '<div style="margin-bottom:6px;text-transform:uppercase;letter-spacing:1px;font-size:10px;">Closest historical patterns</div>'
             + matches.map(function(m){
-                return '<div class="m"><span>'+m.label+' · '+m.outcome+'</span><span>'+pct(m.similarity)+'</span></div>';
+                return '<div class="m"><span>'+m.label+' Â· '+m.outcome+'</span><span>'+pct(m.similarity)+'</span></div>';
               }).join("")
           : "";
 
@@ -543,7 +582,7 @@
           .catch(function(err){
             statusEl.textContent = "Feed unavailable";
             statusEl.className = "infera-status err";
-            summaryEl.textContent = "Could not reach the live inference service. It may be sleeping on the free tier — retrying shortly.";
+            summaryEl.textContent = "Could not reach the live inference service. It may be sleeping on the free tier â retrying shortly.";
           });
       }
 
@@ -575,7 +614,7 @@
 
       function runSearch(){
         var q = (qEl.value || "").trim();
-        resultsEl.innerHTML = '<div class="pm-empty">Searching…</div>';
+        resultsEl.innerHTML = '<div class="pm-empty">Searchingâ¦</div>';
         var url = api + "/polymarket/search?limit=20" + (q ? "&q=" + encodeURIComponent(q) : "");
         fetch(url, { cache: "no-store" })
           .then(function(r){ if (!r.ok) throw new Error("http "+r.status); return r.json(); })
@@ -586,8 +625,8 @@
               return;
             }
             resultsEl.innerHTML = markets.map(function(m){
-              var end = m.end_date ? " · ends " + fmtDate(m.end_date) : "";
-              var vol = m.volume_24hr ? " · 24h vol $" + Math.round(m.volume_24hr).toLocaleString() : "";
+              var end = m.end_date ? " Â· ends " + fmtDate(m.end_date) : "";
+              var vol = m.volume_24hr ? " Â· 24h vol $" + Math.round(m.volume_24hr).toLocaleString() : "";
               return '<button type="button" class="pm-result" data-slug="'+esc(m.slug)+'">'
                 + esc(m.question)
                 + '<br><small>' + esc(m.slug) + end + vol + '</small>'
@@ -598,7 +637,7 @@
             });
           })
           .catch(function(err){
-            resultsEl.innerHTML = '<div class="pm-empty">Search failed. The backend may be waking up — try again in a few seconds.</div>';
+            resultsEl.innerHTML = '<div class="pm-empty">Search failed. The backend may be waking up â try again in a few seconds.</div>';
           });
       }
 
@@ -617,11 +656,57 @@
         var vol = m.volume_24hr ? "24h vol $" + Math.round(m.volume_24hr).toLocaleString() : "";
         var end = m.end_date ? "Ends " + fmtDate(m.end_date) : "";
         var updated = m.updated_at ? "Updated " + (new Date(m.updated_at)).toLocaleTimeString() : "";
+        var firstOutcome = outcomes[0] ? esc(outcomes[0].name) : "";
         selectedEl.innerHTML = '<div class="pm-selected">'
           + '<p class="pm-q">'+esc(m.question)+'</p>'
           + rows
+          + '<div class="pm-spark" data-role="pm-spark">'
+          +   '<div class="pm-spark-head"><span>'+firstOutcome+' Â· price history</span><span data-role="pm-spark-range">loadingâ¦</span></div>'
+          +   '<div class="pm-spark-empty">Loading historyâ¦</div>'
+          + '</div>'
           + '<div class="pm-meta"><span>'+esc(end)+'</span><span>'+esc(vol)+'</span><span>'+esc(updated)+'</span></div>'
           + '</div>';
+      }
+
+      function renderSpark(data){
+        var sparkEl = selectedEl.querySelector('[data-role="pm-spark"]');
+        if (!sparkEl) return;
+        var rangeEl = sparkEl.querySelector('[data-role="pm-spark-range"]');
+        var points = (data && data.points) || [];
+        if (!points.length){
+          sparkEl.innerHTML = '<div class="pm-spark-head"><span>price history</span><span>n/a</span></div><div class="pm-spark-empty">No history available.</div>';
+          return;
+        }
+        var W = 600, H = 56, PAD = 2;
+        var ys = points.map(function(p){ return p.p; });
+        var minY = Math.min.apply(null, ys);
+        var maxY = Math.max.apply(null, ys);
+        var range = Math.max(0.01, maxY - minY);
+        var n = points.length;
+        function x(i){ return n === 1 ? W/2 : PAD + (i * (W - 2*PAD)) / (n - 1); }
+        function y(v){ return PAD + (1 - (v - minY) / range) * (H - 2*PAD); }
+        var d = "";
+        for (var i = 0; i < n; i++){
+          d += (i === 0 ? "M" : "L") + x(i).toFixed(1) + "," + y(ys[i]).toFixed(1) + " ";
+        }
+        var area = d + "L" + x(n-1).toFixed(1) + "," + (H - PAD) + " L" + x(0).toFixed(1) + "," + (H - PAD) + " Z";
+        var last = ys[n-1], first = ys[0];
+        var delta = last - first;
+        var deltaStr = (delta >= 0 ? "+" : "") + (Math.round(delta * 1000) / 10) + "pp";
+        var lo = Math.round(minY * 1000) / 10 + "%";
+        var hi = Math.round(maxY * 1000) / 10 + "%";
+        sparkEl.innerHTML = '<div class="pm-spark-head"><span>'+esc((data.outcome || "") + " Â· " + (data.interval || "") + " history")+'</span><span>'+esc(lo + " â " + hi + "  " + deltaStr)+'</span></div>'
+          + '<svg viewBox="0 0 '+W+' '+H+'" preserveAspectRatio="none"><path class="area" d="'+area+'"/><path class="line" d="'+d+'"/></svg>';
+      }
+
+      function fetchHistory(slug){
+        fetch(api + "/polymarket/history/" + encodeURIComponent(slug) + "?interval=1w", { cache: "no-store" })
+          .then(function(r){ if (!r.ok) throw new Error("http "+r.status); return r.json(); })
+          .then(renderSpark)
+          .catch(function(){
+            var sparkEl = selectedEl.querySelector('[data-role="pm-spark"]');
+            if (sparkEl) sparkEl.innerHTML = '<div class="pm-spark-head"><span>price history</span><span>error</span></div><div class="pm-spark-empty">History unavailable.</div>';
+          });
       }
 
       function fetchMarket(slug){
@@ -636,8 +721,9 @@
       function selectMarket(slug){
         currentSlug = slug;
         if (pollTimer) { clearInterval(pollTimer); pollTimer = null; }
-        selectedEl.innerHTML = '<div class="pm-selected"><div class="pm-empty">Loading market…</div></div>';
+        selectedEl.innerHTML = '<div class="pm-selected"><div class="pm-empty">Loading marketâ¦</div></div>';
         fetchMarket(slug);
+        fetchHistory(slug);
         pollTimer = setInterval(function(){
           if (currentSlug) fetchMarket(currentSlug);
         }, 15 * 1000);
