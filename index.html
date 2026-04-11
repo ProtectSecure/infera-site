@@ -202,6 +202,140 @@
       line-height: 1.6;
     }
 
+    /* Polymarket picker */
+    .pm-picker {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 22px 24px;
+      margin: 24px 0 40px;
+    }
+    .pm-picker h2 {
+      font-size: 18px;
+      margin: 0 0 4px;
+      font-weight: 700;
+      color: var(--text);
+    }
+    .pm-picker .pm-sub {
+      font-size: 12px;
+      color: var(--muted);
+      margin: 0 0 16px;
+    }
+    .pm-search {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+    .pm-search input {
+      flex: 1;
+      background: var(--panel-2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 10px 14px;
+      color: var(--text);
+      font-size: 14px;
+      font-family: inherit;
+      outline: none;
+    }
+    .pm-search input:focus { border-color: var(--accent-2); }
+    .pm-search button {
+      background: var(--accent-2);
+      border: 0;
+      color: #fff;
+      border-radius: 10px;
+      padding: 10px 18px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: inherit;
+    }
+    .pm-search button:hover { background: var(--accent); color: #061a2e; }
+    .pm-results {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      max-height: 280px;
+      overflow-y: auto;
+      margin-bottom: 14px;
+    }
+    .pm-result {
+      background: var(--panel-2);
+      border: 1px solid #222839;
+      border-radius: 10px;
+      padding: 10px 14px;
+      font-size: 13px;
+      cursor: pointer;
+      color: var(--text);
+      text-align: left;
+      font-family: inherit;
+    }
+    .pm-result:hover {
+      border-color: var(--accent-2);
+      background: #141826;
+    }
+    .pm-result small { color: var(--muted); font-size: 11px; }
+    .pm-selected {
+      background: var(--panel-2);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px 18px;
+      margin-top: 8px;
+    }
+    .pm-selected .pm-q {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text);
+      margin: 0 0 10px;
+    }
+    .pm-outcome {
+      margin-bottom: 10px;
+    }
+    .pm-outcome-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 13px;
+      margin-bottom: 4px;
+    }
+    .pm-outcome-row span:last-child {
+      color: var(--accent);
+      font-weight: 700;
+    }
+    .pm-outcome-bar {
+      height: 8px;
+      background: #222839;
+      border-radius: 4px;
+      overflow: hidden;
+    }
+    .pm-outcome-bar > span {
+      display: block;
+      height: 100%;
+      background: linear-gradient(90deg, var(--accent-2), var(--accent));
+      transition: width 0.4s ease;
+    }
+    .pm-meta {
+      display: flex;
+      justify-content: space-between;
+      font-size: 11px;
+      color: var(--dim);
+      margin-top: 10px;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+    .pm-empty {
+      color: var(--muted);
+      font-size: 13px;
+      text-align: center;
+      padding: 18px 0;
+    }
+    .pm-disclaimer {
+      font-size: 10px;
+      color: var(--dim);
+      margin-top: 14px;
+      line-height: 1.6;
+      border-top: 1px solid var(--border);
+      padding-top: 10px;
+    }
+
     /* Sections */
     .section {
       margin: 56px 0;
@@ -291,6 +425,20 @@
       <div class="infera-disclaimer">
         Infera provides probabilistic interpretations of publicly available signals.
         It is informational only and is not financial, betting, legal, medical, or professional advice.
+      </div>
+    </div>
+
+    <div id="pm-picker" class="pm-picker" data-api="https://infera-api.onrender.com">
+      <h2>Track a Polymarket market</h2>
+      <p class="pm-sub">Search any active market, click to track. Shows Polymarket's current implied probability. Informational only — not betting advice.</p>
+      <div class="pm-search">
+        <input type="text" data-role="pm-q" placeholder="Search markets (e.g. election, fed, bitcoin)…" />
+        <button type="button" data-role="pm-go">Search</button>
+      </div>
+      <div class="pm-results" data-role="pm-results"></div>
+      <div data-role="pm-selected"></div>
+      <div class="pm-disclaimer">
+        Data mirrored from Polymarket's public Gamma API and refreshed every 15 seconds while a market is selected. Infera does not place trades, hold funds, or offer betting advice.
       </div>
     </div>
 
@@ -401,6 +549,107 @@
 
       fetchOnce();
       setInterval(fetchOnce, 60 * 1000);
+    })();
+
+    // Polymarket picker
+    (function(){
+      var root = document.getElementById("pm-picker");
+      if (!root) return;
+      var api = (root.getAttribute("data-api") || "").replace(/\/$/, "");
+      var $ = function(r){ return root.querySelector('[data-role="'+r+'"]'); };
+      var qEl = $("pm-q");
+      var goEl = $("pm-go");
+      var resultsEl = $("pm-results");
+      var selectedEl = $("pm-selected");
+      var pollTimer = null;
+      var currentSlug = null;
+
+      function pct(n){ return (Math.round((n||0) * 1000) / 10) + "%"; }
+      function esc(s){ return String(s == null ? "" : s).replace(/[&<>"']/g, function(c){
+        return ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"})[c];
+      }); }
+      function fmtDate(iso){
+        if (!iso) return "";
+        try { return new Date(iso).toLocaleDateString(); } catch(e) { return iso; }
+      }
+
+      function runSearch(){
+        var q = (qEl.value || "").trim();
+        resultsEl.innerHTML = '<div class="pm-empty">Searching…</div>';
+        var url = api + "/polymarket/search?limit=20" + (q ? "&q=" + encodeURIComponent(q) : "");
+        fetch(url, { cache: "no-store" })
+          .then(function(r){ if (!r.ok) throw new Error("http "+r.status); return r.json(); })
+          .then(function(data){
+            var markets = (data && data.markets) || [];
+            if (!markets.length){
+              resultsEl.innerHTML = '<div class="pm-empty">No markets found. Try a different query.</div>';
+              return;
+            }
+            resultsEl.innerHTML = markets.map(function(m){
+              var end = m.end_date ? " · ends " + fmtDate(m.end_date) : "";
+              var vol = m.volume_24hr ? " · 24h vol $" + Math.round(m.volume_24hr).toLocaleString() : "";
+              return '<button type="button" class="pm-result" data-slug="'+esc(m.slug)+'">'
+                + esc(m.question)
+                + '<br><small>' + esc(m.slug) + end + vol + '</small>'
+                + '</button>';
+            }).join("");
+            Array.prototype.forEach.call(resultsEl.querySelectorAll(".pm-result"), function(btn){
+              btn.addEventListener("click", function(){ selectMarket(btn.getAttribute("data-slug")); });
+            });
+          })
+          .catch(function(err){
+            resultsEl.innerHTML = '<div class="pm-empty">Search failed. The backend may be waking up — try again in a few seconds.</div>';
+          });
+      }
+
+      function renderMarket(m){
+        if (!m || m.error){
+          selectedEl.innerHTML = '<div class="pm-selected"><div class="pm-empty">Market unavailable.</div></div>';
+          return;
+        }
+        var outcomes = m.outcomes || [];
+        var rows = outcomes.map(function(o){
+          return '<div class="pm-outcome">'
+            + '<div class="pm-outcome-row"><span>'+esc(o.name)+'</span><span>'+pct(o.price)+'</span></div>'
+            + '<div class="pm-outcome-bar"><span style="width:'+pct(o.price)+'"></span></div>'
+            + '</div>';
+        }).join("");
+        var vol = m.volume_24hr ? "24h vol $" + Math.round(m.volume_24hr).toLocaleString() : "";
+        var end = m.end_date ? "Ends " + fmtDate(m.end_date) : "";
+        var updated = m.updated_at ? "Updated " + (new Date(m.updated_at)).toLocaleTimeString() : "";
+        selectedEl.innerHTML = '<div class="pm-selected">'
+          + '<p class="pm-q">'+esc(m.question)+'</p>'
+          + rows
+          + '<div class="pm-meta"><span>'+esc(end)+'</span><span>'+esc(vol)+'</span><span>'+esc(updated)+'</span></div>'
+          + '</div>';
+      }
+
+      function fetchMarket(slug){
+        fetch(api + "/polymarket/market/" + encodeURIComponent(slug), { cache: "no-store" })
+          .then(function(r){ if (!r.ok) throw new Error("http "+r.status); return r.json(); })
+          .then(renderMarket)
+          .catch(function(err){
+            selectedEl.innerHTML = '<div class="pm-selected"><div class="pm-empty">Lost connection to market feed.</div></div>';
+          });
+      }
+
+      function selectMarket(slug){
+        currentSlug = slug;
+        if (pollTimer) { clearInterval(pollTimer); pollTimer = null; }
+        selectedEl.innerHTML = '<div class="pm-selected"><div class="pm-empty">Loading market…</div></div>';
+        fetchMarket(slug);
+        pollTimer = setInterval(function(){
+          if (currentSlug) fetchMarket(currentSlug);
+        }, 15 * 1000);
+      }
+
+      goEl.addEventListener("click", runSearch);
+      qEl.addEventListener("keydown", function(e){
+        if (e.key === "Enter") { e.preventDefault(); runSearch(); }
+      });
+
+      // Initial load: show some popular markets
+      runSearch();
     })();
   </script>
 </body>
