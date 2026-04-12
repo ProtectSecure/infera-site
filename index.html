@@ -788,9 +788,9 @@ function renderSocialFeed(posts, topic) {
       const bg   = isBsky ? 'rgba(0,133,255,.1)' : 'rgba(99,100,255,.1)';
       const brd  = isBsky ? 'rgba(0,133,255,.25)' : 'rgba(99,100,255,.25)';
       const time = p.publishedAt ? new Date(p.publishedAt).toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'}) : '';
-      const safeUrl = (p.url || '').replace(/'/g, '%27');
+      const safeUrl = (p.url || '').replace(/"/g, '&quot;');
       html +=
-        '<div class="social-card" onclick="window.open('' + safeUrl + '','_blank')">' +
+        '<div class="social-card" data-url="' + safeUrl + '" onclick="window.open(this.dataset.url,\'_blank\')">' +
           '<div class="sc-platform" style="display:flex;align-items:center;gap:6px;margin-bottom:6px">' +
             '<span class="sc-platform-badge" style="background:' + bg + ';color:' + col + ';border:1px solid ' + brd + '">' + p.platform + '</span>' +
             '<span style="font-size:10px;color:var(--dim);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1">' + (p.handle || '') + '</span>' +
