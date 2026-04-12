@@ -219,11 +219,9 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:14
 .confidence-label{font-size:10px;color:var(--dim);text-transform:uppercase;letter-spacing:.06em;white-space:nowrap}
 .confidence-bar-wrap{flex:1;background:var(--b2);border-radius:3px;height:5px;overflow:hidden}
 .confidence-bar{height:5px;border-radius:3px;background:linear-gradient(90deg,var(--teal),#51cf66);transition:width .4s}
-.sv-row{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;margin-bottom:10px}
-.sv-cell{display:flex;flex-direction:column;gap:2px}
-.sv-dim{font-size:9px;color:var(--dim);text-transform:uppercase;letter-spacing:.06em}
-.sv-bar-wrap{background:var(--b2);border-radius:2px;height:4px;overflow:hidden}
-.sv-bar{height:4px;border-radius:2px;background:var(--teal)}
+.conf-desc{font-size:10.5px;color:var(--dim);margin:-2px 0 10px;line-height:1.5}
+.sig-profile{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:10px}
+.sig-badge{font-size:10px;font-weight:700;letter-spacing:.06em;padding:3px 8px;border-radius:3px;background:rgba(255,255,255,.08)}.sig-badge.geo{color:#7ec8e3}.sig-badge.market{color:#f4b942}.sig-badge.macro{color:#a8e6cf}.sig-badge.policy{color:#d4a5f5}
 .differs-label{font-size:10px;color:var(--dim);font-style:italic;margin-top:5px;padding-top:4px;border-top:1px solid var(--b1)}
 .evolution-arc{font-size:10px;color:var(--dim);background:var(--s0);border-radius:4px;padding:7px 10px;margin-top:4px;line-height:1.5}
 /* Historical */
@@ -260,14 +258,17 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:14
 .oc-label{font-size:.68rem;text-transform:uppercase;letter-spacing:.1em;color:var(--gold);font-family:var(--mono)}
 .oc-text{font-size:13px;color:var(--text);line-height:1.5;margin:0}
 .hist-src-title{font-size:.68rem;text-transform:uppercase;letter-spacing:.12em;color:var(--gold);font-family:var(--mono);margin:1.3rem 0 .65rem}
-.hist-sources{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:.75rem}
-.src-card{display:flex;gap:.75rem;background:var(--b2);border:1px solid rgba(255,255,255,.07);border-radius:8px;padding:.85rem;text-decoration:none;color:var(--text);transition:border-color .2s,background .2s}
-.src-card:hover{border-color:var(--gold);background:rgba(255,255,255,.03)}
-.src-card-body{flex:1;min-width:0;display:flex;flex-direction:column;gap:.28rem}
-.src-badge{font-size:.63rem;text-transform:uppercase;letter-spacing:.08em;color:var(--dim);font-family:var(--mono)}
-.src-title{font-size:13px;font-weight:600;line-height:1.4;margin:0;color:var(--text)}
-.src-excerpt{font-size:11.5px;color:var(--dim);line-height:1.5;margin:0;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
-.src-date{font-size:.63rem;color:var(--dim);font-family:var(--mono);margin-top:.15rem}
+.hist-sources{display:flex;flex-direction:column;gap:3px;margin-top:4px}
+.ref-link{border-radius:6px;overflow:hidden;border:1px solid rgba(255,255,255,.07)}
+.ref-link summary{display:flex;align-items:center;gap:8px;padding:8px 12px;cursor:pointer;list-style:none;color:var(--text)}
+.ref-link summary::-webkit-details-marker{display:none}
+.ref-link summary:hover{background:rgba(255,255,255,.04)}
+.ref-badge{font-size:.6rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;padding:2px 6px;border-radius:3px;background:rgba(255,255,255,.1);color:var(--gold);font-family:var(--mono);white-space:nowrap}
+.ref-title{font-size:12.5px;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ref-toggle{font-size:10px;color:var(--dim);flex-shrink:0;transition:transform .2s}
+details[open] .ref-toggle{transform:rotate(180deg)}
+.ref-synopsis{padding:8px 12px 10px;font-size:11.5px;color:var(--dim);line-height:1.55;border-top:1px solid rgba(255,255,255,.05)}
+.ref-synopsis a{color:var(--gold);text-decoration:none;font-size:11px}
 .src-thumb{width:68px;height:68px;object-fit:cover;border-radius:6px;flex-shrink:0}
 .ob-header{padding:8px 12px;background:rgba(240,180,41,.06);border-bottom:1px solid var(--b2);font-family:var(--mono);font-size:8px;letter-spacing:.18em;color:var(--gold);text-transform:uppercase;display:flex;align-items:center;gap:6px}
 .ob-item{display:flex;align-items:flex-start;gap:10px;padding:10px 12px;border-bottom:1px solid var(--b1)}
@@ -977,16 +978,17 @@ function renderContextualPerspective(data, mkts, analogs) {
   const CC = {recession:'#ff6b6b',recovery:'#51cf66',escalation:'#ff9f43',policy:'#6b7cff',conflict:'#e84393'};
   let aHtml = '';
   if (analogs && analogs.analogs && analogs.analogs.length) {
-    const sigHtml = (analogs.confidence!=null?'<div class="confidence-row"><span class="confidence-label">Pattern confidence</span><div class="confidence-bar-wrap"><div class="confidence-bar" style="width:'+Math.round(analogs.confidence*100)+'%"></div></div><span class="confidence-label">'+Math.round(analogs.confidence*100)+'%</span></div>':'')
-    +(analogs.signal_vector?'<div class="sv-row"><div class="sv-cell"><div class="sv-dim">Market</div><div class="sv-bar-wrap"><div class="sv-bar" style="width:'+Math.round((analogs.signal_vector.market||0)*100)+'%"></div></div></div><div class="sv-cell"><div class="sv-dim">Macro</div><div class="sv-bar-wrap"><div class="sv-bar" style="width:'+Math.round((analogs.signal_vector.macro||0)*100)+'%"></div></div></div><div class="sv-cell"><div class="sv-dim">Geo</div><div class="sv-bar-wrap"><div class="sv-bar" style="width:'+Math.round((analogs.signal_vector.geo||0)*100)+'%"></div></div></div><div class="sv-cell"><div class="sv-dim">Policy</div><div class="sv-bar-wrap"><div class="sv-bar" style="width:'+Math.round((analogs.signal_vector.policy||0)*100)+'%"></div></div></div></div>':'');
-    aHtml = sigHtml+'<div class="analog-section"><div class="analog-header">Historical Analogs</div><div class="analog-cards">' + analogs.analogs.map(a => '<div class="analog-card"><span class="analog-name">' + a.name + '</span><span class="analog-year">' + a.year + '</span><div class="analog-outcome">' + a.outcome + '</div><div class="analog-sim-wrap"><div class="analog-sim-bar"><div class="analog-sim-fill" style="width:' + Math.round(a.similarity*100) + '%"></div></div><span class="analog-sim-pct">' + Math.round(a.similarity*100) + '%</span>'+(a.differs&&a.differs.length?'<div class="differs-label">Differs: '+a.differs.join(', ')+'</div>':'')+'</div></div>').join('') + '</div></div>';
+    const sigHtml = (analogs.confidence!=null?'<div class="confidence-row"><span class="confidence-label">Pattern confidence</span><div class="confidence-bar-wrap"><div class="confidence-bar" style="width:'+Math.round(analogs.confidence*100)+'%"></div></div><span class="confidence-label">'+Math.round(analogs.confidence*100)+'%</span></div><p class="conf-desc">Cluster match strength — how closely this event’s keyword signature aligns with historical pattern databases across signal dimensions.</p>':'')
+    +(analogs.signal_vector?(()=>{const sv=analogs.signal_vector;const dims=[['geo','GEO',sv.geo||0],['market','MKT',sv.market||0],['macro','MACRO',sv.macro||0],['policy','POL',sv.policy||0]];const active=dims.filter(d=>d[2]>0.05).sort((a,b)=>b[2]-a[2]);return active.length?'<div class="sig-profile">'+active.map(d=>'<span class="sig-badge '+d[0]+'">'+d[1]+' '+Math.round(d[2]*100)+'%</span>').join('')+'</div>':'';})():'')
+    aHtml = '<div class="analog-section"><div class="analog-cards">' + analogs.analogs.map(a => '<div class="analog-card"><span class="analog-name">' + a.name + '</span><span class="analog-year">' + a.year + '</span><div class="analog-outcome">' + a.outcome + '</div><div class="analog-sim-wrap"><div class="analog-sim-bar"><div class="analog-sim-fill" style="width:' + Math.round(a.similarity*100) + '%"></div></div><span class="analog-sim-pct">' + Math.round(a.similarity*100) + '%</span>'+(a.differs&&a.differs.length?'<div class="differs-label">Differs: '+a.differs.join(', ')+'</div>':'')+'</div></div>').join('') + '</div></div>';
   }
   let stHtml = '';
   if (analogs && analogs.scenario_tree && analogs.scenario_tree.length) {
     const tp = analogs.scenario_tree.reduce((s,x) => s + x.probability, 0) || 1;
     stHtml = '<div class="scenario-tree"><div class="scenario-tree-header">Scenario Probabilities</div>' + analogs.scenario_tree.map(s => '<div class="scenario-row"><span class="scenario-label">' + s.path + '</span><div class="scenario-bar-wrap"><div class="scenario-bar" style="width:' + Math.round(s.probability/tp*100) + '%;background:' + (CC[s.cluster]||'var(--teal)') + '"></div></div><span class="scenario-pct">' + Math.round(s.probability/tp*100) + '%</span><div class="scenario-sub">~' + s.timeframe_months + ' mo &bull; ' + s.anchor + '</div></div>').join('') + (analogs.avg_time_months ? '<div class="time-forecast">Avg. resolution across analogs: ~' + analogs.avg_time_months + ' months</div>' : '') +(analogs.evolution?'<div class="evolution-arc">'+analogs.evolution.pattern+' &mdash; onset '+analogs.evolution.onset+'% &rarr; peak '+analogs.evolution.peak+'%</div>':'')+'</div>';
   }
-  el.innerHTML = '<div class="context-overview">' + (data.overview||'') + '</div>' + stHtml + aHtml + mHtml + '<div class="context-branches">' + bHtml + '</div>';
+    el.innerHTML = '<div class="context-overview">' + (data.overview||'') + '</div>' + stHtml + sigHtml + mHtml + '<div class="context-branches">' + bHtml + '</div>'; const _hI=document.getElementById('histIntro'); if(_hI&&aHtml){const _e=document.getElementById('analogsInHist');if(_e)_e.remove();const _d=document.createElement('div');_d.id='analogsInHist';_d.innerHTML=aHtml;_hI.insertAdjacentElement('afterend',_d);}
+
 }
 async function fetchHistoricalSources(topic, desc) {
   const shortQ = topic.split(' ').slice(0, 5).join(' ');
@@ -1188,40 +1190,38 @@ function renderHistoricalSection(data) {
   const deckEl  = document.getElementById('dh-deck');
   if (deckEl && aiData && aiData.deck) deckEl.textContent = aiData.deck;
   if (introEl) {
-    introEl.innerHTML = (aiData && aiData.histIntro)
-      ? '<p class="hist-synthesis">' + aiData.histIntro + '</p>'
-      : '';
+    const _raw = (aiData && aiData.histIntro) || '';
+    const _sents = _raw.match(/[^.!?]*[.!?]+/g) || (_raw ? [_raw] : []);
+    const _intro = _sents.slice(0, 3).join('').trim();
+    introEl.innerHTML = _intro
+      ? '<p class="hist-synthesis">' + _intro + '</p>'
+      : '<p style="color:var(--dim)">Historical context unavailable.</p>';
   }
   let html = '';
   if (aiData && Array.isArray(aiData.outcomes) && aiData.outcomes.length) {
     html += '<div class="hist-outcomes">';
     for (const o of aiData.outcomes) {
-      html += '<div class="outcome-card"><span class="oc-icon">' + (o.icon || '📌') + '</span>'
+      html += '<div class="outcome-card"><span class="oc-icon">' + (o.icon || '📈') + '</span>'
             + '<strong class="oc-label">' + (o.label || '') + '</strong>'
             + '<p class="oc-text">' + (o.text || '') + '</p></div>';
     }
     html += '</div>';
   }
   if (sources && sources.length) {
-    html += '<div class="hist-src-title">📚 Sources & Historical References</div>';
+    html += '<div class="hist-src-title">📋 Sources &amp; Historical References</div>';
     html += '<div class="hist-sources">';
     for (const s of sources.slice(0, 9)) {
-      const thumb = s.thumbnail ? '<img class="src-thumb" src="' + s.thumbnail + '" alt="" loading="lazy">' : '';
-      html += '<a class="src-card" href="' + s.url + '" target="_blank" rel="noopener">'
-            + thumb
-            + '<div class="src-card-body">'
-            + '<span class="src-badge">' + (s.sourceIcon || '🔗') + ' ' + s.source + '</span>'
-            + '<p class="src-title">' + s.title + '</p>'
-            + (s.excerpt ? '<p class="src-excerpt">' + s.excerpt.slice(0, 200) + (s.excerpt.length > 200 ? '…' : '') + '</p>' : '')
-            + (s.date ? '<span class="src-date">' + s.date + '</span>' : '')
-            + '</div></a>';
+      html += '<details class="ref-link"><summary><span class="ref-badge">' + (s.source||'SRC') + '</span>'
+            + '<span class="ref-title">' + (s.title||'') + '</span>'
+            + '<span class="ref-toggle">&#9660;</span></summary>'
+            + '<div class="ref-synopsis">' + (s.excerpt ? s.excerpt.slice(0,280) + (s.excerpt.length>280 ? '…' : '') : '')
+            + ' <a href="' + (s.url||'#') + '" target="_blank" rel="noopener">Read more ↗</a></div></details>';
     }
     html += '</div>';
   }
   if (!html) html = '<p style="color:var(--dim);padding:.8rem 0">No historical sources found for this topic.</p>';
   if (eventsEl) eventsEl.innerHTML = html;
 }
-
 function toggleHist(i) { document.getElementById('he-' + i).classList.toggle('open'); }
 
 // ─── NAVIGATION ────────────────────────────────────────────────────────────
