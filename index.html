@@ -1032,9 +1032,9 @@ function renderContextualPerspective(data, mkts, analogs) {
     const sigProf = el.querySelector('.sig-profile');
     if (sigProf) {
       const sv = analogs.signal_vector || {};
-      const newsW = Math.round(((sv.POL||0)+(sv.ECO||0))/2*100);
-      const socW  = Math.round(((sv.GEO||0)+(sv.POL||0))/2*100);
-      const mktW  = Math.round(((sv.MKT||0)+(sv.ECO||0))/2*100);
+      const newsW = Math.round(((sv.policy||0)+(sv.macro||0))/2*100);
+      const socW  = Math.round(((sv.geo||0)+(sv.policy||0))/2*100);
+      const mktW  = Math.round(((sv.market||0)+(sv.macro||0))/2*100);
       const wc = Math.round(analogs.weighted_confidence*100);
       const weightRow = document.createElement('div');
       weightRow.className = 'signal-weights';
