@@ -927,7 +927,7 @@ function renderContextualPerspective(data, mkts) {
   const el = document.getElementById('context-body');
   if (!el) return;
   if (!data) { el.innerHTML = '<p style="color:var(--dim);font-size:13px;padding:12px 0">Analysis unavailable.</p>'; return; }
-  const bHtml = (data.branches||[]).slice(0,3).map(b => '<div class="branch-card"><div class="branch-icon">' + (b.icon||''🔀'') + '</div><div class="branch-path">' + (b.path||'Path') + '</div><div class="branch-title">' + (b.title||'') + '</div><div class="branch-detail">' + (b.detail||'') + '</div></div>').join('');
+  const bHtml = (data.branches||[]).slice(0,3).map(b => '<div class="branch-card"><div class="branch-icon">' + (b.icon||''') + '</div><div class="branch-path">' + (b.path||'Path') + '</div><div class="branch-title">' + (b.title||'') + '</div><div class="branch-detail">' + (b.detail||'') + '</div></div>').join('');
   const mHtml = (mkts && mkts.length) ? '<div class="mkt-signals">' + mkts.slice(0,4).map(m => '<div class="mkt-row"><span class="mkt-q">' + m.question + '</span><div class="mkt-bar-wrap"><div class="mkt-bar" style="width:' + Math.round(m.probability*100) + '%"></div></div><span class="mkt-pct">' + Math.round(m.probability*100) + '%</span><span class="mkt-src">' + m.source + '</span></div>').join('') + '</div>' : '';
   el.innerHTML = '<div class="context-overview">' + (data.overview||'') + '</div>' + mHtml + '<div class="context-branches">' + bHtml + '</div>';
 }
