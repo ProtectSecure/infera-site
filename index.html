@@ -316,6 +316,14 @@ details[open] .ref-toggle{transform:rotate(180deg)}
   .deep-body{padding:20px 16px 48px}
   .dh-headline{font-size:24px}
 }
+
+.signal-weights{display:flex;align-items:center;gap:8px;margin:6px 0 2px;font-size:10px;letter-spacing:.06em}
+.sw-label{color:var(--dim);text-transform:uppercase}
+.sw-seg{background:rgba(255,255,255,.07);border-radius:3px;padding:2px 6px;color:var(--text)}
+.sw-seg b{color:var(--accent)}
+.sw-conf{margin-left:auto;color:var(--dim)}
+@keyframes probPulse{0%,100%{opacity:1}50%{opacity:.4}}
+.prob-delta{animation:probPulse .8s ease 2}
 </style>
 </head>
 <body>
@@ -969,6 +977,38 @@ async function fetchContextualPerspective(topic, desc) {
     return JSON.parse(text.split('```json').join('').split('```').join('').trim());
   } catch(e) { return null; }
 }
+
+function startEvolutionPolling(scenarioTree, query, el) {
+  if (window._evoInterval) clearInterval(window._evoInterval);
+  let currentProbs = {};
+  scenarioTree.forEach(b => { currentProbs[b.cluster] = (b.probability||0); });
+  window._evoInterval = setInterval(async () => {
+    const latestSignal = Array.from(document.querySelectorAll('.live-post-title'))
+      .slice(0,3).map(e=>e.textContent).join(' ') || query;
+    try {
+      const res = await fetch('https://infera-api.onrender.com/evolution', {
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({probs: currentProbs, signal: latestSignal, delta: 0.04})
+      });
+      const data = await res.json();
+      if (data.any_change) {
+        currentProbs = data.updated_probs;
+        Object.entries(data.deltas).forEach(([cluster, delta]) => {
+          if (Math.abs(delta) < 0.005) return;
+          el.querySelectorAll('.scenario-branch').forEach(branch => {
+            if (branch.dataset.cluster === cluster) {
+              const bar = branch.querySelector('.scenario-bar-fill');
+              const pct = branch.querySelector('.scenario-pct');
+              if (bar) { bar.style.transition='width 1.2s ease'; bar.style.width=(data.updated_probs[cluster]*100)+'%'; }
+              if (pct) { pct.textContent=Math.round(data.updated_probs[cluster]*100)+'%'; pct.classList.add('prob-delta'); setTimeout(()=>pct.classList.remove('prob-delta'),1600); }
+            }
+          });
+        });
+      }
+    } catch(e) { /* silent */ }
+  }, 90000);
+}
+
 function renderContextualPerspective(data, mkts, analogs) {
   const el = document.getElementById('context-body');
   if (!el) return;
@@ -987,7 +1027,28 @@ function renderContextualPerspective(data, mkts, analogs) {
     const tp = analogs.scenario_tree.reduce((s,x) => s + x.probability, 0) || 1;
     stHtml = '<div class="scenario-tree"><div class="scenario-tree-header">Scenario Probabilities</div>' + analogs.scenario_tree.map(s => '<div class="scenario-row"><span class="scenario-label">' + s.path + '</span><div class="scenario-bar-wrap"><div class="scenario-bar" style="width:' + Math.round(s.probability/tp*100) + '%;background:' + (CC[s.cluster]||'var(--teal)') + '"></div></div><span class="scenario-pct">' + Math.round(s.probability/tp*100) + '%</span><div class="scenario-sub">~' + s.timeframe_months + ' mo &bull; ' + s.anchor + '</div></div>').join('') + (analogs.avg_time_months ? '<div class="time-forecast">Avg. resolution across analogs: ~' + analogs.avg_time_months + ' months</div>' : '') +(analogs.evolution?'<div class="evolution-arc">'+analogs.evolution.pattern+' &mdash; onset '+analogs.evolution.onset+'% &rarr; peak '+analogs.evolution.peak+'%</div>':'')+'</div>';
   }
-    el.innerHTML = '<div class="context-overview">' + (data.overview||'') + '</div>' + stHtml + sigHtml + mHtml + '<div class="context-branches">' + bHtml + '</div>'; const _hI=document.getElementById('histIntro'); if(_hI&&aHtml){const _e=document.getElementById('analogsInHist');if(_e)_e.remove();const _d=document.createElement('div');_d.id='analogsInHist';_d.innerHTML=aHtml;_hI.insertAdjacentElement('afterend',_d);}
+    el.innerHTML = '<div class="context-overview">' + (data.overview||'') + '</div>' + stHtml + sigHtml + mHtml + '<div class="context-branches">' + bHtml + '</div>';
+  if (analogs && analogs.weighted_confidence != null) {
+    const sigProf = el.querySelector('.sig-profile');
+    if (sigProf) {
+      const sv = analogs.signal_vector || {};
+      const newsW = Math.round(((sv.POL||0)+(sv.ECO||0))/2*100);
+      const socW  = Math.round(((sv.GEO||0)+(sv.POL||0))/2*100);
+      const mktW  = Math.round(((sv.MKT||0)+(sv.ECO||0))/2*100);
+      const wc = Math.round(analogs.weighted_confidence*100);
+      const weightRow = document.createElement('div');
+      weightRow.className = 'signal-weights';
+      weightRow.innerHTML = '<span class="sw-label">SIGNAL WEIGHT</span>'
+        + '<span class="sw-seg" title="News & Policy">NEWS <b>' + newsW + '%</b></span>'
+        + '<span class="sw-seg" title="Social & Geo">SOC <b>' + socW + '%</b></span>'
+        + '<span class="sw-seg" title="Market & Economic">MKT <b>' + mktW + '%</b></span>'
+        + '<span class="sw-conf">' + wc + '% composite</span>';
+      sigProf.after(weightRow);
+    }
+  }
+  if (analogs && analogs.scenario_tree && analogs.scenario_tree.length) {
+    startEvolutionPolling(analogs.scenario_tree, data.query||data.title||'', el);
+  } const _hI=document.getElementById('histIntro'); if(_hI&&aHtml){const _e=document.getElementById('analogsInHist');if(_e)_e.remove();const _d=document.createElement('div');_d.id='analogsInHist';_d.innerHTML=aHtml;_hI.insertAdjacentElement('afterend',_d);}
 
 }
 async function fetchHistoricalSources(topic, desc) {
