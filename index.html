@@ -199,6 +199,24 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:14
 .ob-text{font-size:12px;color:var(--text);line-height:1.5}
 .ob-text strong{color:var(--bright)}
 
+.social-section{margin-bottom:28px}
+.social-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:10px;margin-top:12px}
+.social-card{background:var(--s1);border:1px solid var(--b1);border-radius:5px;padding:12px 14px;cursor:pointer;transition:border-color .15s}
+.social-card:hover{border-color:var(--b2)}
+.sc-platform{display:flex;align-items:center;gap:6px;margin-bottom:8px}
+.sc-platform-badge{font-family:var(--mono);font-size:8px;letter-spacing:.1em;text-transform:uppercase;padding:2px 7px;border-radius:2px;font-weight:600}
+.sc-title{font-size:12px;color:var(--text);line-height:1.45;font-weight:500;margin-bottom:6px}
+.sc-meta{font-family:var(--mono);font-size:9px;color:var(--dim);display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.sc-score{color:var(--teal)}
+.sc-hashtags{display:flex;flex-wrap:wrap;gap:5px;margin-top:10px}
+.sc-tag{font-family:var(--mono);font-size:9px;color:var(--purple);background:rgba(155,109,255,.1);border:1px solid rgba(155,109,255,.2);padding:2px 7px;border-radius:2px;cursor:pointer}
+.sc-archive{font-family:var(--mono);font-size:8px;color:var(--dim);text-decoration:none;padding:2px 5px;border:1px solid var(--b1);border-radius:2px;margin-left:auto;white-space:nowrap}
+.sc-archive:hover{color:var(--gold);border-color:rgba(240,180,41,.4)}
+.social-tabs{display:flex;gap:4px;margin-bottom:12px;border-bottom:1px solid var(--b1);padding-bottom:8px}
+.stab{font-family:var(--mono);font-size:9px;letter-spacing:.1em;text-transform:uppercase;padding:4px 10px;border-radius:3px;cursor:pointer;color:var(--dim);border:1px solid transparent}
+.stab.active{color:var(--purple);background:rgba(155,109,255,.1);border-color:rgba(155,109,255,.25)}
+.nc-archive{font-family:var(--mono);font-size:8px;color:var(--dim);border:1px solid var(--b1);border-radius:2px;padding:2px 6px;white-space:nowrap;text-decoration:none}
+.nc-archive:hover{color:var(--gold);border-color:rgba(240,180,41,.35)}
 .deep-disclaimer{font-family:var(--mono);font-size:9px;color:var(--dim);letter-spacing:.04em;line-height:1.65;padding:14px 16px;background:var(--s1);border:1px solid var(--b1);border-radius:3px;border-left:2px solid var(--b2);margin-top:32px}
 
 /* Shared */
@@ -340,6 +358,16 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:14
       <div id="newsGrid"></div>
     </div>
 
+    <!-- SOCIAL TRENDS -->
+    <div class="social-section">
+      <div class="sec-head">
+        <div class="sec-bar" style="background:var(--purple)"></div>
+        <div class="sec-title">Live Social Context</div>
+        <div class="sec-sub" id="social-sub">Reddit discussions · trending hashtags · video coverage</div>
+      </div>
+      <div id="socialGrid"></div>
+    </div>
+
     <!-- HISTORICAL -->
     <div class="hist-section">
       <div class="sec-head">
@@ -367,6 +395,10 @@ const GAMMA        = 'https://gamma-api.polymarket.com';
 const PROXY        = 'https://corsproxy.io/?';
 const GNEWS_KEY    = 'YOUR_GNEWS_API_KEY';    // https://gnews.io — free 100/day
 const GUARDIAN_KEY = 'YOUR_GUARDIAN_API_KEY'; // https://open-platform.theguardian.com — free
+const NEWSAPI_KEY  = 'YOUR_NEWSAPI_KEY';      // https://newsapi.org — free 100/day
+const YOUTUBE_KEY  = 'YOUR_YOUTUBE_API_KEY';  // https://console.cloud.google.com — free 10k/day
+// Reddit    — public JSON API, no key required — auto-fetched
+// Archive.ph — no key required — auto-linked on every article card
 
 // ─── STATE ─────────────────────────────────────────────────────────────────
 let allEvents      = [];
@@ -378,7 +410,7 @@ let lastTapId      = null;
 let lastTapTime    = 0;
 const DBL_MS       = 500;
 
-// ─── FETCH POLYMARKET ──────────────────────────────────────────────────────
+// ─── FETCH POLYMARKET ─────────────────────────────────────────────────────
 async function fetchEvents() {
   try {
     const url = PROXY + encodeURIComponent(`${GAMMA}/events?active=true&closed=false&limit=40&order=volume24hr&ascending=false`);
@@ -398,7 +430,7 @@ async function fetchEvents() {
 
 function mockEvents() {
   return [
-    { id:'1', title:'Will the US and China reach a trade deal in 2026?', category:'Economics', volume24hr:9200000, description:'Tracks whether the US and China will formally agree on a comprehensive trade framework, resolving the tariff standoff that began escalating in April 2026.', endDate:'2026-12-31T00:00:00Z', resolutionSource:'Reuters, AP' },
+    { id:'1', title:'Will the US and China reach a trade deal in 2026?', category:'Economics', volume24hr:9200000, description:'Tracks whether the US and China will fl formally agree on a comprehensive trade framework, resolving the tariff standoff that began escalating in April 2026.', endDate:'2026-12-31T00:00:00Z', resolutionSource:'Reuters, AP' },
     { id:'2', title:'Will there be a ceasefire in Gaza by June 2026?', category:'World', volume24hr:6800000, description:'Resolves YES if a formal ceasefire agreement is announced between Israel and Hamas, verified by major international outlets.', endDate:'2026-06-30T00:00:00Z', resolutionSource:'AP, UN' },
     { id:'3', title:'Will the Fed cut rates in May 2026?', category:'Economics', volume24hr:5100000, description:'Resolves YES if the FOMC votes to reduce the federal funds rate target at the May 2026 meeting.', endDate:'2026-05-10T00:00:00Z', resolutionSource:'Federal Reserve' },
     { id:'4', title:'Will Reform UK win more than 200 seats in the next general election?', category:'Politics', volume24hr:3400000, description:"Resolves YES if Nigel Farage's Reform UK party secures over 200 parliamentary seats at the next UK general election.", endDate:'2027-01-01T00:00:00Z', resolutionSource:'UK Electoral Commission' },
@@ -521,6 +553,8 @@ function openDeepDive(ev) {
   document.getElementById('news-sub').textContent       = '';
   document.getElementById('histIntro').innerHTML        = '<div class="loading-row"><div class="spinner" style="border-top-color:var(--gold)"></div><span>Finding historical parallels…</span></div>';
   document.getElementById('histEvents').innerHTML       = '';
+  document.getElementById('socialGrid').innerHTML       = '<div class="loading-row"><div class="spinner" style="border-top-color:var(--purple)"></div><span>Loading Reddit discussions…</span></div>';
+  document.getElementById('social-sub').textContent    = 'Fetching live social context…';
 
   runDeepDive(target);
 }
@@ -529,7 +563,7 @@ function openDeepDive(ev) {
 async function runDeepDive(ev) {
   const topic = ev.title || '';
   const desc  = ev.description || '';
-  const keysSet = GNEWS_KEY !== 'YOUR_GNEWS_API_KEY' || GUARDIAN_KEY !== 'YOUR_GUARDIAN_API_KEY';
+  const keysSet = GNEWS_KEY !== 'YOUR_GNEWS_API_KEY' || GUARDIAN_KEY !== 'YOUR_GUARDIAN_API_KEY' || NEWSAPI_KEY !== 'YOUR_NEWSAPI_KEY';
 
   // Step 1 — AI brief + historical in parallel
   const [briefRes, aiRes] = await Promise.allSettled([
@@ -543,20 +577,28 @@ async function runDeepDive(ev) {
   // Show investigative questions immediately
   if (brief) renderBrief(brief);
 
-  // Step 2 — fetch articles per angle
+  // Step 2 — fetch articles + social in parallel
   let articles = [];
-  if (brief && keysSet) {
-    const from = new Date(Date.now() - 30 * 86400000).toISOString().split('T')[0];
-    const fetched = await Promise.allSettled(brief.investigativeAngles.map(a => fetchAngle(a, from)));
-    fetched.forEach(r => { if (r.status === 'fulfilled') articles = articles.concat(r.value); });
-    // dedupe
-    const seen = new Set();
-    articles = articles.filter(a => {
-      const k = (a.title || '').toLowerCase().slice(0, 50);
-      if (seen.has(k)) return false;
-      seen.add(k); return true;
-    });
-  }
+  const q = (topic + ' ' + (desc || '')).slice(0, 120);
+  const [articlesRes, redditRes, youtubeRes] = await Promise.allSettled([
+    (async () => {
+      if (!brief || !keysSet) return [];
+      const from = new Date(Date.now() - 30 * 86400000).toISOString().split('T')[0];
+      const fetched = await Promise.allSettled(brief.investigativeAngles.map(a => fetchAngle(a, from)));
+      let arts = [];
+      fetched.forEach(r => { if (r.status === 'fulfilled') arts = arts.concat(r.value); });
+      const seen = new Set();
+      return arts.filter(a => {
+        const k = (a.title || '').toLowerCase().slice(0, 50);
+        if (seen.has(k)) return false;
+        seen.add(k); return true;
+      });
+    })(),
+    fetchReddit(topic),
+    fetchYouTube(topic)
+  ]);
+
+  if (articlesRes.status === 'fulfilled') articles = articlesRes.value;
 
   // Step 3 — score
   let scored = [];
@@ -564,9 +606,12 @@ async function runDeepDive(ev) {
     scored = await scoreArticles(articles, brief);
   }
 
-  // Step 4 — render
+  // Step 4 — render everything
   renderNewsGrid(scored, brief, keysSet);
   renderAI(ai);
+  const redditData  = redditRes.status  === 'fulfilled' ? redditRes.value  : [];
+  const youtubeData = youtubeRes.status === 'fulfilled' ? youtubeRes.value : [];
+  renderSocialTrends(redditData, youtubeData, topic);
 }
 
 // ─── BUILD INVESTIGATIVE BRIEF ─────────────────────────────────────────────
@@ -584,11 +629,56 @@ async function fetchAngle(angle, from) {
   const wFrom = getWindowFrom(angle.timeWindow);
   const results = await Promise.allSettled([
     fetchGNews(q, wFrom),
-    fetchGuardian(q, wFrom, angle.guardianSection)
+    fetchGuardian(q, wFrom, angle.guardianSection),
+    fetchNewsAPI(q, wFrom)
   ]);
   let arts = [];
   results.forEach(r => { if (r.status === 'fulfilled') arts = arts.concat(r.value); });
   return arts.map(a => Object.assign({}, a, { _angle: angle.question, _why: angle.why }));
+}
+
+async function fetchNewsAPI(q, from) {
+  if (NEWSAPI_KEY === 'YOUR_NEWSAPI_KEY') return [];
+  try {
+    const url = PROXY + encodeURIComponent('https://newsapi.org/v2/everything?q=' + encodeURIComponent(q) + '&from=' + from + '&sortBy=relevancy&pageSize=6&language=en&apiKey=' + NEWSAPI_KEY);
+    const res  = await fetch(url);
+    const data = await res.json();
+    return (data.articles || []).filter(a => a.title && !a.title.includes('[Removed]')).map(a => ({
+      title: a.title, description: a.description || a.content || '', source: (a.source && a.source.name) || 'NewsAPI',
+      url: a.url, publishedAt: a.publishedAt, _src: 'newsapi'
+    }));
+  } catch(_) { return []; }
+}
+
+async function fetchReddit(topic) {
+  try {
+    const q = topic.slice(0, 100);
+    const url = PROXY + encodeURIComponent('https://www.reddit.com/search.json?q=' + encodeURIComponent(q) + '&sort=hot&t=week&limit=12&type=link');
+    const res  = await fetch(url, { headers: { 'User-Agent': 'Infera/1.0' } });
+    const data = await res.json();
+    const posts = ((data.data && data.data.children) || []).map(c => c.data).filter(p => p.score > 10);
+    return posts.map(p => ({
+      title: p.title, url: 'https://reddit.com' + p.permalink, score: p.score,
+      comments: p.num_comments, subreddit: p.subreddit, selftext: (p.selftext || '').slice(0, 160),
+      publishedAt: new Date(p.created_utc * 1000).toISOString(), _src: 'reddit'
+    }));
+  } catch(_) { return []; }
+}
+
+async function fetchYouTube(topic) {
+  if (YOUTUBE_KEY === 'YOUR_YOUTUBE_API_KEY') return [];
+  try {
+    const q   = topic.slice(0, 100);
+    const pub = new Date(Date.now() - 14 * 86400000).toISOString();
+    const url = PROXY + encodeURIComponent('https://www.googleapis.com/youtube/v3/search?part=snippet&q=' + encodeURIComponent(q) + '&type=video&order=relevance&maxResults=6&publishedAfter=' + pub + '&key=' + YOUTUBE_KEY);
+    const res  = await fetch(url);
+    const data = await res.json();
+    return ((data.items) || []).map(v => ({
+      title: v.snippet.title, url: 'https://youtube.com/watch?v=' + v.id.videoId,
+      source: v.snippet.channelTitle, description: v.snippet.description || '',
+      publishedAt: v.snippet.publishedAt, thumbnail: v.snippet.thumbnails?.default?.url, _src: 'youtube'
+    }));
+  } catch(_) { return []; }
 }
 
 async function fetchGNews(q, from) {
@@ -650,24 +740,112 @@ async function callClaude(prompt, maxTokens) {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'X-Infera-Token': 'y3H2qcJN6YDxwRIAb6_8qDQX8legTKYTDgwR8FNxHb4'
+      'X-Infera-Token': 'y(H2qcJN6YDxwRIAb6_8qDQX8legTKYTDgwR8FNxHb4'
     },
     body: JSON.stringify({ prompt: prompt, max_tokens: maxTokens })
   });
   return res.json();
 }
 
+// ─── RENDER SOCIAL TRENDS ─────────────────────────────────────────────────
+function renderSocialTrends(reddit, youtube, topic) {
+  const grid = document.getElementById('socialGrid');
+  const sub  = document.getElementById('social-sub');
+  if (!grid) return;
+
+  const allCards = [];
+
+  // Reddit posts
+  reddit.forEach(p => {
+    allCards.push({
+      _src: 'reddit', title: p.title, url: p.url, score: p.score,
+      meta: 'r/' + p.subreddit + ' · ' + fmtVol(p.score) + ' pts · ' + p.comments + ' comments',
+      desc: p.selftext, publishedAt: p.publishedAt, platform: 'Reddit',
+      color: '#FF4500', bg: 'rgba(255,69,0,.1)', brd: 'rgba(255,69,0,.2)'
+    });
+  });
+
+  // YouTube videos
+  youtube.forEach(v => {
+    allCards.push({
+      _src: 'youtube', title: v.title, url: v.url, score: 0,
+      meta: v.source + ' · ' + new Date(v.publishedAt).toLocaleDateString('en-US',{month:'short',day:'numeric'}),
+      desc: v.description.slice(0, 140), publishedAt: v.publishedAt, platform: 'YouTube',
+      color: '#FF0000', bg: 'rgba(255,0,0,.08)', brd: 'rgba(255,0,0,.18)', thumb: v.thumbnail
+    });
+  });
+
+  if (!allCards.length) {
+    grid.innerHTML = '<div style="padding:12px;color:var(--dim);font-size:12px;font-family:var(--mono)">Reddit discussions loading… (YouTube requires API key)</div>';
+    sub.textContent = 'Live social context';
+    return;
+  }
+
+  // Extract trending hashtags from Reddit titles
+  const words = reddit.map(p => p.title).join(' ').toLowerCase()
+    .replace(/[^a-z0-9\s]/g, ' ').split(/\s+/)
+    .filter(w => w.length > 4 && !['about','their','there','which','would','could','should','after','before','other','these','those','where','since','being','while','every','under','still','again','first','shall','going'].includes(w));
+  const freq = {};
+  words.forEach(w => { freq[w] = (freq[w] || 0) + 1; });
+  const hashtags = Object.entries(freq).filter(([,c]) => c >= 2).sort((a,b) => b[1]-a[1]).slice(0,12).map(([w]) => '#'+w);
+
+  const tagsHtml = hashtags.length
+    ? '<div class="sc-hashtags">' + hashtags.map(t => '<span class="sc-tag">' + t + '</span>').join('') + '</div>'
+    : '';
+
+  const tabs = allCards.length > 0
+    ? '<div class="social-tabs">' +
+        (reddit.length  ? '<span class="stab active" id="stab-reddit"  onclick="switchSTab('reddit')">' + reddit.length  + ' Reddit</span>' : '') +
+        (youtube.length ? '<span class="stab' + (reddit.length ? '' : ' active') + '" id="stab-youtube" onclick="switchSTab('youtube')">' + youtube.length + ' YouTube</span>' : '') +
+      '</div>'
+    : '';
+
+  window._socialAll = allCards;
+  window._activeSTab = reddit.length ? 'reddit' : 'youtube';
+
+  grid.innerHTML = tagsHtml + tabs + '<div id="social-cards" class="social-grid"></div>';
+  renderSocialCards(window._activeSTab);
+  sub.textContent = allCards.length + ' live social signals · ' + (hashtags.length ? hashtags.length + ' trending terms' : 'no hashtags');
+}
+
+function switchSTab(tab) {
+  window._activeSTab = tab;
+  document.querySelectorAll('.stab').forEach(b => b.classList.remove('active'));
+  const el = document.getElementById('stab-' + tab);
+  if (el) el.classList.add('active');
+  renderSocialCards(tab);
+}
+
+function renderSocialCards(tab) {
+  const cards = (window._socialAll || []).filter(c => c._src === tab);
+  const el = document.getElementById('social-cards');
+  if (!el) return;
+  el.innerHTML = cards.map(c => {
+    const archiveUrl = c._src === 'reddit' ? '' : 'https://archive.ph/newest/' + encodeURIComponent(c.url || '');
+    return '<div class="social-card" onclick="window.open('' + c.url.replace(/'/g, "\'") + '','_blank')">' +
+      '<div class="sc-platform">' +
+        '<span class="sc-platform-badge" style="background:' + c.bg + ';color:' + c.color + ';border:1px solid ' + c.brd + '">' + c.platform + '</span>' +
+        (archiveUrl ? '<a class="sc-archive" href="' + archiveUrl + '" target="_blank" onclick="event.stopPropagation()">⊞ Archive</a>' : '') +
+      '</div>' +
+      (c.thumb ? '<img style="width:100%;height:80px;object-fit:cover;border-radius:3px;margin-bottom:8px" src="' + c.thumb + '" alt="">' : '') +
+      '<div class="sc-title">' + c.title + '</div>' +
+      (c.desc ? '<div style="font-size:11px;color:var(--dim);line-height:1.4;margin:4px 0">' + c.desc.replace(/<[^>]+>/g,'').slice(0,130) + '…</div>' : '') +
+      '<div class="sc-meta"><span class="sc-score">' + c.meta + '</span></div>' +
+    '</div>';
+  }).join('');
+}
+
 // ─── RENDER BRIEF ──────────────────────────────────────────────────────────
 function renderBrief(brief) {
   const angles = (brief.investigativeAngles || []).map((a, i) =>
     '<div style="background:var(--s1);border:1px solid var(--b1);border-radius:4px;padding:10px 12px;display:flex;gap:12px;align-items:flex-start;margin-bottom:8px">' +
-      '<div style="font-family:var(--mono);font-size:9px;color:var(--dim);background:var(--s2);border:1px solid var(--b2);border-radius:2px;padding:2px 6px;flex-shrink:0;margin-top:1px">Q' + (i+1) + '</div>' +
+      '<div style="font-family:var(--mono);font-size:9px;color:var(--dim);background:var(--s2);border:1px solid var(--b2);border-radius:2Kx;padding:2px 6px;flex-shrink:0;margin-top:1px">Q' + (i+1) + '</div>' +
       '<div style="flex:1;min-width:0">' +
         '<div style="font-size:12px;color:var(--bright);font-weight:500;margin-bottom:3px;line-height:1.4">' + a.question + '</div>' +
         '<div style="font-size:11px;color:var(--dim);line-height:1.45;margin-bottom:6px">' + a.why + '</div>' +
         '<div style="display:flex;flex-wrap:wrap;gap:4px">' +
-          (a.keywords || []).map(k => '<span style="font-family:var(--mono);font-size:8px;background:rgba(0,201,167,.07);color:var(--teal);border:1px solid rgba(0,201,167,.18);padding:1px 6px;border-radius:2px">' + k + '</span>').join('') +
-          '<span style="font-family:var(--mono);font-size:8px;background:rgba(61,139,255,.07);color:var(--blue);border:1px solid rgba(61,139,255,.18);padding:1px 6px;border-radius:2px">' + (a.guardianSection || '') + '</span>' +
+          (a.keywords || []).map(k => '<span style="font-family:var(--mono).font-size:8px;background:rgba(0,201,167,.07);color:var(--teal);border:1px solid rgba(0,201,167,.18);padding:1px 6px;border-radius:2px">' + k + '</span>').join('') +
+          '<span style="font-family:var(--mono).font-size:8px;background:rgba(61,139,255,.07);color:var(--blue);border:1px solid rgba(61,139,255,.18);padding:1px 6px;border-radius:2px">' + (a.guardianSection || '') + '</span>' +
           '<span style="font-family:var(--mono);font-size:8px;background:var(--s2);color:var(--dim);border:1px solid var(--b1);padding:1px 6px;border-radius:2px">' + (a.timeWindow || '30d') + '</span>' +
         '</div>' +
       '</div>' +
@@ -697,10 +875,14 @@ function renderNewsGrid(articles, brief, keysSet) {
       '<div style="background:rgba(240,180,41,.06);border:1px solid rgba(240,180,41,.2);border-radius:4px;padding:14px 16px;margin-top:8px">' +
         '<div style="font-family:var(--mono);font-size:9px;letter-spacing:.15em;color:var(--gold);text-transform:uppercase;margin-bottom:8px">⚙ Add API Keys to Activate Live Articles</div>' +
         '<div style="font-family:var(--mono);font-size:11px;background:var(--s3);padding:10px 12px;border-radius:3px;line-height:2;color:var(--teal)">' +
-          'GNEWS_KEY — <a href="https://gnews.io" target="_blank" style="color:var(--gold)">gnews.io</a> (free, 100 req/day)<br>' +
-          'GUARDIAN_KEY — <a href="https://open-platform.theguardian.com" target="_blank" style="color:var(--gold)">open-platform.theguardian.com</a> (free, unlimited)' +
+          'GNEWS_KEY — <a href="https://gnews.io" target="_blank" style="color:var(--gold)">gnews.io</a> · free 100/day<br>' +
+          'GUARDIAN_KEY — <a href="https://open-platform.theguardian.com" target="_blank" style="color:var(--gold)">open-platform.theguardian.com</a> · free unlimited<br>' +
+          'NEWSAPI_KEY — <a href="https://newsapi.org" target="_blank" style="color:var(--gold)">newsapi.org</a> · free 100/day<br>' +
+          'YOUTUBE_KEY — <a href="https://console.cloud.google.com" target="_blank" style="color:var(--gold)">Google Cloud Console</a> · free 10k/day<br>' +
+          '<span style="color:var(--purple)">Archive.ph</span> · auto-linked on every article — <span style="color:var(--dim)">no key needed</span><br>' +
+          '<span style="color:var(--purple)">Reddit</span> · social discussions auto-fetched — <span style="color:var(--dim)">no key needed</span>' +
         '</div>' +
-        '<p style="margin-top:10px;color:var(--dim);font-size:12px">Articles will be fetched per investigative angle, scored for relevance to the specific outcome, and grouped by quality tier.</p>' +
+        '<p style="margin-top:10px;color:var(--dim);font-size:12px">Articles are fetched per investigative angle, scored by AI, and grouped by quality. Reddit discussions and Archive.ph snapshots load automatically for every topic.</p>' +
       '</div>';
     sub.textContent = 'API keys needed';
     return;
@@ -740,12 +922,17 @@ function renderCard(a) {
   const [bg, txt, brd] = tagColors[a._tag] || tagColors['background'];
   const safeUrl = (a.url || '').replace(/'/g, "\\'");
 
+  const archiveUrl = 'https://archive.ph/newest/' + encodeURIComponent(a.url || '');
   return '<div class="news-card" onclick="window.open(\'' + safeUrl + '\',\'_blank\')">' +
     '<div class="nc-meta"><span class="nc-source" style="color:' + srcClr + '">' + (a.source || '') + '</span><span class="nc-dot">·</span><span class="nc-date">' + dateStr + '</span></div>' +
     '<div class="nc-hl">' + (a.title || '') + '</div>' +
     (a.description ? '<div class="nc-body">' + a.description.replace(/<[^>]+>/g, '').slice(0, 160) + '…</div>' : '') +
     (a._note ? '<div style="font-size:11px;color:var(--teal);margin-top:5px;line-height:1.45;font-style:italic;padding-left:8px;border-left:2px solid rgba(0,201,167,.3)">' + a._note + '</div>' : '') +
-    (a._angle ? '<div style="font-family:var(--mono);font-size:8px;color:var(--dim);letter-spacing:.06em;margin-top:5px;padding-top:5px;border-top:1px solid var(--b1);display:flex;align-items:flex-start;gap:4px"><span style="color:var(--gold);flex-shrink:0">↳</span><span>' + a._angle + '</span></div>' : '') +
+    '<div style="display:flex;align-items:center;justify-content:space-between;margin-top:6px;padding-top:6px;border-top:1px solid var(--b1)">' +
+      (a._angle ? '<div style="font-family:var(--mono);font-size:8px;color:var(--dim);letter-spacing:.04em;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">↳ ' + a._angle.slice(0,60) + '</div>' : '<div></div>') +
+      '<a class="nc-archive" href="' + archiveUrl + '" target="_blank" onclick="event.stopPropagation()" title="View archived snapshot">⊞ Archive</a>' +
+    '</div>' +
+    (a._angle ? '<div style="font-family:var(--mono);font-size:8px;color:var(--dim);letter-spacing:.06em;margin-top:0px;padding-top:0px;border-top:1px solid var(--b1);display:flex;align-items:flex-start;gap:4px"><span style="color:var(--gold);flex-shrink:0">↳</span><span>' + a._angle + '</span></div>' : '') +
     (a._score ? '<div style="display:flex;align-items:center;gap:6px;margin-top:7px"><div style="font-family:var(--mono);font-size:8px;color:var(--dim)">relevance</div><div style="flex:1;height:3px;background:var(--b1);border-radius:2px;overflow:hidden"><div style="height:100%;width:' + (a._score * 10) + '%;background:linear-gradient(90deg,var(--teal),var(--accent));border-radius:2px"></div></div><div style="font-family:var(--mono);font-size:8px;color:var(--bright);font-weight:600">' + a._score + '/10</div></div>' : '') +
     '<div style="display:flex;align-items:center;justify-content:space-between;margin-top:7px">' +
       '<span style="font-family:var(--mono);font-size:8px;letter-spacing:.09em;text-transform:uppercase;padding:2px 6px;border-radius:2px;background:' + bg + ';color:' + txt + ';border:1px solid ' + brd + '">' + (a._tag || 'background') + '</span>' +
@@ -769,9 +956,9 @@ function renderAI(d) {
             '<div class="he-title">' + h.title + '</div>' +
             '<div class="he-desc">' + h.description + '</div>' +
             '<div class="sim-tag ' + h.similarity + '">' + ({ high:'⚠ High Similarity', medium:'~ Moderate Similarity', low:'◇ Partial Parallel' }[h.similarity] || '') + '</div>' +
-          '</div>' +
-          '<div class="he-btn">▼</div>' +
-        '</div>' +
+           '</div>' +
+           '<div class="he-btn">▼</div>' +
+         '</div>' +
         '<div class="he-detail">' +
           '<div class="hed-body">' + (h.fullContext || []).map(p => '<p>' + p + '</p>').join('') + '</div>' +
           '<div class="outcome-block">' +
