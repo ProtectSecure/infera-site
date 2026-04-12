@@ -164,6 +164,24 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:14
 .nc-hl{font-family:var(--serif);font-size:15px;color:var(--bright);line-height:1.35;margin-bottom:6px}
 .nc-body{font-size:12px;color:var(--dim);line-height:1.55}
 
+/* Contextual Perspective */
+.context-section{margin-bottom:28px}
+.context-overview{background:var(--s1);border:1px solid var(--b2);border-left:3px solid var(--teal);border-radius:8px;padding:18px 20px;margin-bottom:18px;font-size:13.5px;line-height:1.75;color:var(--text)}
+.context-branches{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+@media(max-width:640px){.context-branches{grid-template-columns:1fr}}
+.branch-card{background:var(--s1);border:1px solid var(--b2);border-radius:10px;padding:16px 18px;position:relative;overflow:hidden}
+.branch-card::before{content:'';position:absolute;top:0;left:0;width:3px;height:100%}
+.branch-card:nth-child(1)::before{background:var(--teal)}
+.branch-card:nth-child(2)::before{background:var(--gold)}
+.branch-card:nth-child(3)::before{background:var(--orange)}
+.branch-icon{font-size:22px;margin-bottom:8px}
+.branch-path{font-family:var(--mono);font-size:9px;letter-spacing:.15em;text-transform:uppercase;margin-bottom:5px}
+.branch-card:nth-child(1) .branch-path{color:var(--teal)}
+.branch-card:nth-child(2) .branch-path{color:var(--gold)}
+.branch-card:nth-child(3) .branch-path{color:var(--orange)}
+.branch-title{font-weight:600;font-size:13px;color:var(--bright);margin-bottom:6px;line-height:1.4}
+.branch-detail{font-size:12px;color:var(--dim);line-height:1.6}
+
 /* Historical */
 .hist-section{margin-bottom:36px}
 .hist-intro{font-size:13px;color:var(--text);line-height:1.7;padding:14px 16px;background:var(--s1);border:1px solid var(--b1);border-radius:4px;margin-bottom:18px}
@@ -361,6 +379,10 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:14
     </div>
 
     <!-- NEWS CONTEXT -->
+  <div class="context-section">
+    <div class="section-lbl">🧭 Contextual Perspective</div>
+    <div id="context-body"><div class="sk-line" style="height:80px;margin-bottom:14px"></div><div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px"><div class="sk-line" style="height:120px"></div><div class="sk-line" style="height:120px"></div><div class="sk-line" style="height:120px"></div></div></div>
+  </div>
     <div class="news-section">
       <div class="sec-head">
         <div class="sec-bar" style="background:var(--blue)"></div>
@@ -582,17 +604,20 @@ async function runDeepDive(ev) {
   const keysSet = GNEWS_KEY !== 'YOUR_GNEWS_API_KEY' || GUARDIAN_KEY !== 'YOUR_GUARDIAN_API_KEY' || NEWSAPI_KEY !== 'YOUR_NEWSAPI_KEY';
 
   // Step 1 — AI brief + historical in parallel
-  const [briefRes, aiRes] = await Promise.allSettled([
+  const [briefRes, aiRes, ctxRes] = await Promise.allSettled([
     buildBrief(topic, desc),
-    fetchHistoricalSources(topic, desc)
+    fetchHistoricalSources(topic, desc),
+    fetchContextualPerspective(topic, desc)
   ]);
 
   const brief = briefRes.status === 'fulfilled' ? briefRes.value : null;
   const ai    = aiRes.status   === 'fulfilled' ? aiRes.value   : null;
+  const ctx   = ctxRes.status  === 'fulfilled' ? ctxRes.value  : null;
 
   // Show investigative questions immediately
   if (brief) renderBrief(brief);
   if (ai) renderHistoricalSection(ai);
+  renderContextualPerspective(ctx);
 
   // Step 2 — fetch articles + social in parallel
   let articles = [];
@@ -871,6 +896,21 @@ async function fetchNewsAPIHist(query) {
   } catch(e) { return []; }
 }
 
+async function fetchContextualPerspective(topic, desc) {
+  const prompt = 'You are an expert analyst synthesizing geopolitics, economics, technology, and culture. Topic: "' + topic + '".' + (desc ? ' Context: ' + desc.slice(0,200) + '.' : '') + ' Return ONLY valid JSON (no markdown): {"overview":"2-3 sentences on the current situation, significance, and key forces at play","branches":[{"icon":"emoji","path":"one-word trajectory e.g. Escalation","title":"evocative headline max 9 words","detail":"1-2 sentences how this path plays out"},{"icon":"emoji","path":"label","title":"headline","detail":"detail"},{"icon":"emoji","path":"label","title":"headline","detail":"detail"}]}';
+  try {
+    const res = await callClaude(prompt, 600);
+    const text = (res.content && res.content.find(b => b.type === 'text') && res.content.find(b => b.type === 'text').text) || '';
+    return JSON.parse(text.split('```json').join('').split('```').join('').trim());
+  } catch(e) { return null; }
+}
+function renderContextualPerspective(data) {
+  const el = document.getElementById('context-body');
+  if (!el) return;
+  if (!data) { el.innerHTML = '<p style="color:var(--dim);font-size:13px;padding:12px 0">Analysis unavailable.</p>'; return; }
+  const bHtml = (data.branches||[]).slice(0,3).map(b => '<div class="branch-card"><div class="branch-icon">' + (b.icon||'🔀') + '</div><div class="branch-path">' + (b.path||'Path') + '</div><div class="branch-title">' + (b.title||'') + '</div><div class="branch-detail">' + (b.detail||'') + '</div></div>').join('');
+  el.innerHTML = '<div class="context-overview">' + (data.overview||'') + '</div><div class="context-branches">' + bHtml + '</div>';
+}
 async function fetchHistoricalSources(topic, desc) {
   const shortQ = topic.split(' ').slice(0, 5).join(' ');
   const [wikiRes, locRes, archRes, newsRes] = await Promise.allSettled([
