@@ -874,26 +874,16 @@ async function fetchHistoricalSources(topic, desc) {
     ...(archRes.status === 'fulfilled' ? archRes.value : []),
     ...(newsRes.status === 'fulfilled' ? newsRes.value : [])
   ];
+  const nl = String.fromCharCode(10);
   const sourceCtx = sources.slice(0, 6).map((s, i) =>
-    '[' + (i + 1) + '] ' + s.source + ': "' + s.title + '"' + (s.date ? ' (' + s.date + ')' : '') + ' — ' + s.excerpt.slice(0, 180)
-  ).join('
-');
-  const prompt = 'You are a senior historian and news analyst. Given the topic and sources below, identify the strongest historical parallels and extract lessons.
-
-TOPIC: "' + topic + '"
-' + (desc ? 'CONTEXT: ' + desc.slice(0, 200) + '
-' : '') + '
-SOURCES FOUND:
-' + (sourceCtx || 'No external sources — provide historical context from knowledge.') + '
-
-Return ONLY valid JSON, no markdown:
-
-{"deck":"One concise sentence — the core historical lesson or parallel","histIntro":"2-3 sentences identifying specific historical events that parallel this topic and what resulted","outcomes":[{"icon":"📅","label":"Historical Parallel","text":"specific event and timeframe"},{"icon":"📊","label":"Key Outcome","text":"what happened as a result"},{"icon":"💡","label":"Lesson","text":"what this tells us today"}],"similarity":75}';
+    '[' + (i + 1) + '] ' + s.source + ': "' + s.title + '"' + (s.date ? ' (' + s.date + ')' : '') + ' -- ' + s.excerpt.slice(0, 180)
+  ).join(nl);
+  const prompt = 'You are a senior historian and news analyst. Topic: "' + topic + '".' + (desc ? ' Context: ' + desc.slice(0, 200) + '.' : '') + ' Sources: ' + (sourceCtx || 'No external sources.') + ' Return ONLY valid JSON: {"deck":"One sentence core historical lesson","histIntro":"2-3 sentences on historical parallels and what resulted","outcomes":[{"icon":"📅","label":"Historical Parallel","text":"specific event"},{"icon":"📊","label":"Key Outcome","text":"what resulted"},{"icon":"💡","label":"Lesson","text":"what this tells us"}],"similarity":75}';
   let aiData = null;
   try {
     const res  = await callClaude(prompt, 700);
     const text = (res.content && res.content.find(b => b.type === 'text') && res.content.find(b => b.type === 'text').text) || '';
-    aiData = JSON.parse(text.replace(/```jsons*/gi, '').replace(/```s*/g, '').trim());
+    aiData = JSON.parse(text.replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim());
   } catch(e) {}
   return { aiData, sources };
 }
