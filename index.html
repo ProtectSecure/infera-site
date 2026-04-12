@@ -191,6 +191,22 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:14
 .sim-tag.low{background:rgba(61,139,255,.1);color:var(--blue);border:1px solid rgba(61,139,255,.2)}
 
 .outcome-block{background:var(--s2);border:1px solid var(--b2);border-radius:4px;overflow:hidden}
+.hist-synthesis{font-size:15px;line-height:1.7;color:var(--text);margin-bottom:1.2rem;padding:.9rem 1.1rem;border-left:3px solid var(--gold);background:var(--b2);border-radius:0 6px 6px 0}
+.hist-outcomes{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:.8rem;margin-bottom:1.4rem}
+.outcome-card{background:var(--b2);border:1px solid rgba(255,255,255,.07);border-radius:8px;padding:.9rem 1rem;display:flex;flex-direction:column;gap:.35rem}
+.oc-icon{font-size:1.3rem;line-height:1}
+.oc-label{font-size:.68rem;text-transform:uppercase;letter-spacing:.1em;color:var(--gold);font-family:var(--mono)}
+.oc-text{font-size:13px;color:var(--text);line-height:1.5;margin:0}
+.hist-src-title{font-size:.68rem;text-transform:uppercase;letter-spacing:.12em;color:var(--gold);font-family:var(--mono);margin:1.3rem 0 .65rem}
+.hist-sources{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:.75rem}
+.src-card{display:flex;gap:.75rem;background:var(--b2);border:1px solid rgba(255,255,255,.07);border-radius:8px;padding:.85rem;text-decoration:none;color:var(--text);transition:border-color .2s,background .2s}
+.src-card:hover{border-color:var(--gold);background:rgba(255,255,255,.03)}
+.src-card-body{flex:1;min-width:0;display:flex;flex-direction:column;gap:.28rem}
+.src-badge{font-size:.63rem;text-transform:uppercase;letter-spacing:.08em;color:var(--dim);font-family:var(--mono)}
+.src-title{font-size:13px;font-weight:600;line-height:1.4;margin:0;color:var(--text)}
+.src-excerpt{font-size:11.5px;color:var(--dim);line-height:1.5;margin:0;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.src-date{font-size:.63rem;color:var(--dim);font-family:var(--mono);margin-top:.15rem}
+.src-thumb{width:68px;height:68px;object-fit:cover;border-radius:6px;flex-shrink:0}
 .ob-header{padding:8px 12px;background:rgba(240,180,41,.06);border-bottom:1px solid var(--b2);font-family:var(--mono);font-size:8px;letter-spacing:.18em;color:var(--gold);text-transform:uppercase;display:flex;align-items:center;gap:6px}
 .ob-item{display:flex;align-items:flex-start;gap:10px;padding:10px 12px;border-bottom:1px solid var(--b1)}
 .ob-item:last-child{border-bottom:none}
@@ -568,7 +584,7 @@ async function runDeepDive(ev) {
   // Step 1 — AI brief + historical in parallel
   const [briefRes, aiRes] = await Promise.allSettled([
     buildBrief(topic, desc),
-    fetchAI(topic, desc)
+    fetchHistoricalSources(topic, desc)
   ]);
 
   const brief = briefRes.status === 'fulfilled' ? briefRes.value : null;
@@ -576,6 +592,7 @@ async function runDeepDive(ev) {
 
   // Show investigative questions immediately
   if (brief) renderBrief(brief);
+  if (ai) renderHistoricalSection(ai);
 
   // Step 2 — fetch articles + social in parallel
   let articles = [];
@@ -764,6 +781,123 @@ async function callClaude(prompt, maxTokens) {
   return res.json();
 }
 
+// ─── HISTORICAL SOURCES ──────────────────────────────────────────────────────
+async function fetchWikipedia(query) {
+  try {
+    const enc = encodeURIComponent(query);
+    const r = await fetch('https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=' + enc + '&format=json&origin=*&srlimit=4&srprop=snippet');
+    const d = await r.json();
+    const results = [];
+    for (const hit of ((d.query && d.query.search) || []).slice(0, 3)) {
+      try {
+        const sr = await fetch('https://en.wikipedia.org/api/rest_v1/page/summary/' + encodeURIComponent(hit.title));
+        const s = await sr.json();
+        if (s.extract) results.push({
+          source: 'Wikipedia', sourceIcon: '📖',
+          title: s.title,
+          excerpt: s.extract.slice(0, 320),
+          url: (s.content_urls && s.content_urls.desktop && s.content_urls.desktop.page) || 'https://en.wikipedia.org/wiki/' + encodeURIComponent(hit.title),
+          date: null,
+          thumbnail: (s.thumbnail && s.thumbnail.source) || null
+        });
+      } catch(e) {}
+    }
+    return results;
+  } catch(e) { return []; }
+}
+
+async function fetchLocNewspapers(query) {
+  try {
+    const enc = encodeURIComponent(query);
+    const r = await fetch('https://chroniclingamerica.loc.gov/search/pages/results/?format=json&rows=6&proxtext=' + enc);
+    const d = await r.json();
+    return (d.items || []).slice(0, 4).map(item => ({
+      source: 'Library of Congress', sourceIcon: '🏛️',
+      title: item.title_normal || item.title || 'Historical Newspaper Article',
+      excerpt: item.ocr_eng ? item.ocr_eng.slice(0, 280) + '…' : 'Historical newspaper from the Chronicling America collection.',
+      url: item.url ? 'https://chroniclingamerica.loc.gov' + item.url : 'https://chroniclingamerica.loc.gov',
+      date: item.date ? String(item.date).slice(0,4) : null,
+      thumbnail: null
+    }));
+  } catch(e) { return []; }
+}
+
+async function fetchInternetArchive(query) {
+  try {
+    const enc = encodeURIComponent(query);
+    const r = await fetch('https://openlibrary.org/search.json?q=' + enc + '&fields=key,title,first_publish_year,subject,author_name&limit=5');
+    const d = await r.json();
+    return (d.docs || []).slice(0, 3).map(doc => ({
+      source: 'Open Library', sourceIcon: '📚',
+      title: doc.title || 'Untitled',
+      excerpt: [
+        doc.author_name ? 'By ' + doc.author_name.slice(0, 2).join(', ') : '',
+        doc.first_publish_year ? 'First published ' + doc.first_publish_year : '',
+        doc.subject ? 'Topics: ' + doc.subject.slice(0, 3).join(', ') : ''
+      ].filter(Boolean).join(' · '),
+      url: 'https://openlibrary.org' + doc.key,
+      date: doc.first_publish_year ? String(doc.first_publish_year) : null,
+      thumbnail: null
+    }));
+  } catch(e) { return []; }
+}
+
+async function fetchNewsAPIHist(query) {
+  if (NEWSAPI_KEY === 'YOUR_NEWSAPI_KEY') return [];
+  try {
+    const enc = encodeURIComponent(query);
+    const apiUrl = 'https://newsapi.org/v2/everything?q=' + enc + '&sortBy=relevancy&pageSize=6&apiKey=' + NEWSAPI_KEY;
+    const r = await fetch(PROXY + encodeURIComponent(apiUrl));
+    const d = await r.json();
+    return (d.articles || []).slice(0, 5).map(a => ({
+      source: (a.source && a.source.name) || 'News', sourceIcon: '📰',
+      title: a.title || '',
+      excerpt: a.description || (a.content && a.content.slice(0, 280)) || '',
+      url: a.url || '',
+      date: a.publishedAt ? a.publishedAt.slice(0, 10) : null,
+      thumbnail: a.urlToImage || null
+    }));
+  } catch(e) { return []; }
+}
+
+async function fetchHistoricalSources(topic, desc) {
+  const shortQ = topic.split(' ').slice(0, 5).join(' ');
+  const [wikiRes, locRes, archRes, newsRes] = await Promise.allSettled([
+    fetchWikipedia(shortQ),
+    fetchLocNewspapers(shortQ),
+    fetchInternetArchive(shortQ),
+    fetchNewsAPIHist(shortQ)
+  ]);
+  const sources = [
+    ...(wikiRes.status === 'fulfilled' ? wikiRes.value : []),
+    ...(locRes.status  === 'fulfilled' ? locRes.value  : []),
+    ...(archRes.status === 'fulfilled' ? archRes.value : []),
+    ...(newsRes.status === 'fulfilled' ? newsRes.value : [])
+  ];
+  const sourceCtx = sources.slice(0, 6).map((s, i) =>
+    '[' + (i + 1) + '] ' + s.source + ': "' + s.title + '"' + (s.date ? ' (' + s.date + ')' : '') + ' — ' + s.excerpt.slice(0, 180)
+  ).join('
+');
+  const prompt = 'You are a senior historian and news analyst. Given the topic and sources below, identify the strongest historical parallels and extract lessons.
+
+TOPIC: "' + topic + '"
+' + (desc ? 'CONTEXT: ' + desc.slice(0, 200) + '
+' : '') + '
+SOURCES FOUND:
+' + (sourceCtx || 'No external sources — provide historical context from knowledge.') + '
+
+Return ONLY valid JSON, no markdown:
+
+{"deck":"One concise sentence — the core historical lesson or parallel","histIntro":"2-3 sentences identifying specific historical events that parallel this topic and what resulted","outcomes":[{"icon":"📅","label":"Historical Parallel","text":"specific event and timeframe"},{"icon":"📊","label":"Key Outcome","text":"what happened as a result"},{"icon":"💡","label":"Lesson","text":"what this tells us today"}],"similarity":75}';
+  let aiData = null;
+  try {
+    const res  = await callClaude(prompt, 700);
+    const text = (res.content && res.content.find(b => b.type === 'text') && res.content.find(b => b.type === 'text').text) || '';
+    aiData = JSON.parse(text.replace(/```jsons*/gi, '').replace(/```s*/g, '').trim());
+  } catch(e) {}
+  return { aiData, sources };
+}
+
 // ─── RENDER SOCIAL FEED ──────────────────────────────────────────────────────
 function renderSocialFeed(posts, topic) {
   const grid = document.getElementById('socialGrid');
@@ -924,35 +1058,50 @@ function renderCard(a) {
 }
 
 // ─── RENDER AI ANALYSIS ────────────────────────────────────────────────────
-function renderAI(d) {
-  if (!d) { document.getElementById('dh-body').innerHTML = '<p style="color:var(--dim)">AI context unavailable.</p>'; return; }
-  if (d.deck) document.getElementById('dh-deck').textContent = d.deck;
-  if (d.leadParagraphs) document.getElementById('dh-body').innerHTML = d.leadParagraphs.map(p => '<p>' + p + '</p>').join('');
-  if (d.histIntro) document.getElementById('histIntro').textContent = d.histIntro;
-  if (d.historicalEvents) {
-    document.getElementById('histEvents').innerHTML = d.historicalEvents.map((h, i) =>
-      '<div class="hist-event" id="he-' + i + '">' +
-        '<div class="he-header" onclick="toggleHist(' + i + ')">' +
-          '<div class="he-year-block"><div class="he-year">' + h.year + '</div><div class="he-era">' + (h.era || '') + '</div></div>' +
-          '<div class="he-main">' +
-            '<div class="he-title">' + h.title + '</div>' +
-            '<div class="he-desc">' + h.description + '</div>' +
-            '<div class="sim-tag ' + h.similarity + '">' + ({ high:'⚠ High Similarity', medium:'~ Moderate Similarity', low:'◇ Partial Parallel' }[h.similarity] || '') + '</div>' +
-           '</div>' +
-           '<div class="he-btn">▼</div>' +
-         '</div>' +
-        '<div class="he-detail">' +
-          '<div class="hed-body">' + (h.fullContext || []).map(p => '<p>' + p + '</p>').join('') + '</div>' +
-          '<div class="outcome-block">' +
-            '<div class="ob-header">📋 Documented Outcomes from ' + h.year + '</div>' +
-            (h.outcomes || []).map(o =>
-              '<div class="ob-item"><div class="ob-icon">' + (o.icon || '•') + '</div><div><div class="ob-label">' + o.label + '</div><div class="ob-text">' + o.text + '</div></div></div>'
-            ).join('') +
-          '</div>' +
-        '</div>' +
-      '</div>'
-    ).join('');
+function renderHistoricalSection(data) {
+  const introEl  = document.getElementById('histIntro');
+  const eventsEl = document.getElementById('histEvents');
+  if (!data) {
+    if (introEl) introEl.innerHTML = '<p style="color:var(--dim)">Historical context unavailable.</p>';
+    return;
   }
+  const aiData  = data.aiData  !== undefined ? data.aiData  : data;
+  const sources = data.sources !== undefined ? data.sources : [];
+  const deckEl  = document.getElementById('dh-deck');
+  if (deckEl && aiData && aiData.deck) deckEl.textContent = aiData.deck;
+  if (introEl) {
+    introEl.innerHTML = (aiData && aiData.histIntro)
+      ? '<p class="hist-synthesis">' + aiData.histIntro + '</p>'
+      : '';
+  }
+  let html = '';
+  if (aiData && Array.isArray(aiData.outcomes) && aiData.outcomes.length) {
+    html += '<div class="hist-outcomes">';
+    for (const o of aiData.outcomes) {
+      html += '<div class="outcome-card"><span class="oc-icon">' + (o.icon || '📌') + '</span>'
+            + '<strong class="oc-label">' + (o.label || '') + '</strong>'
+            + '<p class="oc-text">' + (o.text || '') + '</p></div>';
+    }
+    html += '</div>';
+  }
+  if (sources && sources.length) {
+    html += '<div class="hist-src-title">📚 Sources & Historical References</div>';
+    html += '<div class="hist-sources">';
+    for (const s of sources.slice(0, 9)) {
+      const thumb = s.thumbnail ? '<img class="src-thumb" src="' + s.thumbnail + '" alt="" loading="lazy">' : '';
+      html += '<a class="src-card" href="' + s.url + '" target="_blank" rel="noopener">'
+            + thumb
+            + '<div class="src-card-body">'
+            + '<span class="src-badge">' + (s.sourceIcon || '🔗') + ' ' + s.source + '</span>'
+            + '<p class="src-title">' + s.title + '</p>'
+            + (s.excerpt ? '<p class="src-excerpt">' + s.excerpt.slice(0, 200) + (s.excerpt.length > 200 ? '…' : '') + '</p>' : '')
+            + (s.date ? '<span class="src-date">' + s.date + '</span>' : '')
+            + '</div></a>';
+    }
+    html += '</div>';
+  }
+  if (!html) html = '<p style="color:var(--dim);padding:.8rem 0">No historical sources found for this topic.</p>';
+  if (eventsEl) eventsEl.innerHTML = html;
 }
 
 function toggleHist(i) { document.getElementById('he-' + i).classList.toggle('open'); }
