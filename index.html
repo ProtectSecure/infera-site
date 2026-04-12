@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>INFERA â World Attention Intelligence</title>
+<title>INFERA — World Attention Intelligence</title>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,600;1,9..144,400&family=DM+Sans:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 :root {
@@ -56,7 +56,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:14
 /* NOTICE */
 .notice{background:rgba(232,64,64,.05);border-bottom:1px solid rgba(232,64,64,.12);padding:6px 20px;font-family:var(--mono);font-size:9px;letter-spacing:.09em;color:#b87070;text-align:center}
 
-/* ââ FEED VIEW ââ */
+/* ── FEED VIEW ── */
 .feed-layout{display:grid;grid-template-columns:320px 1fr;min-height:calc(100vh - 90px)}
 
 .left-panel{border-right:1px solid var(--b1);overflow-y:auto;height:calc(100vh - 90px);position:sticky;top:90px}
@@ -107,7 +107,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:14
 .pc-cta{display:flex;align-items:center;justify-content:center;gap:10px;padding:14px;background:rgba(0,201,167,.06);border:1px dashed rgba(0,201,167,.3);border-radius:4px;cursor:pointer;transition:background .15s;font-family:var(--mono);font-size:10px;letter-spacing:.15em;color:var(--teal);text-transform:uppercase}
 .pc-cta:hover{background:rgba(0,201,167,.12)}
 
-/* ââ DEEP DIVE VIEW ââ */
+/* ── DEEP DIVE VIEW ── */
 #deepView{background:var(--bg);animation:slide-in .4s cubic-bezier(.22,.8,.35,1)}
 @keyframes slide-in{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
 
@@ -229,8 +229,8 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:14
     <div class="logo-pulse"></div>INFERA
   </div>
   <div class="hdr-search">
-    <span class="s-icon">â</span>
-    <input class="s-input" id="searchInput" type="text" placeholder="Search topicsâ¦ (e.g. China, Fed, Bitcoin)" autocomplete="off">
+    <span class="s-icon">⌕</span>
+    <input class="s-input" id="searchInput" type="text" placeholder="Search topics… (e.g. China, Fed, Bitcoin)" autocomplete="off">
     <div class="s-results" id="searchResults"></div>
   </div>
   <div class="hdr-right">
@@ -239,24 +239,24 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:14
   </div>
 </div>
 
-<div class="notice">â  Journalistic context only â no odds, no betting data, no financial advice Â· Powered by Polymarket public signals + AI news intelligence</div>
+<div class="notice">⚠ Journalistic context only — no odds, no betting data, no financial advice · Powered by Polymarket public signals + AI news intelligence</div>
 
 <div class="ticker-wrap">
   <div class="ticker-track" id="tickerTrack">
-    <span class="tk"><span class="tk-name">Loading live topicsâ¦</span></span>
+    <span class="tk"><span class="tk-name">Loading live topics…</span></span>
   </div>
 </div>
 
-<div class="tap-tooltip" id="tapTooltip">ð Tap again to deep dive â</div>
+<div class="tap-tooltip" id="tapTooltip">👆 Tap again to deep dive →</div>
 
-<!-- ââ FEED VIEW ââ -->
+<!-- ══ FEED VIEW ══ -->
 <div class="view active" id="feedView">
   <div class="feed-layout">
 
     <div class="left-panel">
       <div class="panel-hdr">
         <div class="panel-title">Most Active Now</div>
-        <div class="panel-ct" id="eventCount">â</div>
+        <div class="panel-ct" id="eventCount">—</div>
       </div>
       <div class="cat-filters" id="catFilters">
         <button class="cat-btn active" data-cat="all">All</button>
@@ -275,10 +275,10 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:14
 
     <div class="right-panel" id="rightPanel">
       <div class="empty-state" id="emptyState">
-        <div class="es-glyph">â</div>
+        <div class="es-glyph">◎</div>
         <div class="es-title">SELECT A TOPIC</div>
         <div class="es-sub">Tap once to preview<br>Double-tap for full intelligence dive</div>
-        <div class="es-hint">â Double-tap any topic for news + historical analysis</div>
+        <div class="es-hint">↓ Double-tap any topic for news + historical analysis</div>
       </div>
       <div class="preview-card" id="previewCard">
         <div class="pc-cat" id="pc-cat"></div>
@@ -286,7 +286,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:14
         <div class="pc-attention" id="pc-attention"></div>
         <div class="pc-desc" id="pc-desc"></div>
         <div class="pc-cta" onclick="openDeepDive()">
-          <span style="font-size:18px">â</span>
+          <span style="font-size:18px">⊕</span>
           <span>Double-tap or click for full news context &amp; historical analysis</span>
         </div>
       </div>
@@ -295,11 +295,11 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:14
   </div>
 </div>
 
-<!-- ââ DEEP DIVE VIEW ââ -->
+<!-- ══ DEEP DIVE VIEW ══ -->
 <div class="view" id="deepView">
 
   <div class="deep-hdr">
-    <button class="back-btn" onclick="goBack()">â Back</button>
+    <button class="back-btn" onclick="goBack()">← Back</button>
     <span class="dh-divider">|</span>
     <span class="dh-cat" id="dh-cat"></span>
     <span class="dh-title" id="dh-title-crumb"></span>
@@ -313,11 +313,11 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:14
         <div class="dh-eyebrow" id="dh-eyebrow"></div>
         <div class="dh-headline" id="dh-headline"></div>
         <div class="dh-deck" id="dh-deck"></div>
-        <div class="dh-body" id="dh-body"><div class="loading-row"><div class="spinner"></div><span>Loading contextâ¦</span></div></div>
+        <div class="dh-body" id="dh-body"><div class="loading-row"><div class="spinner"></div><span>Loading context…</span></div></div>
       </div>
       <div>
         <div class="attn-pill">
-          <div class="ap-label">ð¡ Why this is surfaced</div>
+          <div class="ap-label">📡 Why this is surfaced</div>
           <div class="ap-text" id="ap-text"></div>
           <div class="apg-row"><span class="apg-label">Global Attention</span><span class="apg-level" id="apg-level"></span></div>
           <div class="apg-bar"><div class="apg-fill" id="apg-fill" style="width:0%"></div></div>
@@ -334,8 +334,8 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:14
         <div class="sec-sub" id="news-sub"></div>
       </div>
       <div class="ai-brief">
-        <div class="ai-brief-label">Investigative framework Â· targeted article search Â· relevance scored by AI</div>
-        <div class="ai-brief-body" id="newsBrief"><div class="loading-row"><div class="spinner" style="border-top-color:var(--gold)"></div><span>Building investigative search briefâ¦</span></div></div>
+        <div class="ai-brief-label">Investigative framework · targeted article search · relevance scored by AI</div>
+        <div class="ai-brief-body" id="newsBrief"><div class="loading-row"><div class="spinner" style="border-top-color:var(--gold)"></div><span>Building investigative search brief…</span></div></div>
       </div>
       <div id="newsGrid"></div>
     </div>
@@ -347,7 +347,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:14
         <div class="sec-title">Historical Comparisons &amp; Outcomes</div>
         <div class="sec-sub">What happened last time</div>
       </div>
-      <div class="hist-intro" id="histIntro"><div class="loading-row"><div class="spinner" style="border-top-color:var(--gold)"></div><span>Finding historical parallelsâ¦</span></div></div>
+      <div class="hist-intro" id="histIntro"><div class="loading-row"><div class="spinner" style="border-top-color:var(--gold)"></div><span>Finding historical parallels…</span></div></div>
       <div class="hist-events" id="histEvents"></div>
     </div>
 
@@ -362,13 +362,13 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:14
 </div>
 
 <script>
-// âââ CONFIG ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+// ─── CONFIG ────────────────────────────────────────────────────────────────
 const GAMMA        = 'https://gamma-api.polymarket.com';
 const PROXY        = 'https://corsproxy.io/?';
-const GNEWS_KEY    = 'YOUR_GNEWS_API_KEY';    // https://gnews.io â free 100/day
-const GUARDIAN_KEY = 'YOUR_GUARDIAN_API_KEY'; // https://open-platform.theguardian.com â free
+const GNEWS_KEY    = 'YOUR_GNEWS_API_KEY';    // https://gnews.io — free 100/day
+const GUARDIAN_KEY = 'YOUR_GUARDIAN_API_KEY'; // https://open-platform.theguardian.com — free
 
-// âââ STATE âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+// ─── STATE ─────────────────────────────────────────────────────────────────
 let allEvents      = [];
 let eventMap       = {};
 let selectedEvent  = null;
@@ -378,7 +378,7 @@ let lastTapId      = null;
 let lastTapTime    = 0;
 const DBL_MS       = 500;
 
-// âââ FETCH POLYMARKET ââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+// ─── FETCH POLYMARKET ──────────────────────────────────────────────────────
 async function fetchEvents() {
   try {
     const url = PROXY + encodeURIComponent(`${GAMMA}/events?active=true&closed=false&limit=40&order=volume24hr&ascending=false`);
@@ -409,7 +409,7 @@ function mockEvents() {
   ];
 }
 
-// âââ RENDER LIST âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+// ─── RENDER LIST ───────────────────────────────────────────────────────────
 function renderList(cat, q) {
   cat = cat || 'all'; q = q || '';
   let evs = allEvents;
@@ -438,7 +438,7 @@ function renderList(cat, q) {
   }).join('');
 }
 
-// âââ DOUBLE-TAP ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+// ─── DOUBLE-TAP ────────────────────────────────────────────────────────────
 function rowClick(e, id) {
   e.stopPropagation();
   const ev = eventMap[id];
@@ -486,7 +486,7 @@ function showTip(e) {
 }
 function hideTip() { document.getElementById('tapTooltip').classList.remove('show'); }
 
-// âââ OPEN DEEP DIVE ââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+// ─── OPEN DEEP DIVE ────────────────────────────────────────────────────────
 function openDeepDive(ev) {
   const target = ev || selectedEvent;
   if (!target) return;
@@ -507,31 +507,31 @@ function openDeepDive(ev) {
   document.getElementById('dh-cat').textContent         = cat.toUpperCase();
   document.getElementById('dh-title-crumb').textContent = target.title || '';
   document.getElementById('dh-source').textContent      = target.resolutionSource || 'Public Records';
-  document.getElementById('dh-eyebrow').textContent     = cat.toUpperCase() + ' Â· WORLD INTELLIGENCE';
+  document.getElementById('dh-eyebrow').textContent     = cat.toUpperCase() + ' · WORLD INTELLIGENCE';
   document.getElementById('dh-headline').textContent    = target.title || '';
   document.getElementById('dh-deck').textContent        = target.description || '';
-  document.getElementById('dh-body').innerHTML          = '<div class="loading-row"><div class="spinner"></div><span>Loading contextâ¦</span></div>';
-  document.getElementById('ap-text').innerHTML          = 'This topic has <strong>' + aTxt.toLowerCase() + ' global attention</strong>. Used here as a journalistic triage signal â not as financial data.';
+  document.getElementById('dh-body').innerHTML          = '<div class="loading-row"><div class="spinner"></div><span>Loading context…</span></div>';
+  document.getElementById('ap-text').innerHTML          = 'This topic has <strong>' + aTxt.toLowerCase() + ' global attention</strong>. Used here as a journalistic triage signal — not as financial data.';
   document.getElementById('apg-fill').style.width       = aPct + '%';
   document.getElementById('apg-level').textContent      = aTxt;
   document.getElementById('apg-level').className        = 'apg-level ' + aKey;
   document.getElementById('ap-enddate').textContent     = endD;
-  document.getElementById('newsBrief').innerHTML        = '<div class="loading-row"><div class="spinner" style="border-top-color:var(--gold)"></div><span>Building investigative search briefâ¦</span></div>';
+  document.getElementById('newsBrief').innerHTML        = '<div class="loading-row"><div class="spinner" style="border-top-color:var(--gold)"></div><span>Building investigative search brief…</span></div>';
   document.getElementById('newsGrid').innerHTML         = '';
   document.getElementById('news-sub').textContent       = '';
-  document.getElementById('histIntro').innerHTML        = '<div class="loading-row"><div class="spinner" style="border-top-color:var(--gold)"></div><span>Finding historical parallelsâ¦</span></div>';
+  document.getElementById('histIntro').innerHTML        = '<div class="loading-row"><div class="spinner" style="border-top-color:var(--gold)"></div><span>Finding historical parallels…</span></div>';
   document.getElementById('histEvents').innerHTML       = '';
 
   runDeepDive(target);
 }
 
-// âââ DEEP DIVE ORCHESTRATOR ââââââââââââââââââââââââââââââââââââââââââââââââ
+// ─── DEEP DIVE ORCHESTRATOR ────────────────────────────────────────────────
 async function runDeepDive(ev) {
   const topic = ev.title || '';
   const desc  = ev.description || '';
   const keysSet = GNEWS_KEY !== 'YOUR_GNEWS_API_KEY' || GUARDIAN_KEY !== 'YOUR_GUARDIAN_API_KEY';
 
-  // Step 1 â AI brief + historical in parallel
+  // Step 1 — AI brief + historical in parallel
   const [briefRes, aiRes] = await Promise.allSettled([
     buildBrief(topic, desc),
     fetchAI(topic, desc)
@@ -543,7 +543,7 @@ async function runDeepDive(ev) {
   // Show investigative questions immediately
   if (brief) renderBrief(brief);
 
-  // Step 2 â fetch articles per angle
+  // Step 2 — fetch articles per angle
   let articles = [];
   if (brief && keysSet) {
     const from = new Date(Date.now() - 30 * 86400000).toISOString().split('T')[0];
@@ -558,27 +558,27 @@ async function runDeepDive(ev) {
     });
   }
 
-  // Step 3 â score
+  // Step 3 — score
   let scored = [];
   if (brief && articles.length) {
     scored = await scoreArticles(articles, brief);
   }
 
-  // Step 4 â render
+  // Step 4 — render
   renderNewsGrid(scored, brief, keysSet);
   renderAI(ai);
 }
 
-// âââ BUILD INVESTIGATIVE BRIEF âââââââââââââââââââââââââââââââââââââââââââââ
+// ─── BUILD INVESTIGATIVE BRIEF ─────────────────────────────────────────────
 async function buildBrief(topic, desc) {
-  const prompt = 'You are an investigative editor at a major international news desk.\n\nA topic is drawing global attention: "' + topic + '"\n' + (desc ? 'Context: ' + desc + '\n' : '') + '\nGenerate a structured search brief to fetch the most targeted, relevant news articles â not random headlines, but pieces that directly bear on the specific outcome.\n\nReturn ONLY valid JSON, no markdown:\n\n{"coreQuestion":"The single most important journalistic question this topic raises","investigativeAngles":[{"question":"Specific investigative question","why":"Why this angle matters to the outcome","keywords":["keyword1","keyword2","keyword3"],"guardianSection":"politics","timeWindow":"30d"},{"question":"...","why":"...","keywords":["..."],"guardianSection":"world","timeWindow":"7d"},{"question":"...","why":"...","keywords":["..."],"guardianSection":"business","timeWindow":"30d"},{"question":"...","why":"...","keywords":["..."],"guardianSection":"us-news","timeWindow":"90d"}],"mustInclude":["critical term 1","critical term 2"],"relevanceTest":"One sentence: what makes an article directly relevant to this specific outcome"}\n\nRules: 4 distinct angles (policy, reaction, background, stakeholder). Keywords must be precise. guardianSection must be one of: politics|world|business|technology|us-news|environment|science|society|sport|culture. timeWindow: 7d|30d|90d.';
+  const prompt = 'You are an investigative editor at a major international news desk.\n\nA topic is drawing global attention: "' + topic + '"\n' + (desc ? 'Context: ' + desc + '\n' : '') + '\nGenerate a structured search brief to fetch the most targeted, relevant news articles — not random headlines, but pieces that directly bear on the specific outcome.\n\nReturn ONLY valid JSON, no markdown:\n\n{"coreQuestion":"The single most important journalistic question this topic raises","investigativeAngles":[{"question":"Specific investigative question","why":"Why this angle matters to the outcome","keywords":["keyword1","keyword2","keyword3"],"guardianSection":"politics","timeWindow":"30d"},{"question":"...","why":"...","keywords":["..."],"guardianSection":"world","timeWindow":"7d"},{"question":"...","why":"...","keywords":["..."],"guardianSection":"business","timeWindow":"30d"},{"question":"...","why":"...","keywords":["..."],"guardianSection":"us-news","timeWindow":"90d"}],"mustInclude":["critical term 1","critical term 2"],"relevanceTest":"One sentence: what makes an article directly relevant to this specific outcome"}\n\nRules: 4 distinct angles (policy, reaction, background, stakeholder). Keywords must be precise. guardianSection must be one of: politics|world|business|technology|us-news|environment|science|society|sport|culture. timeWindow: 7d|30d|90d.';
 
   const res  = await callClaude(prompt, 800);
   const text = res.content?.find(b => b.type === 'text')?.text || '';
   return JSON.parse(text.replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim());
 }
 
-// âââ FETCH ARTICLES PER ANGLE ââââââââââââââââââââââââââââââââââââââââââââââ
+// ─── FETCH ARTICLES PER ANGLE ──────────────────────────────────────────────
 async function fetchAngle(angle, from) {
   const q    = (angle.keywords || []).slice(0, 3).join(' ');
   const wFrom = getWindowFrom(angle.timeWindow);
@@ -617,9 +617,9 @@ function getWindowFrom(tw) {
   return new Date(Date.now() - days * 86400000).toISOString().split('T')[0];
 }
 
-// âââ SCORE ARTICLES ââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+// ─── SCORE ARTICLES ────────────────────────────────────────────────────────
 async function scoreArticles(articles, brief) {
-  const list = articles.slice(0, 28).map((a, i) => i + ': "' + a.title + '" â ' + (a.description || '').replace(/<[^>]+>/g, '').slice(0, 100)).join('\n');
+  const list = articles.slice(0, 28).map((a, i) => i + ': "' + a.title + '" — ' + (a.description || '').replace(/<[^>]+>/g, '').slice(0, 100)).join('\n');
   const prompt = 'Score these news articles for relevance to an investigative topic.\n\nCORE QUESTION: "' + brief.coreQuestion + '"\nRELEVANCE TEST: "' + brief.relevanceTest + '"\n\nArticles:\n' + list + '\n\nReturn ONLY a JSON array, sorted by score descending, include only score >= 5:\n[{"index":0,"score":9,"relevanceNote":"Why this is relevant in 1 sentence","tag":"key-evidence"},{"index":1,"score":7,"relevanceNote":"...","tag":"background"},...]\n\ntag must be one of: key-evidence|background|reaction|analysis';
 
   try {
@@ -635,16 +635,16 @@ async function scoreArticles(articles, brief) {
   }
 }
 
-// âââ FETCH AI ANALYSIS âââââââââââââââââââââââââââââââââââââââââââââââââââââ
+// ─── FETCH AI ANALYSIS ─────────────────────────────────────────────────────
 async function fetchAI(topic, desc) {
-  const prompt = 'You are a senior international news editor and historian.\n\nTOPIC: "' + topic + '"\n' + (desc ? 'CONTEXT: ' + desc + '\n' : '') + '\nReturn ONLY valid JSON, no markdown:\n\n{"deck":"One sentence â key tension/stakes written like a Reuters lede","leadParagraphs":["paragraph 1","paragraph 2","paragraph 3"],"histIntro":"2 sentences explaining why historical comparison matters here","historicalEvents":[{"year":"YYYY","era":"Era name","title":"Short title","description":"2-3 sentences what happened and why comparable","fullContext":["deeper para 1","deeper para 2"],"outcomes":[{"icon":"ð","label":"Economic Impact","text":"Documented fact"},{"icon":"ð","label":"Geopolitical Shift","text":"How world order changed"},{"icon":"â±","label":"Timeline","text":"How long it lasted and resolved"},{"icon":"ð","label":"Key Lesson","text":"Most important lesson for today"}],"similarity":"high"},{"year":"...","era":"...","title":"...","description":"...","fullContext":["...","..."],"outcomes":[{"icon":"ð","label":"...","text":"..."},{"icon":"ð","label":"...","text":"..."},{"icon":"â±","label":"Timeline","text":"..."},{"icon":"ð","label":"Key Lesson","text":"..."}],"similarity":"medium"},{"year":"...","era":"...","title":"...","description":"...","fullContext":["...","..."],"outcomes":[{"icon":"ð¼","label":"...","text":"..."},{"icon":"ðº","label":"...","text":"..."},{"icon":"â±","label":"Timeline","text":"..."},{"icon":"ð","label":"Key Lesson","text":"..."}],"similarity":"low"}]}\n\nRULES: No odds. No betting. Historical events = real, documented. Outcomes = what actually happened.';
+  const prompt = 'You are a senior international news editor and historian.\n\nTOPIC: "' + topic + '"\n' + (desc ? 'CONTEXT: ' + desc + '\n' : '') + '\nReturn ONLY valid JSON, no markdown:\n\n{"deck":"One sentence — key tension/stakes written like a Reuters lede","leadParagraphs":["paragraph 1","paragraph 2","paragraph 3"],"histIntro":"2 sentences explaining why historical comparison matters here","historicalEvents":[{"year":"YYYY","era":"Era name","title":"Short title","description":"2-3 sentences what happened and why comparable","fullContext":["deeper para 1","deeper para 2"],"outcomes":[{"icon":"📉","label":"Economic Impact","text":"Documented fact"},{"icon":"🌍","label":"Geopolitical Shift","text":"How world order changed"},{"icon":"⏱","label":"Timeline","text":"How long it lasted and resolved"},{"icon":"🔑","label":"Key Lesson","text":"Most important lesson for today"}],"similarity":"high"},{"year":"...","era":"...","title":"...","description":"...","fullContext":["...","..."],"outcomes":[{"icon":"📊","label":"...","text":"..."},{"icon":"🌐","label":"...","text":"..."},{"icon":"⏱","label":"Timeline","text":"..."},{"icon":"🔑","label":"Key Lesson","text":"..."}],"similarity":"medium"},{"year":"...","era":"...","title":"...","description":"...","fullContext":["...","..."],"outcomes":[{"icon":"💼","label":"...","text":"..."},{"icon":"🗺","label":"...","text":"..."},{"icon":"⏱","label":"Timeline","text":"..."},{"icon":"🔑","label":"Key Lesson","text":"..."}],"similarity":"low"}]}\n\nRULES: No odds. No betting. Historical events = real, documented. Outcomes = what actually happened.';
 
   const res  = await callClaude(prompt, 1000);
   const text = res.content?.find(b => b.type === 'text')?.text || '';
   return JSON.parse(text.replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim());
 }
 
-// âââ CLAUDE API HELPER âââââââââââââââââââââââââââââââââââââââââââââââââââââ
+// ─── CLAUDE API HELPER ─────────────────────────────────────────────────────
 async function callClaude(prompt, maxTokens) {
   const res = await fetch('https://infera-api.onrender.com/ai', {
     method: 'POST',
@@ -657,7 +657,7 @@ async function callClaude(prompt, maxTokens) {
   return res.json();
 }
 
-// âââ RENDER BRIEF ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+// ─── RENDER BRIEF ──────────────────────────────────────────────────────────
 function renderBrief(brief) {
   const angles = (brief.investigativeAngles || []).map((a, i) =>
     '<div style="background:var(--s1);border:1px solid var(--b1);border-radius:4px;padding:10px 12px;display:flex;gap:12px;align-items:flex-start;margin-bottom:8px">' +
@@ -681,10 +681,10 @@ function renderBrief(brief) {
     '</div>' +
     angles +
     (brief.relevanceTest ? '<div style="margin-top:8px;padding:8px 12px;background:var(--s1);border:1px solid var(--b1);border-radius:3px;font-size:11px;color:var(--dim);font-family:var(--mono);font-style:italic">Relevance test: "' + brief.relevanceTest + '"</div>' : '') +
-    '<div class="loading-row" id="fetchStatus" style="margin-top:12px"><div class="spinner"></div><span>Fetching targeted articles across investigative anglesâ¦</span></div>';
+    '<div class="loading-row" id="fetchStatus" style="margin-top:12px"><div class="spinner"></div><span>Fetching targeted articles across investigative angles…</span></div>';
 }
 
-// âââ RENDER NEWS GRID ââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+// ─── RENDER NEWS GRID ──────────────────────────────────────────────────────
 function renderNewsGrid(articles, brief, keysSet) {
   const fs = document.getElementById('fetchStatus');
   if (fs) fs.remove();
@@ -695,10 +695,10 @@ function renderNewsGrid(articles, brief, keysSet) {
   if (!keysSet) {
     grid.innerHTML =
       '<div style="background:rgba(240,180,41,.06);border:1px solid rgba(240,180,41,.2);border-radius:4px;padding:14px 16px;margin-top:8px">' +
-        '<div style="font-family:var(--mono);font-size:9px;letter-spacing:.15em;color:var(--gold);text-transform:uppercase;margin-bottom:8px">â Add API Keys to Activate Live Articles</div>' +
+        '<div style="font-family:var(--mono);font-size:9px;letter-spacing:.15em;color:var(--gold);text-transform:uppercase;margin-bottom:8px">⚙ Add API Keys to Activate Live Articles</div>' +
         '<div style="font-family:var(--mono);font-size:11px;background:var(--s3);padding:10px 12px;border-radius:3px;line-height:2;color:var(--teal)">' +
-          'GNEWS_KEY â <a href="https://gnews.io" target="_blank" style="color:var(--gold)">gnews.io</a> (free, 100 req/day)<br>' +
-          'GUARDIAN_KEY â <a href="https://open-platform.theguardian.com" target="_blank" style="color:var(--gold)">open-platform.theguardian.com</a> (free, unlimited)' +
+          'GNEWS_KEY — <a href="https://gnews.io" target="_blank" style="color:var(--gold)">gnews.io</a> (free, 100 req/day)<br>' +
+          'GUARDIAN_KEY — <a href="https://open-platform.theguardian.com" target="_blank" style="color:var(--gold)">open-platform.theguardian.com</a> (free, unlimited)' +
         '</div>' +
         '<p style="margin-top:10px;color:var(--dim);font-size:12px">Articles will be fetched per investigative angle, scored for relevance to the specific outcome, and grouped by quality tier.</p>' +
       '</div>';
@@ -716,7 +716,7 @@ function renderNewsGrid(articles, brief, keysSet) {
   const supp = articles.filter(a => a._score >= 6 && a._score < 8);
   const ctx  = articles.filter(a => a._score < 6);
 
-  sub.textContent = articles.length + ' articles Â· ' + key.length + ' key evidence Â· scored by AI';
+  sub.textContent = articles.length + ' articles · ' + key.length + ' key evidence · scored by AI';
 
   function group(label, icon, items, color) {
     if (!items.length) return '';
@@ -729,7 +729,7 @@ function renderNewsGrid(articles, brief, keysSet) {
     '</div>';
   }
 
-  grid.innerHTML = group('Key Evidence', 'ð´', key, 'var(--accent)') + group('Supporting', 'ð¡', supp, 'var(--gold)') + group('Context', 'âª', ctx, 'var(--dim)');
+  grid.innerHTML = group('Key Evidence', '🔴', key, 'var(--accent)') + group('Supporting', '🟡', supp, 'var(--gold)') + group('Context', '⚪', ctx, 'var(--dim)');
 }
 
 function renderCard(a) {
@@ -741,20 +741,20 @@ function renderCard(a) {
   const safeUrl = (a.url || '').replace(/'/g, "\\'");
 
   return '<div class="news-card" onclick="window.open(\'' + safeUrl + '\',\'_blank\')">' +
-    '<div class="nc-meta"><span class="nc-source" style="color:' + srcClr + '">' + (a.source || '') + '</span><span class="nc-dot">Â·</span><span class="nc-date">' + dateStr + '</span></div>' +
+    '<div class="nc-meta"><span class="nc-source" style="color:' + srcClr + '">' + (a.source || '') + '</span><span class="nc-dot">·</span><span class="nc-date">' + dateStr + '</span></div>' +
     '<div class="nc-hl">' + (a.title || '') + '</div>' +
-    (a.description ? '<div class="nc-body">' + a.description.replace(/<[^>]+>/g, '').slice(0, 160) + 'â¦</div>' : '') +
+    (a.description ? '<div class="nc-body">' + a.description.replace(/<[^>]+>/g, '').slice(0, 160) + '…</div>' : '') +
     (a._note ? '<div style="font-size:11px;color:var(--teal);margin-top:5px;line-height:1.45;font-style:italic;padding-left:8px;border-left:2px solid rgba(0,201,167,.3)">' + a._note + '</div>' : '') +
-    (a._angle ? '<div style="font-family:var(--mono);font-size:8px;color:var(--dim);letter-spacing:.06em;margin-top:5px;padding-top:5px;border-top:1px solid var(--b1);display:flex;align-items:flex-start;gap:4px"><span style="color:var(--gold);flex-shrink:0">â³</span><span>' + a._angle + '</span></div>' : '') +
+    (a._angle ? '<div style="font-family:var(--mono);font-size:8px;color:var(--dim);letter-spacing:.06em;margin-top:5px;padding-top:5px;border-top:1px solid var(--b1);display:flex;align-items:flex-start;gap:4px"><span style="color:var(--gold);flex-shrink:0">↳</span><span>' + a._angle + '</span></div>' : '') +
     (a._score ? '<div style="display:flex;align-items:center;gap:6px;margin-top:7px"><div style="font-family:var(--mono);font-size:8px;color:var(--dim)">relevance</div><div style="flex:1;height:3px;background:var(--b1);border-radius:2px;overflow:hidden"><div style="height:100%;width:' + (a._score * 10) + '%;background:linear-gradient(90deg,var(--teal),var(--accent));border-radius:2px"></div></div><div style="font-family:var(--mono);font-size:8px;color:var(--bright);font-weight:600">' + a._score + '/10</div></div>' : '') +
     '<div style="display:flex;align-items:center;justify-content:space-between;margin-top:7px">' +
       '<span style="font-family:var(--mono);font-size:8px;letter-spacing:.09em;text-transform:uppercase;padding:2px 6px;border-radius:2px;background:' + bg + ';color:' + txt + ';border:1px solid ' + brd + '">' + (a._tag || 'background') + '</span>' +
-      '<span style="font-family:var(--mono);font-size:8px;color:var(--dim)">â Read</span>' +
+      '<span style="font-family:var(--mono);font-size:8px;color:var(--dim)">↗ Read</span>' +
     '</div>' +
   '</div>';
 }
 
-// âââ RENDER AI ANALYSIS ââââââââââââââââââââââââââââââââââââââââââââââââââââ
+// ─── RENDER AI ANALYSIS ────────────────────────────────────────────────────
 function renderAI(d) {
   if (!d) { document.getElementById('dh-body').innerHTML = '<p style="color:var(--dim)">AI context unavailable.</p>'; return; }
   if (d.deck) document.getElementById('dh-deck').textContent = d.deck;
@@ -768,16 +768,16 @@ function renderAI(d) {
           '<div class="he-main">' +
             '<div class="he-title">' + h.title + '</div>' +
             '<div class="he-desc">' + h.description + '</div>' +
-            '<div class="sim-tag ' + h.similarity + '">' + ({ high:'â  High Similarity', medium:'~ Moderate Similarity', low:'â Partial Parallel' }[h.similarity] || '') + '</div>' +
+            '<div class="sim-tag ' + h.similarity + '">' + ({ high:'⚠ High Similarity', medium:'~ Moderate Similarity', low:'◇ Partial Parallel' }[h.similarity] || '') + '</div>' +
           '</div>' +
-          '<div class="he-btn">â¼</div>' +
+          '<div class="he-btn">▼</div>' +
         '</div>' +
         '<div class="he-detail">' +
           '<div class="hed-body">' + (h.fullContext || []).map(p => '<p>' + p + '</p>').join('') + '</div>' +
           '<div class="outcome-block">' +
-            '<div class="ob-header">ð Documented Outcomes from ' + h.year + '</div>' +
+            '<div class="ob-header">📋 Documented Outcomes from ' + h.year + '</div>' +
             (h.outcomes || []).map(o =>
-              '<div class="ob-item"><div class="ob-icon">' + (o.icon || 'â¢') + '</div><div><div class="ob-label">' + o.label + '</div><div class="ob-text">' + o.text + '</div></div></div>'
+              '<div class="ob-item"><div class="ob-icon">' + (o.icon || '•') + '</div><div><div class="ob-label">' + o.label + '</div><div class="ob-text">' + o.text + '</div></div></div>'
             ).join('') +
           '</div>' +
         '</div>' +
@@ -788,7 +788,7 @@ function renderAI(d) {
 
 function toggleHist(i) { document.getElementById('he-' + i).classList.toggle('open'); }
 
-// âââ NAVIGATION ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+// ─── NAVIGATION ────────────────────────────────────────────────────────────
 function goBack() {
   document.getElementById('deepView').classList.remove('active');
   document.getElementById('feedView').classList.add('active');
@@ -803,7 +803,7 @@ function goHome() {
   document.querySelectorAll('.event-row').forEach(r => r.classList.remove('selected'));
 }
 
-// âââ SEARCH ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+// ─── SEARCH ────────────────────────────────────────────────────────────────
 let searchTO;
 document.getElementById('searchInput').addEventListener('input', function() {
   clearTimeout(searchTO);
@@ -853,7 +853,7 @@ function searchPick(id) {
 
 document.addEventListener('click', e => { if (!e.target.closest('.hdr-search')) document.getElementById('searchResults').classList.remove('open'); });
 
-// âââ CATEGORY FILTERS ââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+// ─── CATEGORY FILTERS ──────────────────────────────────────────────────────
 document.getElementById('catFilters').addEventListener('click', e => {
   const btn = e.target.closest('.cat-btn');
   if (!btn) return;
@@ -863,26 +863,26 @@ document.getElementById('catFilters').addEventListener('click', e => {
   renderList(activeCategory);
 });
 
-// âââ TICKER ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+// ─── TICKER ────────────────────────────────────────────────────────────────
 function buildTicker() {
   const items = allEvents.slice(0, 16).map(ev => {
     const vol = ev.volume24hr || 0;
     const cls = vol > 5e6 ? 'color:var(--accent)' : 'color:var(--teal)';
-    const lbl = vol > 5e6 ? 'ð¥' : 'â';
-    return '<span class="tk"><span class="tk-name">' + (ev.title || '').slice(0, 52) + (ev.title && ev.title.length > 52 ? 'â¦' : '') + '</span><span style="' + cls + '">' + lbl + '</span></span>';
+    const lbl = vol > 5e6 ? '🔥' : '●';
+    return '<span class="tk"><span class="tk-name">' + (ev.title || '').slice(0, 52) + (ev.title && ev.title.length > 52 ? '…' : '') + '</span><span style="' + cls + '">' + lbl + '</span></span>';
   });
   const t = document.getElementById('tickerTrack');
   t.innerHTML = items.concat(items).join('');
 }
 
-// âââ UTILS âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+// ─── UTILS ─────────────────────────────────────────────────────────────────
 function fmtVol(n) { return n >= 1e6 ? (n/1e6).toFixed(1)+'M' : n >= 1e3 ? Math.round(n/1e3)+'K' : String(n); }
 function getTagCat(tags) { return (tags && tags[0]) ? (tags[0].label || tags[0].slug || '') : ''; }
 
-// âââ REFRESH TIMER âââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+// ─── REFRESH TIMER ─────────────────────────────────────────────────────────
 setInterval(() => { if (--countdown <= 0) { fetchEvents(); countdown = 60; } }, 1000);
 
-// âââ INIT ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+// ─── INIT ──────────────────────────────────────────────────────────────────
 fetchEvents();
 </script>
 </body>
