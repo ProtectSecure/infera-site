@@ -795,8 +795,8 @@ function renderSocialTrends(reddit, youtube, topic) {
 
   const tabs = allCards.length > 0
     ? '<div class="social-tabs">' +
-        (reddit.length  ? '<span class="stab active" id="stab-reddit"  onclick="switchSTab('reddit')">' + reddit.length  + ' Reddit</span>' : '') +
-        (youtube.length ? '<span class="stab' + (reddit.length ? '' : ' active') + '" id="stab-youtube" onclick="switchSTab('youtube')">' + youtube.length + ' YouTube</span>' : '') +
+        (reddit.length  ? '<span class="stab active" id="stab-reddit"  onclick="switchSTab(\'reddit\')">' + reddit.length  + ' Reddit</span>' : '') +
+        (youtube.length ? '<span class="stab' + (reddit.length ? '' : ' active') + '" id="stab-youtube" onclick="switchSTab(\'youtube\')">' + youtube.length + ' YouTube</span>' : '') +
       '</div>'
     : '';
 
