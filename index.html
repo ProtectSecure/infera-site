@@ -641,9 +641,29 @@ async function fetchNewsAPI(q, from) {
   } catch(_) { return []; }
 }
 
+async function fetchHackerNews(query) {
+  try {
+    const q = encodeURIComponent(query.slice(0, 150));
+    const url = 'https://hn.algolia.com/api/v1/search?query=' + q + '&tags=story&hitsPerPage=20&numericFilters=points>1';
+    const res  = await fetch(url);
+    const data = await res.json();
+    return (data.hits || []).filter(h => h.title).map(h => ({
+      title: h.title || '',
+      url: h.url || ('https://news.ycombinator.com/item?id=' + h.objectID),
+      author: h.author || '',
+      handle: 'by ' + (h.author || 'anon') + ' on HN',
+      likes: h.points || 0,
+      reposts: 0,
+      replies: h.num_comments || 0,
+      publishedAt: h.created_at || '',
+      platform: 'Hacker News', _src: 'hackernews'
+    }));
+  } catch(_) { return []; }
+}
+
 async function fetchBluesky(query) {
   try {
-    const url = 'https://public.api.bsky.app/xrpc/app.bsky.feed.searchPosts?q=' + encodeURIComponent(query) + '&limit=25&sort=latest';
+    const url = 'https://public.api.bsky.app/xrpc/app.bsky.feed.searchPosts?q=' + encodeURIComponent(query) + '&limit=15&sort=latest';
     const res  = await fetch(url);
     const data = await res.json();
     return (data.posts || []).map(p => ({
@@ -660,35 +680,14 @@ async function fetchBluesky(query) {
   } catch(_) { return []; }
 }
 
-async function fetchMastodon(query) {
-  try {
-    const url = 'https://mastodon.social/api/v2/search?q=' + encodeURIComponent(query) + '&type=statuses&limit=20';
-    const res  = await fetch(url);
-    const data = await res.json();
-    return (data.statuses || []).map(p => ({
-      title: (p.content || '').replace(/<[^>]+>/g, '').slice(0, 300),
-      url: p.url || '',
-      author: (p.account && (p.account.display_name || p.account.username)) || '',
-      handle: '@' + ((p.account && p.account.acct) || ''),
-      likes: p.favourites_count || 0,
-      reposts: p.reblogs_count || 0,
-      replies: p.replies_count || 0,
-      publishedAt: p.created_at || '',
-      platform: 'Mastodon', _src: 'mastodon'
-    }));
-  } catch(_) { return []; }
-}
-
 async function fetchSocialPosts(keywords) {
   const query = keywords.slice(0, 5).join(' ');
-  const [bsky, masto] = await Promise.allSettled([fetchBluesky(query), fetchMastodon(query)]);
+  const [hn, bsky] = await Promise.allSettled([fetchHackerNews(query), fetchBluesky(query)]);
   const posts = [];
+  if (hn.status === 'fulfilled') posts.push(...hn.value);
   if (bsky.status === 'fulfilled') posts.push(...bsky.value);
-  if (masto.status === 'fulfilled') posts.push(...masto.value);
   return posts.sort((a, b) => new Date(b.publishedAt) - new Date(a.publishedAt));
 }
-
-
 
 async function fetchGNews(q, from) {
   if (GNEWS_KEY === 'YOUR_GNEWS_API_KEY') return [];
