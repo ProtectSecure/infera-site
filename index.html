@@ -580,7 +580,10 @@ async function runDeepDive(ev) {
   // Step 2 — fetch articles + social in parallel
   let articles = [];
   const q = (topic + ' ' + (desc || '')).slice(0, 120);
-  const [articlesRes, redditRes, youtubeRes] = await Promise.allSettled([
+  const socialKws = brief && brief.investigativeAngles
+    ? brief.investigativeAngles.flatMap(a => a.keywords || []).slice(0, 8)
+    : [topic];
+  const [articlesRes, socialRes] = await Promise.allSettled([
     (async () => {
       if (!brief || !keysSet) return [];
       const from = new Date(Date.now() - 30 * 86400000).toISOString().split('T')[0];
@@ -594,24 +597,12 @@ async function runDeepDive(ev) {
         seen.add(k); return true;
       });
     })(),
-    fetchReddit(topic),
-    fetchYouTube(topic)
+    fetchSocialPosts(socialKws)
   ]);
-
-  if (articlesRes.status === 'fulfilled') articles = articlesRes.value;
-
-  // Step 3 — score
-  let scored = [];
-  if (brief && articles.length) {
-    scored = await scoreArticles(articles, brief);
-  }
-
-  // Step 4 — render everything
-  renderNewsGrid(scored, brief, keysSet);
-  renderAI(ai);
-  const redditData  = redditRes.status  === 'fulfilled' ? redditRes.value  : [];
-  const youtubeData = youtubeRes.status === 'fulfilled' ? youtubeRes.value : [];
-  renderSocialTrends(redditData, youtubeData, topic);
+  const articlesData = articlesRes.status === 'fulfilled' ? articlesRes.value : [];
+  renderNewsGrid(articlesData, brief, keysSet);
+  const socialData = socialRes.status === 'fulfilled' ? socialRes.value : [];
+  renderSocialFeed(socialData, topic);
 }
 
 // ─── BUILD INVESTIGATIVE BRIEF ─────────────────────────────────────────────
@@ -650,36 +641,54 @@ async function fetchNewsAPI(q, from) {
   } catch(_) { return []; }
 }
 
-async function fetchReddit(topic) {
+async function fetchBluesky(query) {
   try {
-    const q = topic.slice(0, 100);
-    const url = PROXY + encodeURIComponent('https://www.reddit.com/search.json?q=' + encodeURIComponent(q) + '&sort=hot&t=week&limit=12&type=link');
-    const res  = await fetch(url, { headers: { 'User-Agent': 'Infera/1.0' } });
+    const url = 'https://public.api.bsky.app/xrpc/app.bsky.feed.searchPosts?q=' + encodeURIComponent(query) + '&limit=25&sort=latest';
+    const res  = await fetch(url);
     const data = await res.json();
-    const posts = ((data.data && data.data.children) || []).map(c => c.data).filter(p => p.score > 10);
-    return posts.map(p => ({
-      title: p.title, url: 'https://reddit.com' + p.permalink, score: p.score,
-      comments: p.num_comments, subreddit: p.subreddit, selftext: (p.selftext || '').slice(0, 160),
-      publishedAt: new Date(p.created_utc * 1000).toISOString(), _src: 'reddit'
+    return (data.posts || []).map(p => ({
+      title: (p.record && p.record.text) || '',
+      url: 'https://bsky.app/profile/' + ((p.author && p.author.handle) || '') + '/post/' + ((p.uri || '').split('/').pop()),
+      author: (p.author && (p.author.displayName || p.author.handle)) || '',
+      handle: '@' + ((p.author && p.author.handle) || ''),
+      likes: p.likeCount || 0,
+      reposts: p.repostCount || 0,
+      replies: p.replyCount || 0,
+      publishedAt: (p.record && p.record.createdAt) || p.indexedAt || '',
+      platform: 'Bluesky', _src: 'bluesky'
     }));
   } catch(_) { return []; }
 }
 
-async function fetchYouTube(topic) {
-  if (YOUTUBE_KEY === 'YOUR_YOUTUBE_API_KEY') return [];
+async function fetchMastodon(query) {
   try {
-    const q   = topic.slice(0, 100);
-    const pub = new Date(Date.now() - 14 * 86400000).toISOString();
-    const url = PROXY + encodeURIComponent('https://www.googleapis.com/youtube/v3/search?part=snippet&q=' + encodeURIComponent(q) + '&type=video&order=relevance&maxResults=6&publishedAfter=' + pub + '&key=' + YOUTUBE_KEY);
+    const url = 'https://mastodon.social/api/v2/search?q=' + encodeURIComponent(query) + '&type=statuses&limit=20';
     const res  = await fetch(url);
     const data = await res.json();
-    return ((data.items) || []).map(v => ({
-      title: v.snippet.title, url: 'https://youtube.com/watch?v=' + v.id.videoId,
-      source: v.snippet.channelTitle, description: v.snippet.description || '',
-      publishedAt: v.snippet.publishedAt, thumbnail: v.snippet.thumbnails?.default?.url, _src: 'youtube'
+    return (data.statuses || []).map(p => ({
+      title: (p.content || '').replace(/<[^>]+>/g, '').slice(0, 300),
+      url: p.url || '',
+      author: (p.account && (p.account.display_name || p.account.username)) || '',
+      handle: '@' + ((p.account && p.account.acct) || ''),
+      likes: p.favourites_count || 0,
+      reposts: p.reblogs_count || 0,
+      replies: p.replies_count || 0,
+      publishedAt: p.created_at || '',
+      platform: 'Mastodon', _src: 'mastodon'
     }));
   } catch(_) { return []; }
 }
+
+async function fetchSocialPosts(keywords) {
+  const query = keywords.slice(0, 5).join(' ');
+  const [bsky, masto] = await Promise.allSettled([fetchBluesky(query), fetchMastodon(query)]);
+  const posts = [];
+  if (bsky.status === 'fulfilled') posts.push(...bsky.value);
+  if (masto.status === 'fulfilled') posts.push(...masto.value);
+  return posts.sort((a, b) => new Date(b.publishedAt) - new Date(a.publishedAt));
+}
+
+
 
 async function fetchGNews(q, from) {
   if (GNEWS_KEY === 'YOUR_GNEWS_API_KEY') return [];
@@ -747,92 +756,57 @@ async function callClaude(prompt, maxTokens) {
   return res.json();
 }
 
-// ─── RENDER SOCIAL TRENDS ─────────────────────────────────────────────────
-function renderSocialTrends(reddit, youtube, topic) {
+// ─── RENDER SOCIAL FEED ──────────────────────────────────────────────────────
+function renderSocialFeed(posts, topic) {
   const grid = document.getElementById('socialGrid');
   const sub  = document.getElementById('social-sub');
   if (!grid) return;
 
-  const allCards = [];
+  if (window._socialInterval) { clearInterval(window._socialInterval); window._socialInterval = null; }
 
-  // Reddit posts
-  reddit.forEach(p => {
-    allCards.push({
-      _src: 'reddit', title: p.title, url: p.url, score: p.score,
-      meta: 'r/' + p.subreddit + ' · ' + fmtVol(p.score) + ' pts · ' + p.comments + ' comments',
-      desc: p.selftext, publishedAt: p.publishedAt, platform: 'Reddit',
-      color: '#FF4500', bg: 'rgba(255,69,0,.1)', brd: 'rgba(255,69,0,.2)'
-    });
-  });
-
-  // YouTube videos
-  youtube.forEach(v => {
-    allCards.push({
-      _src: 'youtube', title: v.title, url: v.url, score: 0,
-      meta: v.source + ' · ' + new Date(v.publishedAt).toLocaleDateString('en-US',{month:'short',day:'numeric'}),
-      desc: v.description.slice(0, 140), publishedAt: v.publishedAt, platform: 'YouTube',
-      color: '#FF0000', bg: 'rgba(255,0,0,.08)', brd: 'rgba(255,0,0,.18)', thumb: v.thumbnail
-    });
-  });
-
-  if (!allCards.length) {
-    grid.innerHTML = '<div style="padding:12px;color:var(--dim);font-size:12px;font-family:var(--mono)">Reddit discussions loading… (YouTube requires API key)</div>';
-    sub.textContent = 'Live social context';
+  if (!posts || !posts.length) {
+    grid.innerHTML = '<div style="padding:12px;color:var(--dim);font-size:12px;font-family:var(--mono)">No live social posts found for this topic</div>';
+    if (sub) sub.textContent = 'Live social context';
     return;
   }
 
-  // Extract trending hashtags from Reddit titles
-  const words = reddit.map(p => p.title).join(' ').toLowerCase()
-    .replace(/[^a-z0-9\s]/g, ' ').split(/\s+/)
-    .filter(w => w.length > 4 && !['about','their','there','which','would','could','should','after','before','other','these','those','where','since','being','while','every','under','still','again','first','shall','going'].includes(w));
-  const freq = {};
-  words.forEach(w => { freq[w] = (freq[w] || 0) + 1; });
-  const hashtags = Object.entries(freq).filter(([,c]) => c >= 2).sort((a,b) => b[1]-a[1]).slice(0,12).map(([w]) => '#'+w);
+  const bskyCount  = posts.filter(p => p._src === 'bluesky').length;
+  const mastoCount = posts.filter(p => p._src === 'mastodon').length;
+  if (sub) sub.textContent = posts.length + ' live posts · ' + bskyCount + ' Bluesky · ' + mastoCount + ' Mastodon · refreshes every 5s';
 
-  const tagsHtml = hashtags.length
-    ? '<div class="sc-hashtags">' + hashtags.map(t => '<span class="sc-tag">' + t + '</span>').join('') + '</div>'
-    : '';
+  window._socialPosts = posts;
+  window._socialIdx   = 0;
+  const VISIBLE = 6;
 
-  const tabs = allCards.length > 0
-    ? '<div class="social-tabs">' +
-        (reddit.length  ? '<span class="stab active" id="stab-reddit"  onclick="switchSTab(\'reddit\')">' + reddit.length  + ' Reddit</span>' : '') +
-        (youtube.length ? '<span class="stab' + (reddit.length ? '' : ' active') + '" id="stab-youtube" onclick="switchSTab(\'youtube\')">' + youtube.length + ' YouTube</span>' : '') +
-      '</div>'
-    : '';
+  function renderSlice() {
+    const idx = window._socialIdx;
+    let html = '<div class="social-grid">';
+    for (let i = 0; i < VISIBLE; i++) {
+      const p = posts[(idx + i) % posts.length];
+      const isBsky = p._src === 'bluesky';
+      const col  = isBsky ? '#0085ff' : '#6364ff';
+      const bg   = isBsky ? 'rgba(0,133,255,.1)' : 'rgba(99,100,255,.1)';
+      const brd  = isBsky ? 'rgba(0,133,255,.25)' : 'rgba(99,100,255,.25)';
+      const time = p.publishedAt ? new Date(p.publishedAt).toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'}) : '';
+      const safeUrl = (p.url || '').replace(/'/g, '%27');
+      html +=
+        '<div class="social-card" onclick="window.open('' + safeUrl + '','_blank')">' +
+          '<div class="sc-platform" style="display:flex;align-items:center;gap:6px;margin-bottom:6px">' +
+            '<span class="sc-platform-badge" style="background:' + bg + ';color:' + col + ';border:1px solid ' + brd + '">' + p.platform + '</span>' +
+            '<span style="font-size:10px;color:var(--dim);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1">' + (p.handle || '') + '</span>' +
+            (time ? '<span style="font-size:10px;color:var(--dim);flex-shrink:0">' + time + '</span>' : '') +
+          '</div>' +
+          '<div class="sc-title" style="font-size:12px;line-height:1.45;margin-bottom:6px">' + (p.title || '').replace(/</g,'&lt;').slice(0, 220) + '</div>' +
+          '<div class="sc-meta"><span class="sc-score">♥ ' + (p.likes||0) + ' ↺ ' + (p.reposts||0) + (p.replies ? ' 💬 ' + p.replies : '') + '</span></div>' +
+        '</div>';
+    }
+    html += '</div>';
+    grid.innerHTML = html;
+    window._socialIdx = (window._socialIdx + 1) % posts.length;
+  }
 
-  window._socialAll = allCards;
-  window._activeSTab = reddit.length ? 'reddit' : 'youtube';
-
-  grid.innerHTML = tagsHtml + tabs + '<div id="social-cards" class="social-grid"></div>';
-  renderSocialCards(window._activeSTab);
-  sub.textContent = allCards.length + ' live social signals · ' + (hashtags.length ? hashtags.length + ' trending terms' : 'no hashtags');
-}
-
-function switchSTab(tab) {
-  window._activeSTab = tab;
-  document.querySelectorAll('.stab').forEach(b => b.classList.remove('active'));
-  const el = document.getElementById('stab-' + tab);
-  if (el) el.classList.add('active');
-  renderSocialCards(tab);
-}
-
-function renderSocialCards(tab) {
-  const cards = (window._socialAll || []).filter(c => c._src === tab);
-  const el = document.getElementById('social-cards');
-  if (!el) return;
-  el.innerHTML = cards.map(c => {
-    const archiveUrl = c._src === 'reddit' ? '' : 'https://archive.ph/newest/' + encodeURIComponent(c.url || '');
-    return '<div class="social-card" data-url="' + (c.url||'').replace(/"/g,'%22') + '" onclick="window.open(this.dataset.url,\'_blank\')">' +
-      '<div class="sc-platform">' +
-        '<span class="sc-platform-badge" style="background:' + c.bg + ';color:' + c.color + ';border:1px solid ' + c.brd + '">' + c.platform + '</span>' +
-        (archiveUrl ? '<a class="sc-archive" href="' + archiveUrl + '" target="_blank" onclick="event.stopPropagation()">⊞ Archive</a>' : '') +
-      '</div>' +
-      (c.thumb ? '<img style="width:100%;height:80px;object-fit:cover;border-radius:3px;margin-bottom:8px" src="' + c.thumb + '" alt="">' : '') +
-      '<div class="sc-title">' + c.title + '</div>' +
-      (c.desc ? '<div style="font-size:11px;color:var(--dim);line-height:1.4;margin:4px 0">' + c.desc.replace(/<[^>]+>/g,'').slice(0,130) + '…</div>' : '') +
-      '<div class="sc-meta"><span class="sc-score">' + c.meta + '</span></div>' +
-    '</div>';
-  }).join('');
+  renderSlice();
+  window._socialInterval = setInterval(renderSlice, 5000);
 }
 
 // ─── RENDER BRIEF ──────────────────────────────────────────────────────────
