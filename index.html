@@ -785,18 +785,24 @@ async function callClaude(prompt, maxTokens) {
 async function fetchWikipedia(query) {
   try {
     const enc = encodeURIComponent(query);
-    const r = await fetch('https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=' + enc + '&format=json&origin=*&srlimit=4&srprop=snippet');
+    const r = await fetch('https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=' + enc + '&format=json&origin=*&srlimit=8&srprop=snippet');
     const d = await r.json();
+    const stop = new Set(['the','a','an','in','on','of','and','or','for','to','at','by','is','are','was','were','it','this','that','be','will','have','has','had','what','how','when','why','who','its','their']);
+    const kws = query.toLowerCase().split(/\W+/).filter(w => w.length > 2 && !stop.has(w));
+    const scored = ((d.query && d.query.search) || []).map(h => {
+      const text = (h.title + ' ' + h.snippet).toLowerCase().replace(/<[^>]+>/g, '');
+      return { h, score: kws.filter(w => text.includes(w)).length };
+    }).filter(x => x.score > 0).sort((a, b) => b.score - a.score).slice(0, 3);
     const results = [];
-    for (const hit of ((d.query && d.query.search) || []).slice(0, 3)) {
+    for (const {h} of scored) {
       try {
-        const sr = await fetch('https://en.wikipedia.org/api/rest_v1/page/summary/' + encodeURIComponent(hit.title));
+        const sr = await fetch('https://en.wikipedia.org/api/rest_v1/page/summary/' + encodeURIComponent(h.title));
         const s = await sr.json();
         if (s.extract) results.push({
           source: 'Wikipedia', sourceIcon: '📖',
           title: s.title,
           excerpt: s.extract.slice(0, 320),
-          url: (s.content_urls && s.content_urls.desktop && s.content_urls.desktop.page) || 'https://en.wikipedia.org/wiki/' + encodeURIComponent(hit.title),
+          url: (s.content_urls && s.content_urls.desktop && s.content_urls.desktop.page) || 'https://en.wikipedia.org/wiki/' + encodeURIComponent(h.title),
           date: null,
           thumbnail: (s.thumbnail && s.thumbnail.source) || null
         });
@@ -825,9 +831,14 @@ async function fetchLocNewspapers(query) {
 async function fetchInternetArchive(query) {
   try {
     const enc = encodeURIComponent(query);
-    const r = await fetch('https://openlibrary.org/search.json?q=' + enc + '&fields=key,title,first_publish_year,subject,author_name&limit=5');
+    const r = await fetch('https://openlibrary.org/search.json?q=' + enc + '&fields=key,title,first_publish_year,subject,author_name&limit=12');
     const d = await r.json();
-    return (d.docs || []).slice(0, 3).map(doc => ({
+    const stop = new Set(['the','a','an','in','on','of','and','or','for','to','at','by','is','are','was','were','it','this','that','be','will','have','has','had','what','how','when','why','who','its','their']);
+    const kws = query.toLowerCase().split(/\W+/).filter(w => w.length > 2 && !stop.has(w));
+    return (d.docs || []).map(doc => {
+      const text = ((doc.title || '') + ' ' + ((doc.subject || []).join(' '))).toLowerCase();
+      return { doc, score: kws.filter(w => text.includes(w)).length };
+    }).filter(x => x.score > 0).sort((a, b) => b.score - a.score).slice(0, 3).map(({doc}) => ({
       source: 'Open Library', sourceIcon: '📚',
       title: doc.title || 'Untitled',
       excerpt: [
