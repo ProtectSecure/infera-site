@@ -822,7 +822,7 @@ function renderSocialCards(tab) {
   if (!el) return;
   el.innerHTML = cards.map(c => {
     const archiveUrl = c._src === 'reddit' ? '' : 'https://archive.ph/newest/' + encodeURIComponent(c.url || '');
-    return '<div class="social-card" onclick="window.open('' + c.url.replace(/'/g, "\'") + '','_blank')">' +
+    return '<div class="social-card" data-url="' + (c.url||'').replace(/"/g,'%22') + '" onclick="window.open(this.dataset.url,\'_blank\')">' +
       '<div class="sc-platform">' +
         '<span class="sc-platform-badge" style="background:' + c.bg + ';color:' + c.color + ';border:1px solid ' + c.brd + '">' + c.platform + '</span>' +
         (archiveUrl ? '<a class="sc-archive" href="' + archiveUrl + '" target="_blank" onclick="event.stopPropagation()">⊞ Archive</a>' : '') +
