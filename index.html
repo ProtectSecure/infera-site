@@ -681,11 +681,20 @@ async function fetchBluesky(query) {
 }
 
 async function fetchSocialPosts(keywords) {
-  const query = keywords.slice(0, 5).join(' ');
-  const [hn, bsky] = await Promise.allSettled([fetchHackerNews(query), fetchBluesky(query)]);
+  // Build short focused queries (first 3 words of each keyword) — avoids over-specific HN misses
+  const queries = [...new Set(
+    keywords.slice(0, 4).map(k => k.split(' ').slice(0, 3).join(' ')).filter(Boolean)
+  )];
+  if (!queries.length) return [];
+  const hnResults = await Promise.allSettled(queries.map(q => fetchHackerNews(q)));
+  const seen = new Set();
   const posts = [];
-  if (hn.status === 'fulfilled') posts.push(...hn.value);
-  if (bsky.status === 'fulfilled') posts.push(...bsky.value);
+  for (const r of hnResults) {
+    if (r.status !== 'fulfilled') continue;
+    for (const p of r.value) {
+      if (!seen.has(p.url)) { seen.add(p.url); posts.push(p); }
+    }
+  }
   return posts.sort((a, b) => new Date(b.publishedAt) - new Date(a.publishedAt));
 }
 
