@@ -396,7 +396,7 @@ async function loadSectors() {
         <div style="flex:0 0 90px; font-size:11px; color:var(--muted);">${name}</div>
         <div class="sector-bar-wrap">
           <div class="sector-bar" style="width:${barW}%; background:${barColor};"></div>
-  2     </div>
+        </div>
         <div class="sector-pct ${cls}">${fmtPct(pct)}</div>
       </div>`;
   }).join('');
@@ -706,7 +706,7 @@ async function loadSpyChart() {
         x: { display: false },
         y: {
           position: 'right',
-     0    grid: { color: 'rgba(31,41,64,0.5)', lineWidth: 0.5 },
+          grid: { color: 'rgba(31,41,64,0.5)', lineWidth: 0.5 },
           ticks: { color: '#6b7a99', font: { size: 10 }, maxTicksLimit: 4,
             callback: v => '$' + v.toFixed(0) }
         }
