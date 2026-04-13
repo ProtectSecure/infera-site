@@ -610,7 +610,7 @@ function rowClick(e, id) {
     lastTapId = null; lastTapTime = 0;
     hideTip();
     openDeepDive(ev);
-    setTopicFocus(ev.question||ev.title||'',getCategory(ev.question||ev.title||''));
+    if(window.setTopicFocus)window.setTopicFocus(ev.question||ev.title||'');
   } else {
     lastTapId = id; lastTapTime = now;
     selectPreview(ev, e);
@@ -1502,6 +1502,7 @@ function setTopicFocus(q,cat){__topKW=extractKW(q);__topCat=cat||getCategory(q);
 function clearTopicFocus(){__topActive=false;__topKW=[];__topLabel='';updateTopicBar();reloadAllPanels();}
 function reloadAllPanels(){loadOpps();loadNarr();loadCross();loadDiv();}
 function updateTopicBar(){var bar=document.getElementById('topic-bar');if(!bar)return;if(__topActive){bar.style.display='flex';var lbl=bar.querySelector('.tb-label');if(lbl)lbl.textContent='FOCUS: '+__topLabel;}else{bar.style.display='none';}}
+window.setTopicFocus=setTopicFocus;window.clearTopicFocus=clearTopicFocus;
 function renderOpps(markets){
   var el=document.getElementById("mi-opps");if(!el)return;
   var top=topFilt(markets).slice(0,8);
