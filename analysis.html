@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>INFERA — Deep Analysis</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&family=JetBrains+Mono:wght@300;400;500;700&family=Fraunces:ital,wght@0,300;0,400;1,300;1,400&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#07090d;--s1:#0c0f16;--s2:#111520;--b1:#1c2233;--b2:#252d40;--text:#b8c6de;--dim:#46536b;--bright:#e4edfb;--teal:#00c9a7;--mono:'JetBrains Mono',monospace;--sans:'DM Sans',sans-serif;--serif:'Fraunces',serif;--display:'Bebas Neue',sans-serif}
+body.light-mode{--bg:#f4f4ef;--s1:#e8e8e2;--s2:#d5d5ce;--b1:#b8b8b0;--b2:#9a9a92;--text:#111;--dim:#555;--bright:#000;--teal:#007a6e}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:100vh}
+
+/* HEADER */
+.hdr{position:sticky;top:0;z-index:100;background:var(--bg);border-bottom:1px solid var(--b1);padding:0 20px;height:52px;display:flex;align-items:center;gap:12px}
+.hdr-logo{font-family:var(--display);font-size:22px;letter-spacing:.06em;color:var(--bright);text-decoration:none;display:flex;align-items:center;gap:7px}
+.hdr-logo .rdot{width:7px;height:7px;border-radius:50%;background:#ff3b3b;opacity:1;animation:blink 1.4s ease infinite}
+.hdr-nav{display:flex;align-items:center;gap:6px;margin-left:auto}
+.nav-lnk{font-family:var(--mono);font-size:9px;letter-spacing:.1em;color:var(--dim);text-decoration:none;padding:4px 10px;border:1px solid var(--b1);border-radius:2px;transition:all .2s{text-transform:uppercase}
+.nav-lnk:hover{color:var(--teal);border-color:var(--teal)}
+.nav-lnk.active{color:var(--teal);border-color:var(--teal)}
+.live-chip{display:flex;align-items:center;gap:6px;font-family:var(--mono);font-size:9px;letter-spacing:.1em;color:var(--bright);padding:4px 10px;border:1px solid #ff3b3b;border-radius:2px}
+.live-chip .rdot{width:6px;height:6px;background:#ff3b3b;border-radius:50%;animation:blink 1.4s ease infinite}
+#ttoggle{background:none;border:1px solid var(--b2);color:var(--dim);font-family:var(--mono);font-size:9px;letter-spacing:.08em;padding:3px 9px;border-radius:2px;cursor:pointer;transition:all .2s}
+#ttoggle:hover{border-color:var(--teal);color:var(--teal)}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+
+/* HERO */
+.hero{padding:56px 40px 36px;border-bottom:1px solid var(--b1);position:relative;overflow:hidden;background:var(--bg)}
+.hero::before{content:'';position:absolute;top:0;right:0;width:600px;height:260px;background:radial-gradient(ellipse at 80% 0%,rgba(0,201,167,.07) 0%,transparent 70%);pointer-events:none}
+.hero::after{content:'';position:absolute;bottom:0;left:0;width:300px;height:200px;background:radial-gradient(ellipse at 0% 100%,rgba(192,132,252,.04) 0%,transparent 70%);pointer-events:none}
+.hero-eyebrow{font-family:var(--mono);font-size:9px;letter-spacing:.18em;color:var(--teal);text-transform:uppercase;margin-bottom:14px}
+.hero-title{font-family:var(--display);font-size:clamp(64px,9vw,110px);letter-spacing:.03em;color:var(--bright);line-height:.88;margin-bottom:18px}
+.hero-sub{font-family:var(--serif);font-size:15px;font-style:italic;color:var(--dim);max-width:520px;line-height:1.7;margin-bottom:20px}
+.hero-pills{display:flex;flex-wrap:wrap;gap:8px}
+.hero-pill{font-family:var(--mono);font-size:8px;letter-spacing:.1em;padding:4px 12px;border-radius:2px;border:1px solid var(--b2);color:var(--dim);display:flex;align-items:center;gap:6px}
+.hero-pill .pdot{width:6px;height:6px;border-radius:50%}
+.hero-ts{font-family:var(--mono);font-size:8px;color:var(--dim);letter-spacing:.08em}
+
+/* GRID */
+.a-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:0;background:var(--b1);border-top:1px solid var(--b1)}
+@media(max-width:860px){.a-grid{grid-template-columns:1fr}}
+.a-col{background:var(--bg);padding:28px 24px;position:relative}
+.a-col+.a-col{border-left:1px solid var(--b1)}
+
+/* COLUMN HEAD */
+.col-eyebrow{font-family:var(--mono);font-size:8.5px;letter-spacing:.14em;color:var(--teal);text-transform:uppercase;margin-bottom:8px;display:flex;align-items:center;gap:8px}
+.col-title{font-family:var(--display);font-size:34px;letter-spacing:.04em;color:var(--bright);line-height:.95;margin-bottom:10px}
+.col-desc{font-family:var(--mono);font-size:8px;color:var(--dim);line-height:1.65;padding:6px 10px;border-left:2px solid var(--teal);margin-bottom:12px}
+.col-badge{display:inline-flex;align-items:center;gap:6px;font-family:var(--mono);font-size:8px;letter-spacing:.08em;border:1px solid var(--teal);color:var(--teal);padding:2px 9px;border-radius:2px;margin-bottom:18px}
+.rdot{display:inline-block;width:5px;height:5px;border-radius:50%;background:var(--teal);opacity:0;transition:opacity .3s;vertical-align:middle}
+.rdot.on{opacity:1;animation:pulseTeal 1.2s ease infinite}
+@keyframes pulseTeal{0%,100%{box-shadow:0 0 0 0 rgba(0,201,167,0)}50%{box-shadow:0 0 8px 3px rgba(0,201,167,.2)}}
+
+/* WHY IT WORKED cards */
+.wk-card{padding:9px 0;border-bottom:1px solid var(--b1)}
+.wk-card:last-child{border-bottom:none}
+.wk-row{display:flex;align-items:flex-start;gap:7px;margin-bottom:4px}
+.wk-verdict{font-family:var(--mono);font-size:8px;font-weight:700;padding:2px 7px;border-radius:2px;border:1px solid transparent;text-transform:uppercase;white-space:nowrap;flex-shrink:0}
+.v-yes{background:rgba(34,197,94,.12);border-color:#22c55e40;color:#22c55e}
+.v-no{background:rgba(239,68,68,.12);border-color:#ef444440;color:#ef4444}
+.v-open{background:rgba(255,215,0,.08);border-color:#ffd70030;color:#ffd700}
+.wk-q{font-size:10px;color:var(--text);line-height:1.35;flex:1}
+.wk-meta{display:flex;gap:10px;font-family:var(--mono);font-size:8px;color:var(--dim);margin-top:3px}
+.wk-bar{height:3px;background:var(--b2);border-radius:2px;margin-top:5px;position:relative;overflow:hidden}
+.wk-fill{height:100%;border-radius:2px;position:absolute;left:0;transition:width .7s ease}
+
+/* MISSED SIGNALS cards */
+.ms-card{padding:9px 0;border-bottom:1px solid var(--b1)}
+.ms-card:last-child{border-bottom:none}
+.ms-header{display:flex;align-items:center;gap:7px;margin-bottom:5px}
+.ms-badge{font-family:var(--mono);font-size:8px;padding:2px 6px;border-radius:2px;background:rgba(255,140,66,.1);border:1px solid rgba(255,140,66,.3);color:#ff8c42;white-space:nowrap}
+.ms-q{font-size:10px;color:var(--text);line-height:1.35}
+.ms-insight{margin-top:4px;font-family:var(--mono);font-size:8px;color:var(--teal);line-height:1.5;padding:3px 8px;border-left:1px solid var(--teal);opacity:.8}
+.ms-stats{display:flex;gap:10px;margin-top:4px;font-family:var(--mono);font-size:8px;color:var(--dim)}
+.ms-bar{height:3px;background:var(--b2);border-radius:2px;margin-top:5px;position:relative;overflow:hidden}
+.ms-fill{height:100%;border-radius:2px;position:absolute;left:0;transition:width .7s ease}
+
+/* OFF THE PATH cards */
+.ot-card{padding:9px 0;border-bottom:1px solid var(--b1);perspective:400px}
+.ot-card:last-child{border-bottom:none}
+.ot-row{display:flex;align-items:center;gap:7px;margin-bottom:5px}
+.ot-tag{font-family:var(--mono);font-size:8px;padding:2px 6px;border-radius:2px;background:rgba(192,132,252,.1);border:1px solid rgba(192,132,252,.3);color:#c084fc;white-space:nowrap}
+.ot-q{font-size:10px;color:var(--text);line-height:1.35;flex:1}
+.ot-bar-row{display:flex;align-items:center;gap:8px;margin-top:6px}
+.ot-pct{font-family:var(--mono);font-size:13px;font-weight:700;min-width:42px}
+.ot-bar{flex:1;height:6px;background:var(--b2);border-radius:3px;overflow:hidden;position:relative}
+.ot-fill{height:100%;border-radius:3px;position:absolute;left:0;transition:width .7s cubic-bezier(.4,0,.2,1)}
+.ot-vol{font-family:var(--mono);font-size:8px;color:var(--dim);min-width:36px;text-align:right}
+@keyframes flipIn{0%{transform:rotateX(-90deg);opacity:0}55%{transform:rotateX(8deg);opacity:1}100%{transform:rotateX(0);opacity:1}}
+.flip-in{animation:flipIn .32s ease-out both}
+
+/* LOADING / EMPTY */
+.ld{padding:9px 0;border-bottom:1px solid var(--b1);font-family:var(--mono);font-size:9px;color:var(--dim);letter-spacing:.05em;animation:ldpulse .9s ease infinite}
+@keyframes ldpulse{0%,100%{opacity:.3}50%{opacity:.8}}
+.empty{padding:16px 0;font-family:var(--mono);font-size:9px;color:var(--dim);text-align:center;letter-spacing:.06em}
+
+/* FOOTER */
+.page-foot{padding:20px 40px;border-top:1px solid var(--b1);display:flex;align-items:center;justify-content:space-between;background:var(--s1)}
+.foot-back{font-family:var(--mono);font-size:9px;letter-spacing:.1em;color:var(--dim);text-decoration:none;transition:color .2s}
+.foot-back:hover{color:var(--teal)}
+.foot-meta{font-family:var(--mono);font-size:8px;color:var(--dim);letter-spacing:.07em}
+.foot-links{display:flex;gap:16px}
+.foot-lnk{font-family:var(--mono);font-size:8px;letter-spacing:.08em;color:var(--dim);text-decoration:none;transition:color .2s}
+.foot-lnk:hover{color:var(--teal)}
+
+/* CAT COLORS */
+.cat-world{color:#4a9eff}.cat-crypto{color:#ff8c42}.cat-sports{color:#4ade80}.cat-econ{color:#ffd700}.cat-politics{color:#c084fc}.cat-tech{color:#67e8f9}.cat-health{color:#f87171}.cat-other{color:var(--dim)}
+</style>
+</head>
+<body>
+
+<div class="hdr">
+  <a href="/" class="hdr-logo"><span class="rdot"></span>INFERA</a>
+  <div class="hdr-nav">
+    <a href="/" class="nav-lnk">HOME</a>
+    <a href="/dashboard.html" class="nav-lnk">DASHBOARD</a>
+    <a href="/analysis.html" class="nav-lnk active">ANALYSIS</a>
+    <div class="live-chip"><span class="rdot"></span>LIVE</div>
+    <button id="ttoggle" onclick="document.body.classList.toggle('light-mode');this.textContent=document.body.classList.contains('light-mode')?'&#9788; LIGHT':'&#9680; DARK'">&#9680; DARK</button>
+  </div>
+</div>
+
+<section class="hero">
+  <div class="hero-eyebrow">// SIGNAL ACCOUNTABILITY LAYER</div>
+  <div class="hero-title">DEEP<br>ANALYSIS</div>
+  <div class="hero-sub">Where pattern recognition meets accountability. Past signals examined, missed calls surfaced, and the anomalies no one is watching — yet.</div>
+  <div class="hero-pills">
+    <span class="hero-pill"><span class="pdot" style="background:#22c55e"></span>OUTCOMES TRACKED</span>
+    <span class="hero-pill"><span class="pdot" style="background:#ff8c42"></span>MISSED SIGNALS SURFACED</span>
+    <span class="hero-pill"><span class="pdot" style="background:#c084fc"></span>FRINGE PATTERNS ACTIVE</span>
+    <span class="hero-pill hero-ts" id="an-ts">LOADING…</span>
+  </div>
+</section>
+
+<div class="a-grid">
+
+  <!-- A: WHY IT WORKED / DIDN'T -->
+  <div class="a-col">
+    <div class="col-eyebrow"><span>🧠</span> SECTION A</div>
+    <div class="col-title">WHY IT<br>WORKED</div>
+    <div class="col-desc">Recently resolved prediction markets ranked by volume. The crowd's track record laid bare — who called it, what they missed, and how confident the pricing was going in.</div>
+    <div class="col-badge"><span class="rdot" id="dot-a"></span>&nbsp;RESOLVED MARKETS</div>
+    <div id="an-why">
+      <div class="ld">Fetching resolved markets…</div>
+      <div class="ld" style="animation-delay:.15s">Analyzing outcomes…</div>
+      <div class="ld" style="animation-delay:.3s">Scoring accuracy…</div>
+    </div>
+  </div>
+
+  <!-- B: MISSED SIGNALS -->
+  <div class="a-col">
+    <div class="col-eyebrow"><span>📉</span> SECTION B</div>
+    <div class="col-title">MISSED<br>SIGNALS</div>
+    <div class="col-desc">Low-volume markets with high conviction. These flew under the radar while the crowd chased liquidity elsewhere. If they resolve decisively, the gap was where the alpha was hiding.</div>
+    <div class="col-badge"><span class="rdot" id="dot-b"></span>&nbsp;UNDER-TRACKED</div>
+    <div id="an-missed">
+      <div class="ld">Scanning low-volume markets…</div>
+      <div class="ld" style="animation-delay:.15s">Calculating divergence gaps…</div>
+      <div class="ld" style="animation-delay:.3s">Filtering noise…</div>
+    </div>
+  </div>
+
+  <!-- C: OFF THE PATH -->
+  <div class="a-col">
+    <div class="col-eyebrow"><span>🔍</span> SECTION C</div>
+    <div class="col-title">OFF THE<br>PATH</div>
+    <div class="col-desc">Fringe markets showing extreme conviction — probability above 88% or below 12%. High signal, minimal attention. The anomalies that don't fit the narrative yet, but often do eventually.</div>
+    <div class="col-badge"><span class="rdot" id="dot-c"></span>&nbsp;FRINGE SIGNALS</div>
+    <div id="an-fringe">
+      <div class="ld">Finding fringe patterns…</div>
+      <div class="ld" style="animation-delay:.15s">Mapping extreme probabilities…</div>
+      <div class="ld" style="animation-delay:.3s">Isolating anomalies…</div>
+    </div>
+  </div>
+
+</div>
+
+<div class="page-foot">
+  <a href="/" class="foot-back">&#8592; INTELLIGENCE HUB</a>
+  <div class="foot-links">
+    <a href="/dashboard.html" class="foot-lnk">DASHBOARD</a>
+    <a href="/analysis.html" class="foot-lnk active" style="color:var(--teal)">ANALYSIS</a>
+  </div>
+  <span class="foot-meta">A: 60s &middot; B: 45s &middot; C: 30s REFRESH</span>
+</div>
+
+<script>
+(function(){
+var __cA=null,__cB=null,__cC=null,__tA=0,__tB=0,__tC=0;
+
+function pFetch(u){
+  var pu="https://api.codetabs.com/v1/proxy?quest="+encodeURIComponent(u);
+  var ctrl=new AbortController(),tid=setTimeout(function(){ctrl.abort();},9000);
+  return fetch(pu,{signal:ctrl.signal})
+    .then(function(r){clearTimeout(tid);return r.ok?r.json():null;})
+    .catch(function(){clearTimeout(tid);return null;});
+}
+
+function getP(m){
+  try{var op=JSON.parse(m.outcomePrices||"null");return op?parseFloat(op[0]):parseFloat(m.bestAsk||0.5);}
+  catch(e){return parseFloat(m.bestAsk||0.5);}
+}
+
+function volFmt(v){
+  if(!v)return"$0";
+  if(v>=1e6)return"$"+(v/1e6).toFixed(1)+"M";
+  if(v>=1e3)return"$"+(v/1e3).toFixed(0)+"K";
+  return"$"+Math.round(v);
+}
+
+function getCategory(t){
+  t=(t||"").toLowerCase();
+  if(/bitcoin|crypto|eth|solana|btc|defi|nft|coin|blockchain|token/.test(t))return"crypto";
+  if(/election|president|senate|congress|democrat|republican|vote|ballot|trump|biden|harris|political/.test(t))return"politics";
+  if(/nfl|nba|mlb|nhl|soccer|football|basketball|baseball|sport|championship|tournament|league|cup/.test(t))return"sports";
+  if(/fed|rate|gdp|inflation|recession|market|stock|bond|yield|economy|economic|trade|tariff/.test(t))return"econ";
+  if(/ai|tech|software|apple|google|microsoft|openai|startup|ipo|chip|semiconductor/.test(t))return"tech";
+  if(/covid|cancer|vaccine|health|drug|fda|disease|hospital|medical/.test(t))return"health";
+  if(/war|ukraine|russia|china|nato|military|conflict|geopolitical|nuclear/.test(t))return"world";
+  return"other";
+}
+
+var CAT_LABEL={crypto:"CRYPTO",politics:"POLITICS",sports:"SPORTS",econ:"ECON",tech:"TECH",health:"HEALTH",world:"WORLD",other:"OTHER"};
+
+function flash(id){
+  var d=document.getElementById(id);
+  if(!d)return;
+  d.classList.add("on");
+  setTimeout(function(){d&&d.classList.remove("on");},2200);
+}
+
+function ts(){return new Date().toLocaleTimeString("en-US",{hour:"2-digit",minute:"2-digit"});}
+
+/* ---- SECTION A: WHY IT WORKED ---- */
+async function loadWhy(){
+  var now=Date.now();
+  if(__cA&&(now-__tA)<55000){renderWhy(__cA);return;}
+  var url="https://gamma-api.polymarket.com/markets?closed=true&limit=20&order=volume&ascending=false&active=false";
+  var data=await pFetch(url);
+  if(data&&data.length){__cA=data;__tA=now;}
+  if(__cA)renderWhy(__cA);
+}
+
+function renderWhy(markets){
+  var el=document.getElementById("an-why");
+  if(!el)return;
+  var html="";
+  markets.slice(0,10).forEach(function(m,i){
+    var p=getP(m);
+    var vol=parseFloat(m.volume||0);
+    var q=(m.question||"").substring(0,60);
+    var cat=getCategory(m.question||"");
+    // Determine verdict from resolved price
+    var verdict,vClass,fillColor,fillPct;
+    if(p>=0.95){verdict="YES WON";vClass="v-yes";fillColor="#22c55e";fillPct=100;}
+    else if(p<=0.05){verdict="NO WON";vClass="v-no";fillColor="#ef4444";fillPct=Math.round((1-p)*100);}
+    else if(p>=0.6){verdict="LEANING YES";vClass="v-yes";fillColor="#4ade80";fillPct=Math.round(p*100);}
+    else if(p<=0.4){verdict="LEANING NO";vClass="v-no";fillColor="#f87171";fillPct=Math.round((1-p)*100);}
+    else{verdict="UNRESOLVED";vClass="v-open";fillColor="#ffd700";fillPct=50;}
+    html+='<div class="wk-card flip-in" style="animation-delay:'+(i*60)+'ms">'
+      +'<div class="wk-row">'
+        +'<span class="wk-verdict '+vClass+'">'+verdict+'</span>'
+        +'<span class="wk-q">'+q+(q.length<(m.question||"").length?"…":"")+'</span>'
+      +'</div>'
+      +'<div class="wk-meta">'
+        +'<span class="cat-'+cat+'">'+CAT_LABEL[cat]+'</span>'
+        +'<span>VOL '+volFmt(vol)+'</span>'
+        +'<span>'+Math.round(p*100)+'% YES</span>'
+      +'</div>'
+      +'<div class="wk-bar"><div class="wk-fill" style="width:'+fillPct+'%;background:'+fillColor+'"></div></div>'
+      +'</div>';
+  });
+  el.innerHTML=html||'<div class="empty">No resolved markets available</div>';
+  flash("dot-a");
+  var tsEl=document.getElementById("an-ts");
+  if(tsEl)tsEl.textContent="UPDATED "+ts();
+}
+
+/* ---- SECTION B: MISSED SIGNALS ---- */
+async function loadMissed(){
+  var now=Date.now();
+  if(__cB&&(now-__tB)<40000){renderMissed(__cB);return;}
+  // Fetch a wider set at lower volume cutoff
+  var url="https://gamma-api.polymarket.com/markets?closed=false&limit=50&order=volume&ascending=true&active=true";
+  var data=await pFetch(url);
+  if(data&&data.length){__cB=data;__tB=now;}
+  if(__cB)renderMissed(__cB);
+}
+
+var INSIGHTS=[
+  "Low liquidity. High conviction. Classic pre-breakout signature.",
+  "Volume gap signals institutional disinterest — retail alpha window.",
+  "Under-priced divergence. If this resolves decisively, it was a gift.",
+  "Thin book, strong lean. The market is saying something quietly.",
+  "Crowd hasn't found this yet. Divergence score elevated.",
+  "Minimal volume, outsized signal. Worth watching closely.",
+  "Low-attention market with unusual probability stability.",
+  "Pricing in an outcome most trackers haven't flagged yet."
+];
+
+function renderMissed(markets){
+  var el=document.getElementById("an-missed");
+  if(!el)return;
+  // Filter: meaningful conviction (|p-0.5|>0.2) from the lower-volume markets
+  var filtered=markets.filter(function(m){
+    var p=getP(m),vol=parseFloat(m.volume||0);
+    return Math.abs(p-0.5)>0.2&&vol>100&&vol<2000000;
+  }).slice(0,9);
+  if(!filtered.length){el.innerHTML='<div class="empty">No under-tracked signals found</div>';return;}
+  var html="";
+  filtered.forEach(function(m,i){
+    var p=getP(m),vol=parseFloat(m.volume||0),cat=getCategory(m.question||"");
+    var pct=Math.round(p*100);
+    var q=(m.question||"").substring(0,60);
+    var div=Math.abs(p-0.5);
+    var badge=div>0.35?"HIGH DIVERGENCE":div>0.25?"MED DIVERGENCE":"LOW DIVERGENCE";
+    var fillColor=p>0.5?"#22c55e":"#ef4444";
+    var fillPct=p>0.5?pct:(100-pct);
+    var insight=INSIGHTS[i%INSIGHTS.length];
+    html+='<div class="ms-card">'
+      +'<div class="ms-header">'
+        +'<span class="ms-badge">'+badge+'</span>'
+        +'<span class="cat-'+cat+'" style="font-family:var(--mono);font-size:8px;font-weight:700">'+CAT_LABEL[cat]+'</span>'
+      +'</div>'
+      +'<div class="ms-q">'+q+(q.length<(m.question||"").length?"…":"")+'</div>'
+      +'<div class="ms-insight">'+insight+'</div>'
+      +'<div class="ms-stats">'
+        +'<span>'+pct+'% YES</span>'
+        +'<span>VOL '+volFmt(vol)+'</span>'
+        +'<span>GAP '+(Math.round(div*100))+'pts from 50%</span>'
+      '</div>'
+      +'<div class="ms-bar"><div class="ms-fill" style="width:'+fillPct+'%;background:'+fillColor+'"></div></div>'
+      +'</div>';
+  });
+  el.innerHTML=html;
+  flash("dot-b");
+}
+
+/* ---- SECTION C: OFF THE PATH ---- */
+async function loadFringe(){
+  var now=Date.now();
+  if(__cC&&(now-__tC)<25000){renderFringe(__cC);return;}
+  var url="https://gamma-api.polymarket.com/markets?closed=false&limit=50&order=liquidity&ascending=true&active=true";
+  var data=await pFetch(url);
+  if(data&&data.length){__cC=data;__tC=now;}
+  if(__cC)renderFringe(__cC);
+}
+
+function renderFringe(markets){
+  var el=document.getElementById("an-fringe");
+  if(!el)return;
+  // Filter: extreme probability — p > 0.85 or p < 0.15
+  var filtered=markets.filter(function(m){
+    var p=getP(m);
+    return p>0.85||p<0.15;
+  }).slice(0,9);
+  if(!filtered.length){
+    // Fallback: widest divergence from 50% regardless of threshold
+    filtered=markets.slice().sort(function(a,b){
+      return Math.abs(getP(b)-0.5)-Math.abs(getP(a)-0.5);
+    }).slice(0,9);
+  }
+  var html="";
+  filtered.forEach(function(m,i){
+    var p=getP(m),vol=parseFloat(m.volume||0),cat=getCategory(m.question||"");
+    var pct=Math.round(p*100);
+    var q=(m.question||"").substring(0,58);
+    var extreme=p>0.95?"NEAR CERTAIN":p>0.88?"EXTREME YES":p<0.05?"NEAR CERTAIN NO":p<0.12?"EXTREME NO":"STRONG LEAN";
+    var fillColor=p>0.5?"#22c55e":"#ef4444";
+    html+='<div class="ot-card flip-in" style="animation-delay:'+(i*55)+'ms">'
+      +'<div class="ot-row">'
+        +'<span class="ot-tag">'+extreme+'</span>'
+        +'<span class="ot-q">'+q+(q.length<(m.question||"").length?"…":"")+'</span>'
+      +'</div>'
+      +'<div class="ot-bar-row">'
+        +'<span class="ot-pct" style="color:'+fillColor+'">'+pct+'%</span>'
+        +'<div class="ot-bar"><div class="ot-fill" style="width:'+gct+'%;background:'+fillColor+'"></div></div>'
+        +'<span class="ot-vol cat-'+cat+'">'+CAT_LABEL[cat]+'</span>'
+      +'</div>'
+      +'</div>';
+  });
+  el.innerHTML=html;
+  flash("dot-c");
+}
+
+/* INIT + INTERVALS */
+function loadAll(){loadWhy();loadMissed();loadFringe();}
+
+setInterval(loadWhy,60000);
+setInterval(loadMissed,45000);
+setInterval(loadFringe,30000);
+
+if(document.readyState!=="loading"){loadAll();}
+else{document.addEventListener("DOMContentLoaded",loadAll);}
+
+})();
+</script>
+</body>
+</html>
