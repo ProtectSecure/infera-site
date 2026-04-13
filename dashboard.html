@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Infera Â· Markets Intelligence</title>
+<title>Infera · Markets Intelligence</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <style>
   :root {
@@ -24,7 +24,7 @@
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body { background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; font-size: 13px; line-height: 1.5; min-height: 100vh; }
 
-  /* ââ Header ââ */
+  /* ── Header ── */
   header { display: flex; align-items: center; justify-content: space-between; padding: 12px 24px; border-bottom: 1px solid var(--border); background: var(--surface); position: sticky; top: 0; z-index: 100; }
   .logo { font-size: 15px; font-weight: 700; letter-spacing: -0.3px; color: var(--text); }
   .logo span { color: var(--accent); }
@@ -36,10 +36,10 @@
   .refresh-btn { background: var(--surface2); border: 1px solid var(--border); color: var(--muted); padding: 4px 12px; border-radius: 6px; cursor: pointer; font-size: 11px; transition: all 0.2s; }
   .refresh-btn:hover { border-color: var(--accent); color: var(--accent); }
 
-  /* ââ Layout ââ */
+  /* ── Layout ── */
   main { padding: 16px 24px; max-width: 1600px; margin: 0 auto; }
 
-  /* ââ Ticker tape ââ */
+  /* ── Ticker tape ── */
   .ticker-tape { display: flex; gap: 12px; overflow-x: auto; padding: 10px 0 14px; scrollbar-width: none; }
   .ticker-tape::-webkit-scrollbar { display: none; }
   .ticker-chip { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 8px 14px; min-width: 110px; flex-shrink: 0; cursor: default; transition: border-color 0.2s; }
@@ -51,13 +51,13 @@
   .neg { color: var(--red); }
   .neu { color: var(--muted); }
 
-  /* ââ Grid ââ */
+  /* ── Grid ── */
   .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
   .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; margin-bottom: 16px; }
   @media (max-width: 1100px) { .grid-3 { grid-template-columns: 1fr 1fr; } }
   @media (max-width: 780px)  { .grid-2, .grid-3 { grid-template-columns: 1fr; } }
 
-  /* ââ Cards ââ */
+  /* ── Cards ── */
   .card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 16px; }
   .card-title { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.8px; color: var(--muted); margin-bottom: 12px; display: flex; align-items: center; gap: 6px; }
   .card-title .badge { background: var(--surface2); border-radius: 20px; padding: 1px 7px; font-size: 10px; color: var(--accent); letter-spacing: 0; text-transform: none; font-weight: 500; }
@@ -67,7 +67,7 @@
   .dot-muted  { background: var(--muted); }
   @keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:0.5; } }
 
-  /* ââ Divergence table ââ */
+  /* ── Divergence table ── */
   .div-table { width: 100%; border-collapse: collapse; }
   .div-table th { font-size: 10px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; padding: 0 0 8px; text-align: left; border-bottom: 1px solid var(--border); }
   .div-table td { padding: 8px 0; border-bottom: 1px solid rgba(31,41,64,0.5); vertical-align: middle; }
@@ -80,7 +80,7 @@
   .prob-low  { background: rgba(239,68,68,0.12);  color: var(--red); }
   .spread-chip { font-family: var(--font); font-size: 11px; font-weight: 700; color: var(--purple); }
 
-  /* ââ Sector bars ââ */
+  /* ── Sector bars ── */
   .sector-list { display: flex; flex-direction: column; gap: 6px; }
   .sector-row { display: flex; align-items: center; gap: 8px; }
   .sector-label { font-size: 11px; font-weight: 600; color: var(--muted); width: 36px; flex-shrink: 0; }
@@ -88,7 +88,7 @@
   .sector-bar { height: 100%; border-radius: 3px; transition: width 0.5s ease; }
   .sector-pct { font-family: var(--font); font-size: 11px; width: 52px; text-align: right; flex-shrink: 0; }
 
-  /* ââ Rate tiles ââ */
+  /* ── Rate tiles ── */
   .rate-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
   .rate-tile { background: var(--surface2); border-radius: 8px; padding: 10px 12px; }
   .rate-label { font-size: 10px; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
@@ -97,7 +97,7 @@
   .inverted   { color: var(--red); }
   .normal     { color: var(--green); }
 
-  /* ââ Correlation pairs ââ */
+  /* ── Correlation pairs ── */
   .pair-list { display: flex; flex-direction: column; gap: 8px; }
   .pair-row { display: flex; align-items: center; gap: 10px; background: var(--surface2); border-radius: 8px; padding: 8px 12px; }
   .pair-names { flex: 1; }
@@ -108,7 +108,7 @@
   .r-neg { color: var(--red); }
   .pair-arrow { font-size: 10px; color: var(--muted); }
 
-  /* ââ Signal list ââ */
+  /* ── Signal list ── */
   .signal-list { display: flex; flex-direction: column; gap: 8px; }
   .signal-row { background: var(--surface2); border-radius: 8px; padding: 10px 12px; border-left: 3px solid; }
   .signal-strong   { border-color: var(--red); }
@@ -118,7 +118,7 @@
   .signal-meta { display: flex; gap: 10px; margin-top: 4px; font-size: 10px; color: var(--muted); }
   .signal-meta .tag { background: var(--surface); border-radius: 3px; padding: 1px 5px; }
 
-  /* ââ News feed ââ */
+  /* ── News feed ── */
   .news-list { display: flex; flex-direction: column; gap: 0; }
   .news-item { padding: 9px 0; border-bottom: 1px solid rgba(31,41,64,0.5); }
   .news-item:last-child { border-bottom: none; }
@@ -130,10 +130,10 @@
   .sent-bear { background: rgba(239,68,68,0.12); color: var(--red); }
   .sent-neu  { background: rgba(107,122,153,0.12); color: var(--muted); }
 
-  /* ââ Chart container ââ */
+  /* ── Chart container ── */
   .chart-wrap { position: relative; height: 200px; }
 
-  /* ââ Loading / empty ââ */
+  /* ── Loading / empty ── */
   .loading { color: var(--muted); font-size: 12px; text-align: center; padding: 24px; }
   .dot-flash::after { content: '...'; animation: dots 1.2s steps(4, end) infinite; }
   @keyframes dots { 0%,20% { content:''; } 40% { content:'.'; } 60% { content:'..'; } 80%,100% { content:'...'; } }
@@ -144,11 +144,11 @@
 <body>
 
 <header>
-  <div class="logo">INFERA <span>Â·</span> Markets Intelligence</div>
+  <div class="logo">INFERA <span>·</span> Markets Intelligence</div>
   <div class="status-bar">
     <div class="market-status" id="mktStatus">LOADING</div>
-    <span class="refresh-info" id="lastRefresh">â</span>
-    <button class="refresh-btn" onclick="refreshAll()">â» Refresh</button>
+    <span class="refresh-info" id="lastRefresh">—</span>
+    <button class="refresh-btn" onclick="refreshAll()">↻ Refresh</button>
   </div>
 </header>
 
@@ -241,7 +241,7 @@
         Divergence Signals
         <span class="badge" id="sigBadge">0</span>
       </div>
-      <div id="sigList"><div class="empty-msg">POST to /analytics/ingest-market-data<br>then /analytics/divergence to see signals</div></div>
+     <div id="sigList"><div class="empty-msg">POST to /analytics/ingest-market-data<br>then /analytics/divergence to see signals</div></div>
     </div>
 
     <!-- News sentiment -->
@@ -249,7 +249,7 @@
       <div class="card-title">
         <div class="dot dot-green"></div>
         Market News
-        <span class="badge">Bloomberg Â· Barron's</span>
+        <span class="badge">Bloomberg · Barron's</span>
       </div>
       <div id="newsFeed"><div class="loading dot-flash">Loading headlines</div></div>
     </div>
@@ -271,7 +271,7 @@ const MARKET_TICKERS = ['SPY','QQQ','IWM','VIX','GLD','TLT','UUP','BTC-USD','ETH
 const SECTOR_TICKERS = ['XLF','XLK','XLE','XLV','XLI','XLP','XLY','XLB','XLRE','XLU','XLC'];
 const SECTOR_NAMES = {
   XLF:'Financials', XLK:'Technology', XLE:'Energy', XLV:'Healthcare', XLI:'Industrials',
-  XLP:'Cons. Staples', XLY:'Cons. Disc.', YLB:'Materials', XLRE:'Real Estate',
+  XLP:'Cons. Staples', XLY:'Cons. Disc.', XLB:'Materials', XLRE:'Real Estate',
   XLU:'Utilities', XLC:'Comm. Services'
 };
 
@@ -290,12 +290,12 @@ async function fetchJSON(url, opts = {}) {
 }
 
 function fmt(n, dec = 2) {
-  if (n == null || isNaN(n)) return 'â';
+  if (n == null || isNaN(n)) return '—';
   return n.toFixed(dec);
 }
 
 function fmtPct(n) {
-  if (n == null || isNaN(n)) return 'â';
+  if (n == null || isNaN(n)) return '—';
   const s = (n >= 0 ? '+' : '') + n.toFixed(2) + '%';
   return s;
 }
@@ -316,9 +316,9 @@ function sentiment(text) {
   const bear = /\b(fall|drop|crash|decline|loss|bear|weak|cut|downgrade|sell|miss|recession|fear|risk|concern)\b/gi;
   const bScore = (text.match(bull) || []).length;
   const sScore = (text.match(bear) || []).length;
-  if (bScore > sScore) return { cls: 'sent-bull', label: 'â Bullish' };
-  if (sScore > bScore) return { cls: 'sent-bear', label: 'â Bearish' };
-  return { cls: 'sent-neu', label: 'â Neutral' };
+  if (bScore > sScore) return { cls: 'sent-bull', label: '↑ Bullish' };
+  if (sScore > bScore) return { cls: 'sent-bear', label: '↓ Bearish' };
+  return { cls: 'sent-neu', label: '→ Neutral' };
 }
 
 function ago(dateStr) {
@@ -332,7 +332,7 @@ function ago(dateStr) {
 let spyChartInst = null;
 
 // ============================================================
-// TICKER TAPE â Yahoo Finance v7 (CORS enabled)
+// TICKER TAPE — Yahoo Finance v7 (CORS enabled)
 // ============================================================
 async function loadTickerTape() {
   const tickers = MARKET_TICKERS;
@@ -358,7 +358,7 @@ async function loadTickerTape() {
     return `
       <div class="ticker-chip">
         <div class="ticker-sym">${r.symbol}</div>
-        <div class="ticker-price">${r.regularMarketPrice != null ? (r.symbol.includes('-USD') ? '$' + r.regularMarketPrice.toLocaleString(undefined, {maximumFractionDigits: 0}) : r.regularMarketPrice.toFixed(2)) : 'â'}</div>
+        <div class="ticker-price">${r.regularMarketPrice != null ? (r.symbol.includes('-USD') ? '$' + r.regularMarketPrice.toLocaleString(undefined, {maximumFractionDigits: 0}) : r.regularMarketPrice.toFixed(2)) : '—'}</div>
         <div class="ticker-chg ${cls}">${fmtPct(pct)}</div>
       </div>`;
   }).join('');
@@ -396,18 +396,18 @@ async function loadSectors() {
         <div style="flex:0 0 90px; font-size:11px; color:var(--muted);">${name}</div>
         <div class="sector-bar-wrap">
           <div class="sector-bar" style="width:${barW}%; background:${barColor};"></div>
-        </div>
+  2     </div>
         <div class="sector-pct ${cls}">${fmtPct(pct)}</div>
       </div>`;
   }).join('');
 
   document.getElementById('sectorBars').innerHTML = `<div class="sector-list">${html}</div>`;
   document.getElementById('sectorBadge').textContent =
-    `Best: ${results[0]?.symbol} Â· Worst: ${results[results.length-1]?.symbol}`;
+    `Best: ${results[0]?.symbol} · Worst: ${results[results.length-1]?.symbol}`;
 }
 
 // ============================================================
-// CROSS-PLATFORM DIVERGENCE â compare same events on Poly vs PredictIt
+// CROSS-PLATFORM DIVERGENCE — compare same events on Poly vs PredictIt
 // ============================================================
 async function loadDivergence() {
   // Fetch Polymarket top markets
@@ -431,7 +431,7 @@ async function loadDivergence() {
       <tr>
         <td class="question">
           ${m.question || m.title || 'Unknown'}
-          <small>Vol ${volFmt}${endDate ? ' Â· ' + endDate : ''}</small>
+          <small>Vol ${volFmt}${endDate ? ' · ' + endDate : ''}</small>
         </td>
         <td><span class="prob-chip ${cls}">${(prob * 100).toFixed(0)}%</span></td>
         <td><span style="font-size:10px; color:var(--muted);">Polymarket</span></td>
@@ -451,7 +451,7 @@ async function loadDivergence() {
 }
 
 // ============================================================
-// MACRO RATES â via Infera backend (FRED)
+// MACRO RATES — via Infera backend (FRED)
 // ============================================================
 async function loadRates() {
   const data = await fetchJSON(`${INFERA_BASE}/markets/macro/rates`);
@@ -478,7 +478,7 @@ async function loadRates() {
     const v = r[id]?.value;
     return `<div class="rate-tile">
       <div class="rate-label">${label}</div>
-      <div class="rate-value">${v != null ? parseFloat(v).toFixed(2) + '%' : 'â'}</div>
+      <div class="rate-value">${v != null ? parseFloat(v).toFixed(2) + '%' : '—'}</div>
       <div class="rate-sub">${r[id]?.date || ''}</div>
     </div>`;
   }
@@ -491,13 +491,13 @@ async function loadRates() {
       ${tile('DGS2', '2Y Treasury')}
       <div class="rate-tile">
         <div class="rate-label">Yield Curve</div>
-        <div class="rate-value ${spreadClass}">${spread != null ? (spread > 0 ? '+' : '') + spread.toFixed(2) + '%' : 'â'}</div>
-        <div class="rate-sub">${inverted === true ? 'â  Inverted' : inverted === false ? 'Normal' : ''}</div>
+        <div class="rate-value ${spreadClass}">${spread != null ? (spread > 0 ? '+' : '') + spread.toFixed(2) + '%' : '—'}</div>
+        <div class="rate-sub">${inverted === true ? '⚠ Inverted' : inverted === false ? 'Normal' : ''}</div>
       </div>
       ${tile('DFF', 'Fed Funds (Eff.)')}
     </div>`;
 
-  document.getElementById('ratesBadge').textContent = 'FRED Â· Live';
+  document.getElementById('ratesBadge').textContent = 'FRED · Live';
 }
 
 async function loadRatesFallback() {
@@ -509,7 +509,7 @@ async function loadRatesFallback() {
   const tiles = results.map(r => `
     <div class="rate-tile">
       <div class="rate-label">${labels[r.symbol] || r.symbol}</div>
-      <div class="rate-value">${r.regularMarketPrice?.toFixed(2) || 'â'}</div>
+      <div class="rate-value">${r.regularMarketPrice?.toFixed(2) || '—'}</div>
       <div class="rate-sub ${pctClass(r.regularMarketChangePercent)}">${fmtPct(r.regularMarketChangePercent)}</div>
     </div>`).join('');
   const el = document.getElementById('fredFallback');
@@ -564,7 +564,7 @@ async function loadPredictionMarkets() {
 }
 
 // ============================================================
-// CORRELATIONS â Infera backend
+// CORRELATIONS — Infera backend
 // ============================================================
 async function loadCorrelations() {
   const data = await fetchJSON(`${INFERA_BASE}/analytics/correlations`);
@@ -583,14 +583,14 @@ async function loadCorrelations() {
   const html = pairs.slice(0, 6).map(p => {
     const r = p.r ?? p.pearson_r ?? 0;
     const cls = r >= 0 ? 'r-pos' : 'r-neg';
-   const direction = r >= 0 ? 'â corr' : 'â inv';
+    const direction = r >= 0 ? '↑ corr' : '↓ inv';
     const nameA = (p.question_a || p.market_a || '').replace('equity:', '').replace('macro:', '').replace('poly:', '');
     const nameB = (p.question_b || p.market_b || '').replace('equity:', '').replace('macro:', '').replace('poly:', '');
     return `
       <div class="pair-row">
         <div class="pair-names">
-        <div class="pair-a">${nameA.length > 35 ? nameA.slice(0,35)+'â¦' : nameA}</div>
-          <div class="pair-b">${nameB.length > 35 ? nameB.slice(0,35)+'â¦' : nameB}</div>
+          <div class="pair-a">${nameA.length > 35 ? nameA.slice(0,35)+'…' : nameA}</div>
+          <div class="pair-b">${nameB.length > 35 ? nameB.slice(0,35)+'…' : nameB}</div>
         </div>
         <div>
           <div class="pair-r ${cls}">${r.toFixed(2)}</div>
@@ -600,11 +600,11 @@ async function loadCorrelations() {
   }).join('');
 
   document.getElementById('corrPairs').innerHTML = `<div class="pair-list">${html}</div>`;
-  document.getElementById('corrBadge').textContent = `${pairs.length} pairs Â· râ¥${(data.r_threshold || 0.6).toFixed(2)}`;
+  document.getElementById('corrBadge').textContent = `${pairs.length} pairs · r≥${(data.r_threshold || 0.6).toFixed(2)}`;
 }
 
 // ============================================================
-// DIVERGENCE SIGNALS â Infera backend
+// DIVERGENCE SIGNALS — Infera backend
 // ============================================================
 async function loadSignals() {
   const data = await fetchJSON(`${INFERA_BASE}/analytics/divergence`);
@@ -623,11 +623,11 @@ async function loadSignals() {
     const q = (s.question || s.market_id || '').replace(/^(equity:|macro:|poly:|kalshi:)/, '');
     return `
       <div class="signal-row signal-${strength}">
-        <div class="signal-q">${q.length > 55 ? q.slice(0,55)+'â¦' : q}</div>
+        <div class="signal-q">${q.length > 55 ? q.slice(0,55)+'…' : q}</div>
         <div class="signal-meta">
           <span class="tag">${strength.toUpperCase()}</span>
           <span class="tag">${div}% gap</span>
-    0     <span class="tag">${s.direction || ''}</span>
+          <span class="tag">${s.direction || ''}</span>
         </div>
       </div>`;
   }).join('');
@@ -686,10 +686,10 @@ async function loadSpyChart() {
         borderWidth: 1.5,
         fill: true,
         backgroundColor: parseFloat(chg) >= 0 ? 'rgba(34,197,94,0.07)' : 'rgba(239,68,68,0.07)',
-    0   tension: 0.2,
+        tension: 0.2,
         pointRadius: 0,
         pointHoverRadius: 3,
-    0 }]
+      }]
     },
     options: {
       responsive: true,
@@ -709,7 +709,7 @@ async function loadSpyChart() {
      0    grid: { color: 'rgba(31,41,64,0.5)', lineWidth: 0.5 },
           ticks: { color: '#6b7a99', font: { size: 10 }, maxTicksLimit: 4,
             callback: v => '$' + v.toFixed(0) }
-        }
+        }
       },
       interaction: { mode: 'index', intersect: false },
     }
@@ -717,7 +717,7 @@ async function loadSpyChart() {
 }
 
 // ============================================================
-// NEWS FEED â Infera trending endpoint
+// NEWS FEED — Infera trending endpoint
 // ============================================================
 async function loadNews() {
   const data = await fetchJSON(`${INFERA_BASE}/trending`);
@@ -754,7 +754,7 @@ let refreshCount = 0;
 
 async function refreshAll() {
   refreshCount++;
-  document.getElementById('lastRefresh').textContent = 'Refreshingâ¦';
+  document.getElementById('lastRefresh').textContent = 'Refreshing…';
 
   await Promise.allSettled([
     loadTickerTape(),
