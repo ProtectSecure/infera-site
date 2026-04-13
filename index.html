@@ -1399,8 +1399,9 @@ fetchEvents();
 <script>
 (function(){
   async function pFetch(u){
-    var ctrl=new AbortController(),tid=setTimeout(function(){ctrl.abort();},6000);
-    try{var r=await fetch(u,{signal:ctrl.signal});clearTimeout(tid);return r.ok?r.json():null;}
+    var pu=u.indexOf("polymarket")>=0?"https://api.codetabs.com/v1/proxy?quest="+encodeURIComponent(u):u;
+    var ctrl=new AbortController(),tid=setTimeout(function(){ctrl.abort();},8000);
+    try{var r=await fetch(pu,{signal:ctrl.signal});clearTimeout(tid);return r.ok?r.json():null;}
     catch(e){clearTimeout(tid);return null;}
   }
   function probChip(p){
