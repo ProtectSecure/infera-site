@@ -372,6 +372,7 @@ body.light-mode{--bg:#f4f4ef;--s1:#e8e8e2;--s2:#d5d5ce;--b1:#b8b8b0;--b2:#9a9a92
 .hub-glow{position:relative}
 .hub-glow::after{content:'';position:absolute;inset:-30px -20px;background:radial-gradient(ellipse 60% 40% at 50% 60%,rgba(0,255,200,.04) 0%,transparent 70%);pointer-events:none;z-index:0}
 .hub-glow>*{position:relative;z-index:1}
+.ai-insight{font-family:'JetBrains Mono',monospace;font-size:8px;color:var(--teal);opacity:.82;margin-top:5px;padding:3px 0 3px 7px;border-left:2px solid rgba(0,201,167,.35);line-height:1.6;letter-spacing:.01em;display:block;}
 </style>
 </head>
 <body>
@@ -609,6 +610,7 @@ function rowClick(e, id) {
     lastTapId = null; lastTapTime = 0;
     hideTip();
     openDeepDive(ev);
+    setTopicFocus(ev.question||ev.title||'',getCategory(ev.question||ev.title||''));
   } else {
     lastTapId = id; lastTapTime = now;
     selectPreview(ev, e);
@@ -1427,6 +1429,7 @@ fetchEvents();
     <span class="rdot" id="mi-rdot"></span>
     <span class="mi-ts" id="mi-ts"></span>
   </div>
+  <div id="topic-bar" style="display:none;align-items:center;gap:8px;padding:5px 14px;background:rgba(0,201,167,.07);border-bottom:1px solid rgba(0,201,167,.2);font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:.1em"><span style="color:var(--teal)">&#9672;</span><span class="tb-label" style="color:var(--bright);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:60vw">FOCUS:</span><span style="color:var(--dim);margin-left:4px">ALL PANELS FILTERED</span><button onclick="clearTopicFocus()" style="background:none;border:1px solid rgba(0,201,167,.25);color:var(--teal);font-family:'JetBrains Mono',monospace;font-size:7px;letter-spacing:.08em;padding:2px 8px;cursor:pointer;border-radius:2px;margin-left:8px">&#x2715; RESET</button></div>
   <div class="mi-sub-label">Real-time probability-weighted prediction market signals. Higher conviction = greater deviation from 50% consensus. Surface the edge before the crowd catches up.</div>
   <div class="mi-grid">
     <div class="mi-panel">
@@ -1489,9 +1492,19 @@ function catClass(c){return"cat-"+c;}
 function catBgClass(c){return"cat-"+c+"-bg";}
 var CAT_LABEL={crypto:"CRYPTO",politics:"POLITICS",sports:"SPORTS",econ:"ECON",tech:"TECH",health:"HEALTH",world:"WORLD",other:"OTHER"};
 
+var __topKW=[],__topCat='all',__topLabel='',__topActive=false;
+var __STOP=new Set('will the and for in to be is are was were has have had not that this with from they their there than then more when what who which how any all can would could should does did been being make over under about after before during within without above below between against through because also both each most other some such into itself'.split(' '));
+function extractKW(q){return q.toLowerCase().replace(/[^a-z0-9\s]/g,' ').split(/\s+/).filter(function(w){return w.length>2&&!__STOP.has(w);}).slice(0,7);}
+function topFilt(mkts){if(!__topActive||!__topKW.length)return mkts;var f=mkts.filter(function(m){var q=(m.question||'').toLowerCase();return __topKW.some(function(k){return q.indexOf(k)>=0;});});if(f.length<2)f=mkts.filter(function(m){return getCategory(m.question||'')==__topCat;});return f.length>=2?f:mkts;}
+function djb2(s){var h=5381;for(var i=0;i<s.length;i++)h=((h<<5)+h)^s.charCodeAt(i);return Math.abs(h);}
+function genInsight(m){var p=getP(m),vol=parseFloat(m.volume||0),pct=Math.round(p*100),dv=Math.abs(p-0.5),h=djb2(m.question||'');var T;if(p>=0.90)T=['Crowd priced in at '+pct+'% YES. Market has largely resolved this question.','Near-unanimous at '+pct+'%. The '+volFmt(vol)+' in volume reflects high confidence.','Dominant consensus at '+pct+'%. Only a major catalyst could reverse this pricing.'];else if(p<=0.10)T=['Near-zero probability at '+pct+'% YES. Crowd has effectively ruled this out.',pct+'% YES — market treats this as resolved. '+(100-pct)+'% backing the NO scenario.','Strong NO at '+(100-pct)+'%. Requires extraordinary development to shift.'];else if(p>=0.72)T=[pct+'% YES with '+volFmt(vol)+' behind it. Conviction building toward resolution.','Solid YES lean at '+pct+'%. Market pricing favorable odds with room to extend.','Growing YES consensus at '+pct+'%. Watch for a catalyst to push into certainty territory.'];else if(p<=0.28)T=[pct+'% YES — crowd pricing against this outcome. '+(100-pct)+'% NO lean growing.','Bearish read at '+pct+'% YES. '+volFmt(vol)+' positioned against the YES scenario.','Persistent NO tilt at '+(100-pct)+'%. Market trending toward rejection of this outcome.'];else if(dv<0.07)T=['Near-perfect deadlock at '+pct+'%. Any new signal will move this fast.','50/50 split at '+pct+'% YES. High-information event with binary resolution pending.','Maximum uncertainty at '+pct+'% YES — this market is waiting for a catalyst.'];else T=['Moderate '+(p>0.5?'YES':'NO')+' lean at '+pct+'%. Directional signal building but not decisive.',pct+'% YES on '+volFmt(vol)+' volume. Market positioning ahead of resolution.','Active conviction at '+pct+'%. '+(p>0.5?'YES side growing.':'NO side gaining ground.')+' Watch for acceleration.'];return T[h%T.length];}
+function setTopicFocus(q,cat){__topKW=extractKW(q);__topCat=cat||getCategory(q);__topLabel=(q||'').substring(0,50)+((q||'').length>50?'…':'');__topActive=true;updateTopicBar();reloadAllPanels();}
+function clearTopicFocus(){__topActive=false;__topKW=[];__topLabel='';updateTopicBar();reloadAllPanels();}
+function reloadAllPanels(){loadOpps();loadNarr();loadCross();loadDiv();}
+function updateTopicBar(){var bar=document.getElementById('topic-bar');if(!bar)return;if(__topActive){bar.style.display='flex';var lbl=bar.querySelector('.tb-label');if(lbl)lbl.textContent='FOCUS: '+__topLabel;}else{bar.style.display='none';}}
 function renderOpps(markets){
   var el=document.getElementById("mi-opps");if(!el)return;
-  var top=markets.slice(0,8);
+  var top=topFilt(markets).slice(0,8);
   var html="";
   top.forEach(function(m,i){
     var p=getP(m),cat=getCategory(m.question||""),vol=parseFloat(m.volume||0),pct=Math.round(p*100);
@@ -1501,6 +1514,7 @@ function renderOpps(markets){
       +'<span style="flex:1;font-size:9.5px;line-height:1.3">'+title+(title.length<(m.question||"").length?"…":"")+'</span>'
       +probChip(p)
       +'<span style="font-family:var(--mono);font-size:8px;color:var(--dim);min-width:36px;text-align:right">'+volFmt(vol)+'</span>'
+      +'<div class="ai-insight">'+genInsight(m)+'</div>'
       +'</div>';
   });
   el.innerHTML=html||'<div style="color:var(--dim);font-size:10px;padding:8px 0">No data</div>';
@@ -1518,7 +1532,7 @@ function narrAction(p,prev){
 }
 function renderNarr(markets){
   var el=document.getElementById("mi-narr");if(!el)return;
-  var sorted=markets.slice().sort(function(a,b){return Math.abs(getP(b)-0.5)-Math.abs(getP(a)-0.5);}).slice(0,7);
+  var sorted=topFilt(markets).slice().sort(function(a,b){return Math.abs(getP(b)-0.5)-Math.abs(getP(a)-0.5);}).slice(0,7);
   var html="";
   sorted.forEach(function(m,i){
     var p=getP(m),act=narrAction(p),cat=getCategory(m.question||"");
@@ -1528,6 +1542,7 @@ function renderNarr(markets){
       +'<span class="narr-action" style="background:'+act.bg+';color:'+act.c+';border-color:'+act.c+'40">'+act.label+'</span>'
       +'<span class="narr-title">'+title+(title.length<(m.question||"").length?"…":"")+'</span>'
       +'<span class="'+catClass(cat)+'" style="font-family:var(--mono);font-size:8px;font-weight:700">'+CAT_LABEL[cat]+'</span>'
+      +'<div class="ai-insight">'+genInsight(m)+'</div>'
       +'</div>';
   });
   el.innerHTML=html||'<div style="color:var(--dim);font-size:10px;padding:8px 0">No data</div>';
@@ -1536,7 +1551,7 @@ function renderNarr(markets){
 function renderCross(markets){
   var el=document.getElementById("mi-cross");if(!el)return;
   // Score each market by "signal strength" = divergence from 0.5 * log(volume)
-  var scored=markets.map(function(m){
+  var scored=topFilt(markets).map(function(m){
     var p=getP(m),vol=Math.max(parseFloat(m.volume||1),1),div=Math.abs(p-0.5);
     return{m:m,p:p,div:div,score:div*Math.log(vol)};
   }).sort(function(a,b){return b.score-a.score;}).slice(0,7);
@@ -1572,6 +1587,7 @@ function renderForensics(markets){
       +probChip(p)
       +'<span style="font-family:var(--mono);font-size:8px;color:'+sc+';min-width:28px;text-align:right">'+signal+'</span>'
       +'<span style="font-family:var(--mono);font-size:8px;color:var(--dim);min-width:36px;text-align:right">'+volFmt(vol)+'</span>'
+      +'<div class="ai-insight">'+genInsight(m)+'</div>'
       +'</div>';
   });
   el.innerHTML=html||'<div style="color:var(--dim);font-size:10px;padding:8px">No data</div>';
@@ -1580,7 +1596,7 @@ function renderForensics(markets){
 function renderDiv(markets){
   var el=document.getElementById("mi-divtable"),badge=document.getElementById("div-badge");
   if(!el)return;
-  var top=markets.slice(0,12);
+  var top=topFilt(markets).slice(0,12);
   if(badge)badge.textContent=top.length+" markets";
   var html="";
   top.forEach(function(m){
@@ -1596,6 +1612,7 @@ function renderDiv(markets){
         +'<div class="div-bar-center"></div>'
       +'</div>'
       +'<div class="div-score-row"><span>D = |'+pct+'% − 50%| × √'+volFmt(vol).replace("$","")+'</span><span style="color:'+fillColor+'">D-SCORE: '+dScore+'</span></div>'
+      +'<div class="ai-insight">'+genInsight(m)+'</div>'
       +'</div>';
   });
   el.innerHTML=html||'<div style="color:var(--dim);font-size:10px;padding:8px 0">No data</div>';
