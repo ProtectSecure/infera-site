@@ -241,7 +241,7 @@
         Divergence Signals
         <span class="badge" id="sigBadge">0</span>
       </div>
-     <div id="sigList"><div class="empty-msg">POST to /analytics/ingest-market-data<br>then /analytics/divergence to see signals</div></div>
+      <div id="sigList"><div class="empty-msg">POST to /analytics/ingest-market-data<br>then /analytics/divergence to see signals</div></div>
     </div>
 
     <!-- News sentiment -->
@@ -263,11 +263,12 @@
 // CONFIG
 // ============================================================
 const INFERA_BASE    = '';         // same-origin; set to https://infera.melophon.com for remote
-const CORS_PROXY     = 'https://corsproxy.io/?';
-const YF_BASE        = CORS_PROXY + 'https://query1.finance.yahoo.com';
-const POLY_BASE      = CORS_PROXY + 'https://gamma-api.polymarket.com';
+const AO_PROXY       = 'https://api.allorigins.win/raw?url='; // Free CORS proxy, no key needed
+const YF_HOST        = 'https://query2.finance.yahoo.com';   // v8/finance/chart works; v7/quote is down
+const POLY_HOST      = 'https://gamma-api.polymarket.com';
 const FRED_API_KEY   = '';         // Free key: https://fred.stlouisfed.org/docs/api/api_key.html
 const NEWS_API_KEY   = '';         // Free key: https://newsapi.org
+const FINNHUB_API_KEY = '';        // Free key: https://finnhub.io (60 calls/min, real-time quotes)
 const AUTO_REFRESH_SEC = 60;       // seconds between auto-refreshes
 
 const MARKET_TICKERS = ['SPY','QQQ','IWM','VIX','GLD','TLT','UUP','BTC-USD','ETH-USD'];
@@ -332,17 +333,37 @@ function ago(dateStr) {
   return `${Math.round(mins/1440)}d ago`;
 }
 
+// Wrap a URL through the allorigins CORS proxy
+function proxied(url) {
+  return AO_PROXY + encodeURIComponent(url);
+}
+
+// Fetch a single equity quote via Yahoo v8 chart meta (works without API key)
+async function yfQuote(sym) {
+  const d = await fetchJSON(proxied(`${YF_HOST}/v8/finance/chart/${encodeURIComponent(sym)}?range=1d&interval=1d&includePrePost=false`));
+  const m = d?.chart?.result?.[0]?.meta;
+  if (!m?.regularMarketPrice) return null;
+  const prev = m.chartPreviousClose || m.previousClose || m.regularMarketPrice;
+  const pct = prev ? (m.regularMarketPrice - prev) / prev * 100 : 0;
+  return { symbol: sym, regularMarketPrice: m.regularMarketPrice, regularMarketChangePercent: pct, marketState: m.marketState || '' };
+}
+
+// Fetch quote via Finnhub (requires FINNHUB_API_KEY)
+async function fhQuote(sym) {
+  const d = await fetchJSON(`https://finnhub.io/api/v1/quote?symbol=${sym}&token=${FINNHUB_API_KEY}`);
+  if (!d || d.c == null || d.c === 0) return null;
+  return { symbol: sym, regularMarketPrice: d.c, regularMarketChangePercent: d.dp, marketState: '' };
+}
+
 let spyChartInst = null;
 
 // ============================================================
-// TICKER TAPE — Yahoo Finance v7 (CORS enabled)
+// TICKER TAPE — Finnhub (with key) or Yahoo Finance v8 chart
 // ============================================================
 async function loadTickerTape() {
   const tickers = MARKET_TICKERS;
-  const symbols = tickers.join(',');
-  const url = `${YF_BASE}/v7/finance/quote?symbols=${symbols}&fields=regularMarketPrice,regularMarketChangePercent,marketState,shortName`;
-  const data = await fetchJSON(url);
-  const results = data?.quoteResponse?.result || [];
+  const quoteFn = FINNHUB_API_KEY ? fhQuote : yfQuote;
+  const results = (await Promise.all(tickers.map(quoteFn))).filter(Boolean);
 
   if (!results.length) {
     document.getElementById('tickerTape').innerHTML = '<div class="error-msg">Could not load market data</div>';
@@ -370,13 +391,11 @@ async function loadTickerTape() {
 }
 
 // ============================================================
-// SECTOR PERFORMANCE
+// SECTOR PERFORMANCE — Finnhub (with key) or Yahoo Finance v8 chart
 // ============================================================
 async function loadSectors() {
-  const symbols = SECTOR_TICKERS.join(',');
-  const url = `${YF_BASE}/v7/finance/quote?symbols=${symbols}&fields=regularMarketPrice,regularMarketChangePercent,shortName`;
-  const data = await fetchJSON(url);
-  const results = data?.quoteResponse?.result || [];
+  const quoteFn = FINNHUB_API_KEY ? fhQuote : yfQuote;
+  const results = (await Promise.all(SECTOR_TICKERS.map(quoteFn))).filter(Boolean);
 
   if (!results.length) {
     document.getElementById('sectorBars').innerHTML = '<div class="error-msg">Could not load sectors</div>';
@@ -414,7 +433,7 @@ async function loadSectors() {
 // ============================================================
 async function loadDivergence() {
   // Fetch Polymarket top markets
-  const polyUrl = `${POLY_BASE}/markets?closed=false&limit=30&order=volume&ascending=false&active=true`;
+  const polyUrl = proxied(`${POLY_HOST}/markets?closed=false&limit=30&order=volume&ascending=false&active=true`);
   const polyData = await fetchJSON(polyUrl);
   const markets = Array.isArray(polyData) ? polyData : (polyData?.markets || []);
 
@@ -460,7 +479,7 @@ async function loadRatesFred() {
   const ids = ['DGS10', 'DGS2', 'DFF'];
   const base = 'https://api.stlouisfed.org/fred/series/observations';
   const reqs = ids.map(id =>
-    fetchJSON(base + '?series_id=' + id + '&api_key=' + FRED_API_KEY + '&file_type=json&limit=1&sort_order=desc')
+    fetchJSON(`${base}?series_id=${id}&api_key=${FRED_API_KEY}&file_type=json&limit=1&sort_order=desc`)
   );
   const [t10Res, t2Res, dffRes] = await Promise.all(reqs);
   const v = res => { const x = res?.observations?.[0]?.value; return x && x !== '.' ? parseFloat(x) : null; };
@@ -469,16 +488,16 @@ async function loadRatesFred() {
   const spread = t10 != null && t2 != null ? +(t10 - t2).toFixed(2) : null;
   const inverted = spread != null ? spread < 0 : null;
   const spreadClass = inverted === true ? 'inverted' : inverted === false ? 'normal' : '';
-  const tile = (label, val, sub, cls) =>
-    '<div class="rate-tile"><div class="rate-label">' + label + '</div>' +
-    '<div class="rate-value ' + (cls||'') + '">' + (val != null ? val.toFixed(2) + '%' : '—') + '</div>' +
-    '<div class="rate-sub">' + sub + '</div></div>';
-  document.getElementById('ratesTiles').innerHTML = '<div class="rate-grid">' +
-    tile('10Y Treasury', t10, d(t10Res)) +
-    tile('2Y Treasury', t2, d(t2Res)) +
-    tile('Yield Curve', spread, inverted === true ? '⚠ Inverted' : inverted === false ? 'Normal' : '', spreadClass) +
-    tile('Fed Funds (Eff.)', dff, d(dffRes)) +
-  '</div>';
+  const tile = (label, val, sub, cls = '') =>
+    `<div class="rate-tile"><div class="rate-label">${label}</div>` +
+    `<div class="rate-value ${cls}">${val != null ? val.toFixed(2) + '%' : '—'}</div>` +
+    `<div class="rate-sub">${sub}</div></div>`;
+  document.getElementById('ratesTiles').innerHTML = `<div class="rate-grid">
+    ${tile('10Y Treasury', t10, d(t10Res))}
+    ${tile('2Y Treasury', t2, d(t2Res))}
+    ${tile('Yield Curve', spread, inverted === true ? '⚠ Inverted' : inverted === false ? 'Normal' : '', spreadClass)}
+    ${tile('Fed Funds (Eff.)', dff, d(dffRes))}
+  </div>`;
   document.getElementById('ratesBadge').textContent = 'FRED · Live';
 }
 
@@ -531,11 +550,11 @@ async function loadRates() {
 }
 
 async function loadRatesFallback() {
-  const url = `${YF_BASE}/v7/finance/quote?symbols=%5EVIX,UUP,GLD,TLT&fields=regularMarketPrice,regularMarketChangePercent,shortName`;
-  const data = await fetchJSON(url);
-  const results = data?.quoteResponse?.result || [];
-  if (!results.length) return;
+  const syms = ['^VIX', 'UUP', 'GLD', 'TLT'];
   const labels = { '^VIX': 'VIX', 'UUP': 'Dollar (UUP)', 'GLD': 'Gold (GLD)', 'TLT': '20Y Bond (TLT)' };
+  const quoteFn = FINNHUB_API_KEY ? fhQuote : yfQuote;
+  const results = (await Promise.all(syms.map(quoteFn))).filter(Boolean);
+  if (!results.length) return;
   const tiles = results.map(r => `
     <div class="rate-tile">
       <div class="rate-label">${labels[r.symbol] || r.symbol}</div>
@@ -571,8 +590,8 @@ async function loadPredictionMarkets() {
     return;
   }
 
-  // Fallback: direct Polymarket
-  const data = await fetchJSON(`${POLY_BASE}/markets?closed=false&limit=8&order=volume&ascending=false&active=true`);
+  // Fallback: direct Polymarket via proxy
+  const data = await fetchJSON(proxied(`${POLY_HOST}/markets?closed=false&limit=8&order=volume&ascending=false&active=true`));
   const pMarkets = Array.isArray(data) ? data : (data?.markets || []);
   if (!pMarkets.length) {
     document.getElementById('predMarkets').innerHTML = '<div class="error-msg">Could not load markets</div>';
@@ -674,8 +693,8 @@ async function loadSpyChart() {
   let bars = data?.bars?.filter(b => b.close != null) || [];
 
   if (!bars.length) {
-    // Fallback: Yahoo Finance direct
-    const yData = await fetchJSON(`${YF_BASE}/v8/finance/chart/SPY?range=5d&interval=15m&includePrePost=false`);
+    // Fallback: Yahoo Finance v8 chart via allorigins proxy
+    const yData = await fetchJSON(proxied(`${YF_HOST}/v8/finance/chart/SPY?range=5d&interval=15m&includePrePost=false`));
     const c = yData?.chart?.result?.[0];
     if (c) {
       const ts  = c.timestamp || [];
@@ -750,24 +769,27 @@ async function loadSpyChart() {
 // NEWS FEED — Infera trending endpoint
 // ============================================================
 async function loadNews() {
+  // Direct NewsAPI path if key is configured
   if (NEWS_API_KEY) {
-    const data = await fetchJSON('https://newsapi.org/v2/top-headlines?q=markets+stocks+economy&language=en&pageSize=8&apiKey=' + NEWS_API_KEY);
+    const data = await fetchJSON(`https://newsapi.org/v2/top-headlines?q=markets+stocks+economy&language=en&pageSize=8&apiKey=${NEWS_API_KEY}`);
     const articles = (data?.articles || []).filter(a => a.title && a.title !== '[Removed]');
     if (articles.length) {
       const html = articles.map(a => {
         const sent = sentiment(a.title || '');
-        return '<div class="news-item">' +
-          '<div class="news-headline"><a href="' + a.url + '" target="_blank" style="color:var(--text);text-decoration:none;">' + (a.title||'').slice(0,100) + '</a></div>' +
-          '<div class="news-meta">' +
-            (a.source?.name ? '<span class="news-source">' + a.source.name + '</span>' : '') +
-            (a.publishedAt ? '<span>' + ago(a.publishedAt) + '</span>' : '') +
-            '<span class="sentiment ' + sent.cls + '">' + sent.label + '</span>' +
-          '</div></div>';
+        return `<div class="news-item">
+          <div class="news-headline"><a href="${a.url}" target="_blank" style="color:var(--text);text-decoration:none;">${(a.title || '').slice(0, 100)}</a></div>
+          <div class="news-meta">
+            ${a.source?.name ? `<span class="news-source">${a.source.name}</span>` : ''}
+            ${a.publishedAt ? `<span>${ago(a.publishedAt)}</span>` : ''}
+            <span class="sentiment ${sent.cls}">${sent.label}</span>
+          </div>
+        </div>`;
       }).join('');
-      document.getElementById('newsFeed').innerHTML = '<div class="news-list">' + html + '</div>';
+      document.getElementById('newsFeed').innerHTML = `<div class="news-list">${html}</div>`;
       return;
     }
   }
+
   const data = await fetchJSON(`${INFERA_BASE}/trending`);
   const stories = data?.stories || [];
 
@@ -787,7 +809,7 @@ async function loadNews() {
           ${src ? `<span class="news-source">${src}</span>` : ''}
           ${time_str ? `<span>${time_str}</span>` : ''}
           <span class="sentiment ${sent.cls}">${sent.label}</span>
-        </div>
+  3     </div>
       </div>`;
   }).join('');
 
