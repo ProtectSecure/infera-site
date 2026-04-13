@@ -1,0 +1,788 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Infera Â· Markets Intelligence</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+  :root {
+    --bg:        #0a0d13;
+    --surface:   #111520;
+    --surface2:  #171d2e;
+    --border:    #1f2940;
+    --text:      #e2e8f4;
+    --muted:     #6b7a99;
+    --accent:    #3b82f6;
+    --green:     #22c55e;
+    --red:       #ef4444;
+    --yellow:    #eab308;
+    --purple:    #a855f7;
+    --cyan:      #06b6d4;
+    --font:      'SF Mono', 'Fira Code', monospace;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; font-size: 13px; line-height: 1.5; min-height: 100vh; }
+
+  /* ââ Header ââ */
+  header { display: flex; align-items: center; justify-content: space-between; padding: 12px 24px; border-bottom: 1px solid var(--border); background: var(--surface); position: sticky; top: 0; z-index: 100; }
+  .logo { font-size: 15px; font-weight: 700; letter-spacing: -0.3px; color: var(--text); }
+  .logo span { color: var(--accent); }
+  .status-bar { display: flex; align-items: center; gap: 16px; }
+  .market-status { font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 20px; letter-spacing: 0.5px; }
+  .market-status.open  { background: rgba(34,197,94,0.15);  color: var(--green);  }
+  .market-status.close { background: rgba(107,122,153,0.15); color: var(--muted); }
+  .refresh-info { font-size: 11px; color: var(--muted); }
+  .refresh-btn { background: var(--surface2); border: 1px solid var(--border); color: var(--muted); padding: 4px 12px; border-radius: 6px; cursor: pointer; font-size: 11px; transition: all 0.2s; }
+  .refresh-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+  /* ââ Layout ââ */
+  main { padding: 16px 24px; max-width: 1600px; margin: 0 auto; }
+
+  /* ââ Ticker tape ââ */
+  .ticker-tape { display: flex; gap: 12px; overflow-x: auto; padding: 10px 0 14px; scrollbar-width: none; }
+  .ticker-tape::-webkit-scrollbar { display: none; }
+  .ticker-chip { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 8px 14px; min-width: 110px; flex-shrink: 0; cursor: default; transition: border-color 0.2s; }
+  .ticker-chip:hover { border-color: var(--accent); }
+  .ticker-sym  { font-size: 11px; font-weight: 700; color: var(--muted); letter-spacing: 0.5px; margin-bottom: 2px; }
+  .ticker-price { font-size: 15px; font-weight: 600; color: var(--text); font-family: var(--font); }
+  .ticker-chg  { font-size: 11px; font-family: var(--font); margin-top: 1px; }
+  .pos { color: var(--green); }
+  .neg { color: var(--red); }
+  .neu { color: var(--muted); }
+
+  /* ââ Grid ââ */
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+  @media (max-width: 1100px) { .grid-3 { grid-template-columns: 1fr 1fr; } }
+  @media (max-width: 780px)  { .grid-2, .grid-3 { grid-template-columns: 1fr; } }
+
+  /* ââ Cards ââ */
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 16px; }
+  .card-title { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.8px; color: var(--muted); margin-bottom: 12px; display: flex; align-items: center; gap: 6px; }
+  .card-title .badge { background: var(--surface2); border-radius: 20px; padding: 1px 7px; font-size: 10px; color: var(--accent); letter-spacing: 0; text-transform: none; font-weight: 500; }
+  .card-title .dot { width: 6px; height: 6px; border-radius: 50%; }
+  .dot-green  { background: var(--green); box-shadow: 0 0 6px var(--green); animation: pulse 2s infinite; }
+  .dot-yellow { background: var(--yellow); box-shadow: 0 0 6px var(--yellow); }
+  .dot-muted  { background: var(--muted); }
+  @keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:0.5; } }
+
+  /* ââ Divergence table ââ */
+  .div-table { width: 100%; border-collapse: collapse; }
+  .div-table th { font-size: 10px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; padding: 0 0 8px; text-align: left; border-bottom: 1px solid var(--border); }
+  .div-table td { padding: 8px 0; border-bottom: 1px solid rgba(31,41,64,0.5); vertical-align: middle; }
+  .div-table tr:last-child td { border-bottom: none; }
+  .div-table td.question { color: var(--text); font-size: 12px; max-width: 220px; }
+  .div-table td.question small { display: block; color: var(--muted); font-size: 10px; margin-top: 1px; }
+  .prob-chip { font-family: var(--font); font-size: 12px; font-weight: 600; padding: 2px 7px; border-radius: 4px; display: inline-block; min-width: 42px; text-align: center; }
+  .prob-high { background: rgba(34,197,94,0.12); color: var(--green); }
+  .prob-mid  { background: rgba(234,179,8,0.12);  color: var(--yellow); }
+  .prob-low  { background: rgba(239,68,68,0.12);  color: var(--red); }
+  .spread-chip { font-family: var(--font); font-size: 11px; font-weight: 700; color: var(--purple); }
+
+  /* ââ Sector bars ââ */
+  .sector-list { display: flex; flex-direction: column; gap: 6px; }
+  .sector-row { display: flex; align-items: center; gap: 8px; }
+  .sector-label { font-size: 11px; font-weight: 600; color: var(--muted); width: 36px; flex-shrink: 0; }
+  .sector-bar-wrap { flex: 1; background: var(--surface2); border-radius: 3px; height: 6px; overflow: hidden; }
+  .sector-bar { height: 100%; border-radius: 3px; transition: width 0.5s ease; }
+  .sector-pct { font-family: var(--font); font-size: 11px; width: 52px; text-align: right; flex-shrink: 0; }
+
+  /* ââ Rate tiles ââ */
+  .rate-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .rate-tile { background: var(--surface2); border-radius: 8px; padding: 10px 12px; }
+  .rate-label { font-size: 10px; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+  .rate-value { font-family: var(--font); font-size: 18px; font-weight: 700; color: var(--text); }
+  .rate-sub   { font-size: 10px; color: var(--muted); margin-top: 2px; }
+  .inverted   { color: var(--red); }
+  .normal     { color: var(--green); }
+
+  /* ââ Correlation pairs ââ */
+  .pair-list { display: flex; flex-direction: column; gap: 8px; }
+  .pair-row { display: flex; align-items: center; gap: 10px; background: var(--surface2); border-radius: 8px; padding: 8px 12px; }
+  .pair-names { flex: 1; }
+  .pair-a { font-size: 11px; color: var(--accent); font-weight: 600; }
+  .pair-b { font-size: 11px; color: var(--cyan); font-weight: 600; margin-top: 1px; }
+  .pair-r { font-family: var(--font); font-size: 16px; font-weight: 700; min-width: 50px; text-align: right; }
+  .r-pos { color: var(--green); }
+  .r-neg { color: var(--red); }
+  .pair-arrow { font-size: 10px; color: var(--muted); }
+
+  /* ââ Signal list ââ */
+  .signal-list { display: flex; flex-direction: column; gap: 8px; }
+  .signal-row { background: var(--surface2); border-radius: 8px; padding: 10px 12px; border-left: 3px solid; }
+  .signal-strong   { border-color: var(--red); }
+  .signal-moderate { border-color: var(--yellow); }
+  .signal-weak     { border-color: var(--muted); }
+  .signal-q { font-size: 12px; color: var(--text); font-weight: 500; }
+  .signal-meta { display: flex; gap: 10px; margin-top: 4px; font-size: 10px; color: var(--muted); }
+  .signal-meta .tag { background: var(--surface); border-radius: 3px; padding: 1px 5px; }
+
+  /* ââ News feed ââ */
+  .news-list { display: flex; flex-direction: column; gap: 0; }
+  .news-item { padding: 9px 0; border-bottom: 1px solid rgba(31,41,64,0.5); }
+  .news-item:last-child { border-bottom: none; }
+  .news-headline { font-size: 12px; color: var(--text); line-height: 1.4; }
+  .news-meta { display: flex; gap: 8px; margin-top: 3px; font-size: 10px; color: var(--muted); }
+  .news-source { color: var(--accent); font-weight: 600; }
+  .sentiment { border-radius: 3px; padding: 1px 5px; font-weight: 600; }
+  .sent-bull { background: rgba(34,197,94,0.12); color: var(--green); }
+  .sent-bear { background: rgba(239,68,68,0.12); color: var(--red); }
+  .sent-neu  { background: rgba(107,122,153,0.12); color: var(--muted); }
+
+  /* ââ Chart container ââ */
+  .chart-wrap { position: relative; height: 200px; }
+
+  /* ââ Loading / empty ââ */
+  .loading { color: var(--muted); font-size: 12px; text-align: center; padding: 24px; }
+  .dot-flash::after { content: '...'; animation: dots 1.2s steps(4, end) infinite; }
+  @keyframes dots { 0%,20% { content:''; } 40% { content:'.'; } 60% { content:'..'; } 80%,100% { content:'...'; } }
+  .error-msg { color: var(--red); font-size: 11px; text-align: center; padding: 16px; }
+  .empty-msg { color: var(--muted); font-size: 11px; text-align: center; padding: 16px; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">INFERA <span>Â·</span> Markets Intelligence</div>
+  <div class="status-bar">
+    <div class="market-status" id="mktStatus">LOADING</div>
+    <span class="refresh-info" id="lastRefresh">â</span>
+    <button class="refresh-btn" onclick="refreshAll()">â» Refresh</button>
+  </div>
+</header>
+
+<main>
+
+  <!-- Ticker tape -->
+  <div class="ticker-tape" id="tickerTape">
+    <div class="loading dot-flash">Loading market data</div>
+  </div>
+
+  <!-- Row 1: Divergence + Sector performance -->
+  <div class="grid-2">
+
+    <!-- Cross-platform divergence -->
+    <div class="card">
+      <div class="card-title">
+        <div class="dot dot-green"></div>
+        Cross-Platform Divergence
+        <span class="badge" id="divCount">0 signals</span>
+      </div>
+      <div id="divTable"><div class="loading dot-flash">Loading markets</div></div>
+    </div>
+
+    <!-- Sector performance -->
+    <div class="card">
+      <div class="card-title">
+        <div class="dot dot-yellow"></div>
+        Sector Performance Today
+        <span class="badge" id="sectorBadge">S&P 500</span>
+      </div>
+      <div id="sectorBars"><div class="loading dot-flash">Loading sectors</div></div>
+    </div>
+
+  </div>
+
+  <!-- Row 2: Rates + Prediction markets + Correlation -->
+  <div class="grid-3">
+
+    <!-- Macro rates -->
+    <div class="card">
+      <div class="card-title">
+        <div class="dot dot-muted"></div>
+        Rates &amp; Macro
+        <span class="badge" id="ratesBadge">FRED</span>
+      </div>
+      <div id="ratesTiles"><div class="loading dot-flash">Loading rates</div></div>
+    </div>
+
+    <!-- Top prediction markets -->
+    <div class="card">
+      <div class="card-title">
+        <div class="dot dot-green"></div>
+        Top Prediction Markets
+        <span class="badge">Polymarket</span>
+      </div>
+      <div id="predMarkets"><div class="loading dot-flash">Loading markets</div></div>
+    </div>
+
+    <!-- Top correlations -->
+    <div class="card">
+      <div class="card-title">
+        <div class="dot dot-muted"></div>
+        Market Correlations
+        <span class="badge" id="corrBadge">needs data</span>
+      </div>
+      <div id="corrPairs"><div class="empty-msg">POST to /analytics/ingest-market-data<br>to build correlation history</div></div>
+    </div>
+
+  </div>
+
+  <!-- Row 3: SPY chart + Divergence signals + News -->
+  <div class="grid-3">
+
+    <!-- SPY intraday chart -->
+    <div class="card">
+      <div class="card-title">
+        <div class="dot dot-yellow"></div>
+        SPY Intraday
+        <span class="badge" id="spyBadge">5D</span>
+      </div>
+      <div class="chart-wrap">
+        <canvas id="spyChart"></canvas>
+      </div>
+    </div>
+
+    <!-- Divergence signals -->
+    <div class="card">
+      <div class="card-title">
+        <div class="dot dot-muted"></div>
+        Divergence Signals
+        <span class="badge" id="sigBadge">0</span>
+      </div>
+      <div id="sigList"><div class="empty-msg">POST to /analytics/ingest-market-data<br>then /analytics/divergence to see signals</div></div>
+    </div>
+
+    <!-- News sentiment -->
+    <div class="card">
+      <div class="card-title">
+        <div class="dot dot-green"></div>
+        Market News
+        <span class="badge">Bloomberg Â· Barron's</span>
+      </div>
+      <div id="newsFeed"><div class="loading dot-flash">Loading headlines</div></div>
+    </div>
+
+  </div>
+
+</main>
+
+<script>
+// ============================================================
+// CONFIG
+// ============================================================
+const INFERA_BASE = '';           // same-origin; set to https://infera.melophon.com for remote
+const YF_BASE     = 'https://query1.finance.yahoo.com';
+const POLY_BASE   = 'https://gamma-api.polymarket.com';
+const AUTO_REFRESH_SEC = 60;      // seconds between auto-refreshes
+
+const MARKET_TICKERS = ['SPY','QQQ','IWM','VIX','GLD','TLT','UUP','BTC-USD','ETH-USD'];
+const SECTOR_TICKERS = ['XLF','XLK','XLE','XLV','XLI','XLP','XLY','XLB','XLRE','XLU','XLC'];
+const SECTOR_NAMES = {
+  XLF:'Financials', XLK:'Technology', XLE:'Energy', XLV:'Healthcare', XLI:'Industrials',
+  XLP:'Cons. Staples', XLY:'Cons. Disc.', YLB:'Materials', XLRE:'Real Estate',
+  XLU:'Utilities', XLC:'Comm. Services'
+};
+
+// ============================================================
+// UTILITIES
+// ============================================================
+async function fetchJSON(url, opts = {}) {
+  try {
+    const r = await fetch(url, { ...opts, mode: 'cors', cache: 'no-cache' });
+    if (!r.ok) throw new Error(`HTTP ${r.status}`);
+    return await r.json();
+  } catch(e) {
+    console.warn('[infera]', url, e.message);
+    return null;
+  }
+}
+
+function fmt(n, dec = 2) {
+  if (n == null || isNaN(n)) return 'â';
+  return n.toFixed(dec);
+}
+
+function fmtPct(n) {
+  if (n == null || isNaN(n)) return 'â';
+  const s = (n >= 0 ? '+' : '') + n.toFixed(2) + '%';
+  return s;
+}
+
+function pctClass(n) {
+  if (n == null) return 'neu';
+  return n > 0 ? 'pos' : n < 0 ? 'neg' : 'neu';
+}
+
+function probClass(p) {
+  if (p >= 0.65) return 'prob-high';
+  if (p >= 0.35) return 'prob-mid';
+  return 'prob-low';
+}
+
+function sentiment(text) {
+  const bull = /\b(surge|rally|rise|gain|bull|growth|record|profit|beat|upgrade|buy|strong|boom|recover)\b/gi;
+  const bear = /\b(fall|drop|crash|decline|loss|bear|weak|cut|downgrade|sell|miss|recession|fear|risk|concern)\b/gi;
+  const bScore = (text.match(bull) || []).length;
+  const sScore = (text.match(bear) || []).length;
+  if (bScore > sScore) return { cls: 'sent-bull', label: 'â Bullish' };
+  if (sScore > bScore) return { cls: 'sent-bear', label: 'â Bearish' };
+  return { cls: 'sent-neu', label: 'â Neutral' };
+}
+
+function ago(dateStr) {
+  const d = new Date(dateStr);
+  const mins = Math.round((Date.now() - d) / 60000);
+  if (mins < 60) return `${mins}m ago`;
+  if (mins < 1440) return `${Math.round(mins/60)}h ago`;
+  return `${Math.round(mins/1440)}d ago`;
+}
+
+let spyChartInst = null;
+
+// ============================================================
+// TICKER TAPE â Yahoo Finance v7 (CORS enabled)
+// ============================================================
+async function loadTickerTape() {
+  const tickers = MARKET_TICKERS;
+  const symbols = tickers.join(',');
+  const url = `${YF_BASE}/v7/finance/quote?symbols=${symbols}&fields=regularMarketPrice,regularMarketChangePercent,marketState,shortName`;
+  const data = await fetchJSON(url);
+  const results = data?.quoteResponse?.result || [];
+
+  if (!results.length) {
+    document.getElementById('tickerTape').innerHTML = '<div class="error-msg">Could not load market data</div>';
+    return;
+  }
+
+  // Market open status
+  const isOpen = results.some(r => r.marketState === 'REGULAR');
+  const mkt = document.getElementById('mktStatus');
+  mkt.textContent = isOpen ? 'MARKET OPEN' : 'MARKET CLOSED';
+  mkt.className = `market-status ${isOpen ? 'open' : 'close'}`;
+
+  const chips = results.map(r => {
+    const pct = r.regularMarketChangePercent;
+    const cls = pctClass(pct);
+    return `
+      <div class="ticker-chip">
+        <div class="ticker-sym">${r.symbol}</div>
+        <div class="ticker-price">${r.regularMarketPrice != null ? (r.symbol.includes('-USD') ? '$' + r.regularMarketPrice.toLocaleString(undefined, {maximumFractionDigits: 0}) : r.regularMarketPrice.toFixed(2)) : 'â'}</div>
+        <div class="ticker-chg ${cls}">${fmtPct(pct)}</div>
+      </div>`;
+  }).join('');
+
+  document.getElementById('tickerTape').innerHTML = chips;
+}
+
+// ============================================================
+// SECTOR PERFORMANCE
+// ============================================================
+async function loadSectors() {
+  const symbols = SECTOR_TICKERS.join(',');
+  const url = `${YF_BASE}/v7/finance/quote?symbols=${symbols}&fields=regularMarketPrice,regularMarketChangePercent,shortName`;
+  const data = await fetchJSON(url);
+  const results = data?.quoteResponse?.result || [];
+
+  if (!results.length) {
+    document.getElementById('sectorBars').innerHTML = '<div class="error-msg">Could not load sectors</div>';
+    return;
+  }
+
+  results.sort((a, b) => (b.regularMarketChangePercent || 0) - (a.regularMarketChangePercent || 0));
+
+  const maxAbs = Math.max(...results.map(r => Math.abs(r.regularMarketChangePercent || 0)), 0.01);
+
+  const html = results.map(r => {
+    const pct  = r.regularMarketChangePercent || 0;
+    const cls  = pctClass(pct);
+    const barW = Math.round(Math.abs(pct) / maxAbs * 100);
+    const barColor = pct >= 0 ? '#22c55e' : '#ef4444';
+    const name = SECTOR_NAMES[r.symbol] || r.symbol;
+    return `
+      <div class="sector-row">
+        <div class="sector-label">${r.symbol}</div>
+        <div style="flex:0 0 90px; font-size:11px; color:var(--muted);">${name}</div>
+        <div class="sector-bar-wrap">
+          <div class="sector-bar" style="width:${barW}%; background:${barColor};"></div>
+        </div>
+        <div class="sector-pct ${cls}">${fmtPct(pct)}</div>
+      </div>`;
+  }).join('');
+
+  document.getElementById('sectorBars').innerHTML = `<div class="sector-list">${html}</div>`;
+  document.getElementById('sectorBadge').textContent =
+    `Best: ${results[0]?.symbol} Â· Worst: ${results[results.length-1]?.symbol}`;
+}
+
+// ============================================================
+// CROSS-PLATFORM DIVERGENCE â compare same events on Poly vs PredictIt
+// ============================================================
+async function loadDivergence() {
+  // Fetch Polymarket top markets
+  const polyUrl = `${POLY_BASE}/markets?closed=false&limit=30&order=volume&ascending=false&active=true`;
+  const polyData = await fetchJSON(polyUrl);
+  const markets = Array.isArray(polyData) ? polyData : (polyData?.markets || []);
+
+  if (!markets.length) {
+    document.getElementById('divTable').innerHTML = '<div class="error-msg">Could not load Polymarket data</div>';
+    return;
+  }
+
+  // Build table rows
+  const rows = markets.slice(0, 12).map(m => {
+    const prob = parseFloat(m.outcomePrices?.[0] ?? m.bestBid ?? m.lastTradePrice ?? 0);
+    const vol  = parseInt(m.volumeNum || m.volume || 0);
+    const volFmt = vol > 1e6 ? `$${(vol/1e6).toFixed(1)}M` : vol > 1e3 ? `$${(vol/1e3).toFixed(0)}K` : `$${vol}`;
+    const cls  = probClass(prob);
+    const endDate = m.endDate ? new Date(m.endDate).toLocaleDateString('en-US', {month:'short', day:'numeric'}) : '';
+    return `
+      <tr>
+        <td class="question">
+          ${m.question || m.title || 'Unknown'}
+          <small>Vol ${volFmt}${endDate ? ' Â· ' + endDate : ''}</small>
+        </td>
+        <td><span class="prob-chip ${cls}">${(prob * 100).toFixed(0)}%</span></td>
+        <td><span style="font-size:10px; color:var(--muted);">Polymarket</span></td>
+      </tr>`;
+  }).join('');
+
+  document.getElementById('divCount').textContent = `${Math.min(markets.length, 12)} markets`;
+  document.getElementById('divTable').innerHTML = `
+    <table class="div-table">
+      <thead><tr>
+        <th style="width:60%">Event</th>
+        <th>Yes Prob</th>
+        <th>Source</th>
+      </tr></thead>
+      <tbody>${rows}</tbody>
+    </table>`;
+}
+
+// ============================================================
+// MACRO RATES â via Infera backend (FRED)
+// ============================================================
+async function loadRates() {
+  const data = await fetchJSON(`${INFERA_BASE}/markets/macro/rates`);
+
+  if (!data || data.error) {
+    // Fallback: show placeholder tiles
+    document.getElementById('ratesTiles').innerHTML = `
+      <div class="rate-grid">
+        <div class="rate-tile"><div class="rate-label">FRED API Key</div><div class="rate-value" style="font-size:13px; color:var(--muted)">Set FRED_API_KEY env var to enable</div></div>
+        <div class="rate-tile"><div class="rate-label">Free Key</div><div class="rate-value" style="font-size:12px; color:var(--accent)">fred.stlouisfed.org</div></div>
+      </div>
+      <div style="margin-top:10px;"></div>
+      <div id="fredFallback"></div>`;
+    // Try to load VIX/DXY from Yahoo as fallback
+    loadRatesFallback();
+    return;
+  }
+
+  const r = data.rates || {};
+  const spread = data.yield_curve_spread;
+  const inverted = data.curve_inverted;
+
+  function tile(id, label) {
+    const v = r[id]?.value;
+    return `<div class="rate-tile">
+      <div class="rate-label">${label}</div>
+      <div class="rate-value">${v != null ? parseFloat(v).toFixed(2) + '%' : 'â'}</div>
+      <div class="rate-sub">${r[id]?.date || ''}</div>
+    </div>`;
+  }
+
+  const spreadClass = inverted === true ? 'inverted' : inverted === false ? 'normal' : '';
+
+  document.getElementById('ratesTiles').innerHTML = `
+    <div class="rate-grid">
+      ${tile('DGS10', '10Y Treasury')}
+      ${tile('DGS2', '2Y Treasury')}
+      <div class="rate-tile">
+        <div class="rate-label">Yield Curve</div>
+        <div class="rate-value ${spreadClass}">${spread != null ? (spread > 0 ? '+' : '') + spread.toFixed(2) + '%' : 'â'}</div>
+        <div class="rate-sub">${inverted === true ? 'â  Inverted' : inverted === false ? 'Normal' : ''}</div>
+      </div>
+      ${tile('DFF', 'Fed Funds (Eff.)')}
+    </div>`;
+
+  document.getElementById('ratesBadge').textContent = 'FRED Â· Live';
+}
+
+async function loadRatesFallback() {
+  const url = `${YF_BASE}/v7/finance/quote?symbols=%5EVIX,UUP,GLD,TLT&fields=regularMarketPrice,regularMarketChangePercent,shortName`;
+  const data = await fetchJSON(url);
+  const results = data?.quoteResponse?.result || [];
+  if (!results.length) return;
+  const labels = { '^VIX': 'VIX', 'UUP': 'Dollar (UUP)', 'GLD': 'Gold (GLD)', 'TLT': '20Y Bond (TLT)' };
+  const tiles = results.map(r => `
+    <div class="rate-tile">
+      <div class="rate-label">${labels[r.symbol] || r.symbol}</div>
+      <div class="rate-value">${r.regularMarketPrice?.toFixed(2) || 'â'}</div>
+      <div class="rate-sub ${pctClass(r.regularMarketChangePercent)}">${fmtPct(r.regularMarketChangePercent)}</div>
+    </div>`).join('');
+  const el = document.getElementById('fredFallback');
+  if (el) el.innerHTML = `<div class="rate-grid">${tiles}</div>`;
+}
+
+// ============================================================
+// TOP PREDICTION MARKETS
+// ============================================================
+async function loadPredictionMarkets() {
+  // First try Infera backend
+  const inferaData = await fetchJSON(`${INFERA_BASE}/markets`);
+  const markets = inferaData?.markets || [];
+
+  if (markets.length > 0) {
+    const rows = markets.slice(0, 8).map(m => {
+      const prob = m.yes_price;
+      const cls  = prob != null ? probClass(prob) : 'prob-mid';
+      return `
+        <div style="padding:7px 0; border-bottom:1px solid rgba(31,41,64,0.5);">
+          <div style="font-size:12px; color:var(--text); line-height:1.3;">${m.question || ''}</div>
+          <div style="display:flex; gap:8px; margin-top:4px; align-items:center;">
+            ${prob != null ? `<span class="prob-chip ${cls}">${(prob*100).toFixed(0)}%</span>` : ''}
+            <span style="font-size:10px; color:var(--muted);">${m.source || ''}</span>
+          </div>
+        </div>`;
+    }).join('');
+    document.getElementById('predMarkets').innerHTML = rows;
+    return;
+  }
+
+  // Fallback: direct Polymarket
+  const data = await fetchJSON(`${POLY_BASE}/markets?closed=false&limit=8&order=volume&ascending=false&active=true`);
+  const pMarkets = Array.isArray(data) ? data : (data?.markets || []);
+  if (!pMarkets.length) {
+    document.getElementById('predMarkets').innerHTML = '<div class="error-msg">Could not load markets</div>';
+    return;
+  }
+  const rows = pMarkets.map(m => {
+    const prob = parseFloat(m.outcomePrices?.[0] ?? 0);
+    const cls  = probClass(prob);
+    return `
+      <div style="padding:7px 0; border-bottom:1px solid rgba(31,41,64,0.5);">
+        <div style="font-size:12px; color:var(--text); line-height:1.3;">${m.question || ''}</div>
+        <div style="display:flex; gap:8px; margin-top:4px; align-items:center;">
+          <span class="prob-chip ${cls}">${(prob*100).toFixed(0)}%</span>
+          <span style="font-size:10px; color:var(--muted);">polymarket</span>
+        </div>
+      </div>`;
+  }).join('');
+  document.getElementById('predMarkets').innerHTML = rows;
+}
+
+// ============================================================
+// CORRELATIONS â Infera backend
+// ============================================================
+async function loadCorrelations() {
+  const data = await fetchJSON(`${INFERA_BASE}/analytics/correlations`);
+
+  if (!data || data.error) {
+    document.getElementById('corrBadge').textContent = 'needs data';
+    return;
+  }
+
+  const pairs = data.pairs || [];
+  if (!pairs.length) {
+    document.getElementById('corrBadge').textContent = 'collecting data';
+    return;
+  }
+
+  const html = pairs.slice(0, 6).map(p => {
+    const r = p.r ?? p.pearson_r ?? 0;
+    const cls = r >= 0 ? 'r-pos' : 'r-neg';
+   const direction = r >= 0 ? 'â corr' : 'â inv';
+    const nameA = (p.question_a || p.market_a || '').replace('equity:', '').replace('macro:', '').replace('poly:', '');
+    const nameB = (p.question_b || p.market_b || '').replace('equity:', '').replace('macro:', '').replace('poly:', '');
+    return `
+      <div class="pair-row">
+        <div class="pair-names">
+        <div class="pair-a">${nameA.length > 35 ? nameA.slice(0,35)+'â¦' : nameA}</div>
+          <div class="pair-b">${nameB.length > 35 ? nameB.slice(0,35)+'â¦' : nameB}</div>
+        </div>
+        <div>
+          <div class="pair-r ${cls}">${r.toFixed(2)}</div>
+          <div class="pair-arrow">${direction}</div>
+        </div>
+      </div>`;
+  }).join('');
+
+  document.getElementById('corrPairs').innerHTML = `<div class="pair-list">${html}</div>`;
+  document.getElementById('corrBadge').textContent = `${pairs.length} pairs Â· râ¥${(data.r_threshold || 0.6).toFixed(2)}`;
+}
+
+// ============================================================
+// DIVERGENCE SIGNALS â Infera backend
+// ============================================================
+async function loadSignals() {
+  const data = await fetchJSON(`${INFERA_BASE}/analytics/divergence`);
+
+  if (!data || data.error || !data.signals?.length) {
+    document.getElementById('sigBadge').textContent = '0';
+    return;
+  }
+
+  const sigs = data.signals;
+  document.getElementById('sigBadge').textContent = sigs.length;
+
+  const html = sigs.slice(0, 5).map(s => {
+    const strength = s.strength || 'weak';
+    const div = ((s.divergence ?? s.gap ?? 0) * 100).toFixed(1);
+    const q = (s.question || s.market_id || '').replace(/^(equity:|macro:|poly:|kalshi:)/, '');
+    return `
+      <div class="signal-row signal-${strength}">
+        <div class="signal-q">${q.length > 55 ? q.slice(0,55)+'â¦' : q}</div>
+        <div class="signal-meta">
+          <span class="tag">${strength.toUpperCase()}</span>
+          <span class="tag">${div}% gap</span>
+    0     <span class="tag">${s.direction || ''}</span>
+        </div>
+      </div>`;
+  }).join('');
+
+  document.getElementById('sigList').innerHTML = `<div class="signal-list">${html}</div>`;
+}
+
+// ============================================================
+// SPY INTRADAY CHART
+// ============================================================
+async function loadSpyChart() {
+  // Try Infera backend first
+  const data = await fetchJSON(`${INFERA_BASE}/markets/equities/ohlcv/SPY?period=5d&interval=15m`);
+  let bars = data?.bars?.filter(b => b.close != null) || [];
+
+  if (!bars.length) {
+    // Fallback: Yahoo Finance direct
+    const yData = await fetchJSON(`${YF_BASE}/v8/finance/chart/SPY?range=5d&interval=15m&includePrePost=false`);
+    const c = yData?.chart?.result?.[0];
+    if (c) {
+      const ts  = c.timestamp || [];
+      const closes = c.indicators?.quote?.[0]?.close || [];
+      bars = ts.map((t, i) => ({ ts: t, close: closes[i] })).filter(b => b.close != null);
+    }
+  }
+
+  if (!bars.length) {
+    document.getElementById('spyBadge').textContent = 'No data';
+    return;
+  }
+
+  const labels = bars.map(b => {
+    const d = new Date(b.ts * 1000);
+    return d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', month:'short', day:'numeric' });
+  });
+  const prices = bars.map(b => b.close);
+  const startPrice = prices[0];
+  const bgColors = prices.map(p => p >= startPrice ? 'rgba(34,197,94,0.08)' : 'rgba(239,68,68,0.08)');
+  const lineColors = prices.map(p => p >= startPrice ? '#22c55e' : '#ef4444');
+  const lastPrice = prices[prices.length - 1];
+  const firstPrice = prices[0];
+  const chg = ((lastPrice - firstPrice) / firstPrice * 100).toFixed(2);
+
+  document.getElementById('spyBadge').textContent = `$${lastPrice.toFixed(2)} (${chg >= 0 ? '+' : ''}${chg}%)`;
+
+  const ctx = document.getElementById('spyChart').getContext('2d');
+  if (spyChartInst) spyChartInst.destroy();
+
+  spyChartInst = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [{
+        data: prices,
+        borderColor: parseFloat(chg) >= 0 ? '#22c55e' : '#ef4444',
+        borderWidth: 1.5,
+        fill: true,
+        backgroundColor: parseFloat(chg) >= 0 ? 'rgba(34,197,94,0.07)' : 'rgba(239,68,68,0.07)',
+    0   tension: 0.2,
+        pointRadius: 0,
+        pointHoverRadius: 3,
+    0 }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { display: false }, tooltip: {
+        mode: 'index', intersect: false,
+        backgroundColor: '#111520', borderColor: '#1f2940', borderWidth: 1,
+        titleColor: '#6b7a99', bodyColor: '#e2e8f4', titleFont: { size: 10 },
+        callbacks: {
+          label: ctx => `$${ctx.parsed.y.toFixed(2)}`
+        }
+      }},
+      scales: {
+        x: { display: false },
+        y: {
+          position: 'right',
+     0    grid: { color: 'rgba(31,41,64,0.5)', lineWidth: 0.5 },
+          ticks: { color: '#6b7a99', font: { size: 10 }, maxTicksLimit: 4,
+            callback: v => '$' + v.toFixed(0) }
+        }
+      },
+      interaction: { mode: 'index', intersect: false },
+    }
+  });
+}
+
+// ============================================================
+// NEWS FEED â Infera trending endpoint
+// ============================================================
+async function loadNews() {
+  const data = await fetchJSON(`${INFERA_BASE}/trending`);
+  const stories = data?.stories || [];
+
+  if (!stories.length) {
+    document.getElementById('newsFeed').innerHTML = '<div class="empty-msg">Start the Infera server to see live headlines</div>';
+    return;
+  }
+
+  const html = stories.slice(0, 8).map(s => {
+    const sent = sentiment(s.headline || s.title || '');
+    const src  = s.source || s.feed || '';
+    const time_str = s.published ? ago(s.published) : '';
+    return `
+      <div class="news-item">
+        <div class="news-headline">${(s.headline || s.title || '').slice(0, 100)}</div>
+        <div class="news-meta">
+          ${src ? `<span class="news-source">${src}</span>` : ''}
+          ${time_str ? `<span>${time_str}</span>` : ''}
+          <span class="sentiment ${sent.cls}">${sent.label}</span>
+        </div>
+      </div>`;
+  }).join('');
+
+  document.getElementById('newsFeed').innerHTML = `<div class="news-list">${html}</div>`;
+}
+
+// ============================================================
+// MAIN REFRESH LOOP
+// ============================================================
+let refreshTimer = null;
+let refreshCount = 0;
+
+async function refreshAll() {
+  refreshCount++;
+  document.getElementById('lastRefresh').textContent = 'Refreshingâ¦';
+
+  await Promise.allSettled([
+    loadTickerTape(),
+    loadSectors(),
+    loadDivergence(),
+    loadRates(),
+    loadPredictionMarkets(),
+    loadCorrelations(),
+    loadSignals(),
+    loadSpyChart(),
+    loadNews(),
+  ]);
+
+  const now = new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+  document.getElementById('lastRefresh').textContent = `Last refresh: ${now}`;
+
+  // Reset auto-refresh timer
+  if (refreshTimer) clearTimeout(refreshTimer);
+  refreshTimer = setTimeout(refreshAll, AUTO_REFRESH_SEC * 1000);
+}
+
+// ============================================================
+// BOOT
+// ============================================================
+document.addEventListener('DOMContentLoaded', () => {
+  refreshAll();
+});
+</script>
+
+</body>
+</html>
