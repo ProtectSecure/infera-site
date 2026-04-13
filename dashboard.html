@@ -333,13 +333,15 @@ function ago(dateStr) {
   return `${Math.round(mins/1440)}d ago`;
 }
 
-// Fetch via CORS proxy — tries allorigins /get first (JSON envelope), then corsproxy.io (raw)
+// Fetch via CORS proxy — tries codetabs first (raw JSON), then allorigins /get (JSON envelope)
 async function proxiedFetch(url) {
-  // Primary: allorigins /get wraps response in {contents, status}
+  // Primary: codetabs returns raw content directly
+  const c = await fetchJSON('https://api.codetabs.com/v1/proxy?quest=' + encodeURIComponent(url));
+  if (c !== null) return c;
+  // Fallback: allorigins /get wraps response in {contents, status}
   const w = await fetchJSON('https://api.allorigins.win/get?url=' + encodeURIComponent(url));
   if (w?.contents) { try { return JSON.parse(w.contents); } catch(e) {} }
-  // Fallback: corsproxy.io returns the raw body with CORS headers added
-  return await fetchJSON('https://corsproxy.io/?' + encodeURIComponent(url));
+  return null;
 }
 
 // Polymarket gamma-api returns outcomePrices as a JSON-stringified array, e.g. '["0.82","0.18"]'
@@ -518,7 +520,6 @@ async function loadRatesFred() {
 async function loadRates() {
   if (FRED_API_KEY) { return loadRatesFred(); }
   const data = await fetchJSON(`${INFERA_BASE}/markets/macro/rates`);
-
   if (!data || data.error) {
     // Fallback: show placeholder tiles
     document.getElementById('ratesTiles').innerHTML = `
@@ -532,11 +533,9 @@ async function loadRates() {
     loadRatesFallback();
     return;
   }
-
   const r = data.rates || {};
   const spread = data.yield_curve_spread;
   const inverted = data.curve_inverted;
-
   function tile(id, label) {
     const v = r[id]?.value;
     return `<div class="rate-tile">
@@ -545,9 +544,7 @@ async function loadRates() {
       <div class="rate-sub">${r[id]?.date || ''}</div>
     </div>`;
   }
-
   const spreadClass = inverted === true ? 'inverted' : inverted === false ? 'normal' : '';
-
   document.getElementById('ratesTiles').innerHTML = `
     <div class="rate-grid">
       ${tile('DGS10', '10Y Treasury')}
@@ -559,7 +556,6 @@ async function loadRates() {
       </div>
       ${tile('DFF', 'Fed Funds (Eff.)')}
     </div>`;
-
   document.getElementById('ratesBadge').textContent = 'FRED · Live';
 }
 
@@ -582,6 +578,7 @@ async function loadRatesFallback() {
 // ============================================================
 // TOP PREDICTION MARKETS
 // ============================================================
+as===
 async function loadPredictionMarkets() {
   // First try Infera backend
   const inferaData = await fetchJSON(`${INFERA_BASE}/markets`);
@@ -839,6 +836,7 @@ let refreshCount = 0;
 async function refreshAll() {
   refreshCount++;
   document.getElementById('lastRefresh').textContent = 'Refreshing…';
+
   await Promise.allSettled([
     loadTickerTape(),
     loadSectors(),
