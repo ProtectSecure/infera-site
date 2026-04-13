@@ -322,6 +322,56 @@ details[open] .ref-toggle{transform:rotate(180deg)}
 .prob-high{background:rgba(34,197,94,.15);color:#22c55e}
 .prob-mid{background:rgba(240,180,41,.15);color:#f0b429}
 .prob-low{background:rgba(239,68,68,.15);color:#ef4444}
+
+/* ===LIGHT MODE=== */
+body.light-mode{--bg:#f4f4ef;--s1:#e8e8e2;--s2:#d5d5ce;--b1:#b8b8b0;--b2:#9a9a92;--text:#111;--dim:#555;--bright:#000;--teal:#007a6e}
+#theme-toggle{background:none;border:1px solid var(--b2);color:var(--dim);font-family:var(--mono);font-size:9px;letter-spacing:.08em;padding:3px 9px;border-radius:2px;cursor:pointer;transition:all .2s;margin-left:8px;vertical-align:middle}
+#theme-toggle:hover{border-color:var(--teal);color:var(--teal)}
+/* ===TOPIC COLORS=== */
+.cat-world{color:#4a9eff}.cat-crypto{color:#ff8c42}.cat-sports{color:#4ade80}.cat-econ{color:#ffd700}.cat-politics{color:#c084fc}.cat-tech{color:#67e8f9}.cat-health{color:#f87171}.cat-other{color:var(--dim)}
+.cat-world-bg{background:rgba(74,158,255,.1);border-left:2px solid #4a9eff}
+.cat-crypto-bg{background:rgba(255,140,66,.1);border-left:2px solid #ff8c42}
+.cat-sports-bg{background:rgba(74,222,128,.1);border-left:2px solid #4ade80}
+.cat-econ-bg{background:rgba(255,215,0,.1);border-left:2px solid #ffd700}
+.cat-politics-bg{background:rgba(192,132,252,.1);border-left:2px solid #c084fc}
+.cat-tech-bg{background:rgba(103,232,249,.1);border-left:2px solid #67e8f9}
+.cat-health-bg{background:rgba(248,113,113,.1);border-left:2px solid #f87171}
+/* ===SUB-HEADERS=== */
+.mi-sub-label{font-family:var(--mono);font-size:8.5px;color:var(--dim);letter-spacing:.05em;line-height:1.6;margin:4px 0 12px;padding:5px 10px;border-left:2px solid var(--teal);background:rgba(0,255,200,.03)}
+.mi-section-title{font-family:var(--mono);font-size:11px;letter-spacing:.12em;color:var(--bright);text-transform:uppercase}
+.mi-panel-sub{font-family:var(--mono);font-size:8px;color:var(--dim);letter-spacing:.05em;margin:2px 0 8px;opacity:.8;line-height:1.5}
+/* ===AIRPORT FLIP=== */
+@keyframes flipIn{0%{transform:rotateX(-90deg);opacity:0}55%{transform:rotateX(8deg);opacity:1}100%{transform:rotateX(0deg);opacity:1}}
+.flip-row{perspective:500px;transform-style:preserve-3d;animation:flipIn .32s ease-out both;border-bottom:1px solid var(--b1);padding:5px 0;display:flex;align-items:center;gap:7px}
+/* ===NARRATIVE=== */
+@keyframes slideUp{0%{transform:translateY(20px);opacity:0}100%{transform:translateY(0);opacity:1}}
+@keyframes pulseTeal{0%,100%{box-shadow:0 0 0 0 rgba(0,255,200,0)}50%{box-shadow:0 0 8px 3px rgba(0,255,200,.15)}}
+.narr-row{animation:slideUp .38s ease-out both;border-bottom:1px solid var(--b1);padding:5px 0;display:flex;align-items:center;gap:7px}
+.narr-arrow{font-size:15px;font-weight:900;min-width:16px;text-align:center}
+.narr-action{font-family:var(--mono);font-size:8px;letter-spacing:.06em;padding:2px 6px;border-radius:2px;border:1px solid transparent;text-transform:uppercase}
+.narr-title{font-size:10px;color:var(--text);flex:1;line-height:1.3}
+/* ===SIGNALS=== */
+.signal-row{display:flex;align-items:center;gap:7px;padding:5px 0;border-bottom:1px solid var(--b1);animation:flipIn .32s ease-out both}
+.signal-score{font-family:var(--mono);font-size:11px;font-weight:700;min-width:34px;text-align:right}
+.signal-title{font-size:10px;flex:1;line-height:1.3}
+.signal-badge{font-family:var(--mono);font-size:8px;padding:2px 5px;border-radius:2px;border:1px solid transparent}
+/* ===DIVERGENCE BARS=== */
+.div-bar-wrap{margin:5px 0;padding:6px 0;border-bottom:1px solid var(--b1)}
+.div-bar-title{font-size:10px;color:var(--text);margin-bottom:4px;line-height:1.3}
+.div-bar-labels{display:flex;justify-content:space-between;font-family:var(--mono);font-size:8px;color:var(--dim);margin-bottom:2px}
+.div-bar-track{height:7px;background:var(--s2);border-radius:2px;position:relative;overflow:visible}
+.div-bar-fill{height:100%;border-radius:2px;transition:width .7s cubic-bezier(.4,0,.2,1);position:absolute;left:0;top:0}
+.div-bar-center{position:absolute;left:50%;top:-3px;width:1px;height:13px;background:var(--dim);opacity:.4;transform:translateX(-50%)}
+.div-score-row{display:flex;justify-content:space-between;margin-top:2px;font-family:var(--mono);font-size:8px;color:var(--dim)}
+/* ===TICKER LINKS=== */
+.t-link{color:inherit;text-decoration:none;cursor:pointer}.t-link:hover{color:var(--teal)}
+/* ===REFRESH DOT=== */
+.rdot{display:inline-block;width:5px;height:5px;border-radius:50%;background:var(--teal);margin-left:6px;opacity:0;transition:opacity .3s;vertical-align:middle}
+.rdot.on{opacity:1;animation:pulseTeal 1.2s ease infinite}
+/* ===HUB GLOW=== */
+.hub-glow{position:relative}
+.hub-glow::after{content:'';position:absolute;inset:-30px -20px;background:radial-gradient(ellipse 60% 40% at 50% 60%,rgba(0,255,200,.04) 0%,transparent 70%);pointer-events:none;z-index:0}
+.hub-glow>*{position:relative;z-index:1}
 </style>
 </head>
 <body>
@@ -338,7 +388,7 @@ details[open] .ref-toggle{transform:rotate(180deg)}
   </div>
   <div class="hdr-right">
     <div class="tap-hint" id="tapHint">double-tap to deep dive</div>
-    <div class="live-tag"><div class="logo-pulse" style="width:6px;height:6px"></div>LIVE</div>
+    <div class="live-tag"><div class="logo-pulse" style="width:6px;height:6px"></div>LIVE</div><button id="theme-toggle" onclick="document.body.classList.toggle('light-mode');this.textContent=document.body.classList.contains('light-mode')?'☀ LIGHT':'◐ DARK'">◐ DARK</button>
   </div>
 </div>
 
@@ -1370,123 +1420,220 @@ fetchEvents();
 </script>
 
 <!-- MARKET INTELLIGENCE PANELS -->
-<section class="mi-section">
+<section class="mi-section hub-glow">
   <div class="mi-header">
-    <span style="color:var(--bright);font-size:11px">TODAY'S INTELLIGENCE</span>
+    <span class="mi-section-title">TODAY'S INTELLIGENCE</span>
     <span class="mi-badge">AI-Scored · Live</span>
+    <span class="rdot" id="mi-rdot"></span>
     <span class="mi-ts" id="mi-ts"></span>
   </div>
+  <div class="mi-sub-label">Real-time probability-weighted prediction market signals. Higher conviction = greater deviation from 50% consensus. Surface the edge before the crowd catches up.</div>
   <div class="mi-grid">
-    <div class="mi-panel"><div class="mi-panel-head">TOP OPPORTUNITIES</div><div id="mi-opps">Loading…</div></div>
-    <div class="mi-panel"><div class="mi-panel-head">NARRATIVE SHIFTS</div><div id="mi-narr">Loading…</div></div>
-    <div class="mi-panel"><div class="mi-panel-head">CROSS-MARKET SIGNALS</div><div id="mi-cross">Loading…</div></div>
+    <div class="mi-panel">
+      <div class="mi-panel-head">TOP OPPORTUNITIES</div>
+      <div class="mi-panel-sub">Highest-volume markets ranked by conviction strength. Color-coded by sector for instant pattern recognition.</div>
+      <div class="flip-board" id="mi-opps"><div style="color:var(--dim);font-size:10px;padding:8px 0">Loading…</div></div>
+    </div>
+    <div class="mi-panel">
+      <div class="mi-panel-head">NARRATIVE SHIFTS</div>
+      <div class="mi-panel-sub">Fast-moving markets showing momentum divergence. Tracks velocity of probability changes — where the story is changing.</div>
+      <div id="mi-narr"><div style="color:var(--dim);font-size:10px;padding:8px 0">Loading…</div></div>
+    </div>
+    <div class="mi-panel">
+      <div class="mi-panel-head">CROSS-MARKET SIGNALS</div>
+      <div class="mi-panel-sub">Markets showing unusual conviction across unrelated sectors. Macro patterns surfacing in micro signals.</div>
+      <div class="flip-board" id="mi-cross"><div style="color:var(--dim);font-size:10px;padding:8px 0">Loading…</div></div>
+    </div>
   </div>
   <div class="sf-panel" style="margin-bottom:12px">
     <div class="sf-head" onclick="var b=this.nextElementSibling;b.classList.toggle('open')">
       SIGNAL FORENSICS <span class="mi-badge" id="sf-badge">0 signals</span>
       <span style="margin-left:auto;color:var(--dim);font-size:9px">Click to expand ›</span>
     </div>
-    <div class="sf-body" id="sf-body">Loading…</div>
+    <div class="sf-body" id="sf-body"><div style="color:var(--dim);font-size:10px;padding:8px">Loading…</div></div>
   </div>
   <div>
     <div class="mi-header" style="margin-top:8px">
-      <span style="color:var(--bright);font-size:11px">CROSS-PLATFORM DIVERGENCE</span>
+      <span class="mi-section-title">CROSS-PLATFORM DIVERGENCE</span>
       <span class="mi-badge" id="div-badge">0 markets</span>
+      <span class="rdot" id="div-rdot"></span>
     </div>
-    <div id="mi-divtable">Loading…</div>
+    <div class="mi-sub-label">Where prediction markets price outlier outcomes. Divergence Score D = |P − 0.5| × √Volume. High D = high-conviction minority view. Low D = uncertain consensus. The gap is where alpha hides.</div>
+    <div id="mi-divtable"><div style="color:var(--dim);font-size:10px;padding:8px 0">Loading…</div></div>
   </div>
 </section>
 <script>
 (function(){
-  async function pFetch(u){
-    var pu=u.indexOf("polymarket")>=0?"https://api.codetabs.com/v1/proxy?quest="+encodeURIComponent(u):u;
-    var ctrl=new AbortController(),tid=setTimeout(function(){ctrl.abort();},8000);
-    try{var r=await fetch(pu,{signal:ctrl.signal});clearTimeout(tid);return r.ok?r.json():null;}
-    catch(e){clearTimeout(tid);return null;}
+var __cache=null,__ts=0;
+function pFetch(u){
+  var pu="https://api.codetabs.com/v1/proxy?quest="+encodeURIComponent(u);
+  var ctrl=new AbortController(),tid=setTimeout(function(){ctrl.abort();},9000);
+  return fetch(pu,{signal:ctrl.signal}).then(function(r){clearTimeout(tid);return r.ok?r.json():null;}).catch(function(){clearTimeout(tid);return null;});
+}
+function getP(m){try{var op=JSON.parse(m.outcomePrices||"null");return op?parseFloat(op[0]):parseFloat(m.bestAsk||0.5);}catch(e){return parseFloat(m.bestAsk||0.5);}}
+function volFmt(v){if(!v)return"$0";if(v>=1e6)return"$"+(v/1e6).toFixed(1)+"M";if(v>=1e3)return"$"+(v/1e3).toFixed(0)+"K";return"$"+Math.round(v);}
+function probChip(p){var pct=Math.round(p*100),cls=p>0.65?"prob-high":p>0.35?"prob-mid":"prob-low";return'<span class="prob-chip '+cls+'">'+pct+'%</span>';}
+function flash(id){var d=document.getElementById(id);if(!d)return;d.classList.add("on");setTimeout(function(){d&&d.classList.remove("on");},2000);}
+function getCategory(t){
+  t=t.toLowerCase();
+  if(/bitcoin|crypto|eth|solana|btc|defi|nft|coin|blockchain|token/.test(t))return"crypto";
+  if(/election|president|senate|congress|democrat|republican|vote|ballot|trump|biden|harris|political/.test(t))return"politics";
+  if(/nfl|nba|mlb|nhl|soccer|football|basketball|baseball|sport|championship|tournament|league|cup|team|player/.test(t))return"sports";
+  if(/fed|rate|gdp|inflation|recession|market|stock|bond|yield|economy|economic|trade|tariff/.test(t))return"econ";
+  if(/ai|tech|software|apple|google|microsoft|openai|startup|ipo|chip|semiconductor/.test(t))return"tech";
+  if(/covid|cancer|vaccine|health|drug|fda|disease|hospital|medical/.test(t))return"health";
+  if(/war|ukraine|russia|china|nato|military|conflict|geopolitical/.test(t))return"world";
+  return"other";
+}
+function catClass(c){return"cat-"+c;}
+function catBgClass(c){return"cat-"+c+"-bg";}
+var CAT_LABEL={crypto:"CRYPTO",politics:"POLITICS",sports:"SPORTS",econ:"ECON",tech:"TECH",health:"HEALTH",world:"WORLD",other:"OTHER"};
+
+function renderOpps(markets){
+  var el=document.getElementById("mi-opps");if(!el)return;
+  var top=markets.slice(0,8);
+  var html="";
+  top.forEach(function(m,i){
+    var p=getP(m),cat=getCategory(m.question||""),vol=parseFloat(m.volume||0),pct=Math.round(p*100);
+    var title=(m.question||"").substring(0,55);
+    html+='<div class="flip-row '+catBgClass(cat)+'" style="animation-delay:'+(i*80)+'ms;padding-left:6px">'
+      +'<span class="'+catClass(cat)+'" style="font-family:var(--mono);font-size:8px;min-width:52px;font-weight:700">'+CAT_LABEL[cat]+'</span>'
+      +'<span style="flex:1;font-size:9.5px;line-height:1.3">'+title+(title.length<(m.question||"").length?"…":"")+'</span>'
+      +probChip(p)
+      +'<span style="font-family:var(--mono);font-size:8px;color:var(--dim);min-width:36px;text-align:right">'+volFmt(vol)+'</span>'
+      +'</div>';
+  });
+  el.innerHTML=html||'<div style="color:var(--dim);font-size:10px;padding:8px 0">No data</div>';
+  var ts=document.getElementById("mi-ts");
+  if(ts)ts.textContent="Updated "+new Date().toLocaleTimeString("en-US",{hour:"2-digit",minute:"2-digit"});
+  flash("mi-rdot");
+}
+var NARR_ACTIONS={high_rising:"SURGING",high_stable:"LOCKED IN",high_falling:"FADING",low_rising:"REVERSING",low_stable:"DORMANT",low_falling:"COLLAPSING",mid:"CONTESTED"};
+function narrAction(p,prev){
+  if(p>0.7)return{label:"SURGING",bg:"rgba(34,197,94,.12)",c:"#22c55e",arrow:"↑"};
+  if(p>0.55)return{label:"TRENDING",bg:"rgba(34,197,94,.07)",c:"#4ade80",arrow:"↗"};
+  if(p<0.3)return{label:"COLLAPSING",bg:"rgba(239,68,68,.12)",c:"#ef4444",arrow:"↓"};
+  if(p<0.45)return{label:"FADING",bg:"rgba(239,68,68,.07)",c:"#f87171",arrow:"↘"};
+  return{label:"CONTESTED",bg:"rgba(107,122,153,.1)",c:"var(--dim)",arrow:"↔"};
+}
+function renderNarr(markets){
+  var el=document.getElementById("mi-narr");if(!el)return;
+  var sorted=markets.slice().sort(function(a,b){return Math.abs(getP(b)-0.5)-Math.abs(getP(a)-0.5);}).slice(0,7);
+  var html="";
+  sorted.forEach(function(m,i){
+    var p=getP(m),act=narrAction(p),cat=getCategory(m.question||"");
+    var title=(m.question||"").substring(0,50);
+    html+='<div class="narr-row" style="animation-delay:'+(i*90)+'ms">'
+      +'<span class="narr-arrow" style="color:'+act.c+'">'+act.arrow+'</span>'
+      +'<span class="narr-action" style="background:'+act.bg+';color:'+act.c+';border-color:'+act.c+'40">'+act.label+'</span>'
+      +'<span class="narr-title">'+title+(title.length<(m.question||"").length?"…":"")+'</span>'
+      +'<span class="'+catClass(cat)+'" style="font-family:var(--mono);font-size:8px;font-weight:700">'+CAT_LABEL[cat]+'</span>'
+      +'</div>';
+  });
+  el.innerHTML=html||'<div style="color:var(--dim);font-size:10px;padding:8px 0">No data</div>';
+}
+
+function renderCross(markets){
+  var el=document.getElementById("mi-cross");if(!el)return;
+  // Score each market by "signal strength" = divergence from 0.5 * log(volume)
+  var scored=markets.map(function(m){
+    var p=getP(m),vol=Math.max(parseFloat(m.volume||1),1),div=Math.abs(p-0.5);
+    return{m:m,p:p,div:div,score:div*Math.log(vol)};
+  }).sort(function(a,b){return b.score-a.score;}).slice(0,7);
+  var html="";
+  scored.forEach(function(item,i){
+    var m=item.m,p=item.p,cat=getCategory(m.question||"");
+    var scoreStr=(item.score).toFixed(1);
+    var title=(m.question||"").substring(0,48);
+    var scoreColor=item.score>3?"#22c55e":item.score>1.5?"#ffd700":"var(--dim)";
+    html+='<div class="signal-row" style="animation-delay:'+(i*75)+'ms">'
+      +'<span class="signal-score" style="color:'+scoreColor+'">'+scoreStr+'</span>'
+      +'<span class="signal-title">'+title+(title.length<(m.question||"").length?"…":"")+'</span>'
+      +'<span class="signal-badge '+catBgClass(cat)+' '+catClass(cat)+'" style="font-size:8px">'+CAT_LABEL[cat]+'</span>'
+      +probChip(p)
+      +'</div>';
+  });
+  el.innerHTML=html||'<div style="color:var(--dim);font-size:10px;padding:8px 0">No data</div>';
+}
+function renderForensics(markets){
+  var el=document.getElementById("sf-body"),badge=document.getElementById("sf-badge");
+  if(!el)return;
+  var top=markets.slice(0,14);
+  if(badge)badge.textContent=top.length+" signals";
+  var html="";
+  top.forEach(function(m){
+    var p=getP(m),vol=parseFloat(m.volume||0),cat=getCategory(m.question||"");
+    var div=Math.abs(p-0.5),signal=div>0.3?"HIGH":div>0.15?"MED":"LOW";
+    var sc=signal==="HIGH"?"#22c55e":signal==="MED"?"#ffd700":"var(--dim)";
+    var title=(m.question||"").substring(0,70);
+    html+='<div class="sf-row">'
+      +'<span class="'+catClass(cat)+'" style="font-family:var(--mono);font-size:8px;font-weight:700;min-width:52px">'+CAT_LABEL[cat]+'</span>'
+      +'<span style="flex:1;font-size:9px;line-height:1.4">'+title+(title.length<(m.question||"").length?"…":"")+'</span>'
+      +probChip(p)
+      +'<span style="font-family:var(--mono);font-size:8px;color:'+sc+';min-width:28px;text-align:right">'+signal+'</span>'
+      +'<span style="font-family:var(--mono);font-size:8px;color:var(--dim);min-width:36px;text-align:right">'+volFmt(vol)+'</span>'
+      +'</div>';
+  });
+  el.innerHTML=html||'<div style="color:var(--dim);font-size:10px;padding:8px">No data</div>';
+}
+
+function renderDiv(markets){
+  var el=document.getElementById("mi-divtable"),badge=document.getElementById("div-badge");
+  if(!el)return;
+  var top=markets.slice(0,12);
+  if(badge)badge.textContent=top.length+" markets";
+  var html="";
+  top.forEach(function(m){
+    var p=getP(m),vol=Math.max(parseFloat(m.volume||1),1),cat=getCategory(m.question||"");
+    var pct=Math.round(p*100),div=Math.abs(p-0.5),dScore=(div*Math.sqrt(vol)).toFixed(0);
+    var fillColor=p>0.65?"#22c55e":p>0.55?"#4ade80":p<0.35?"#ef4444":p<0.45?"#f87171":"#a0aec0";
+    var title=(m.question||"").substring(0,65);
+    html+='<div class="div-bar-wrap">'
+      +'<div class="div-bar-title"><span class="'+catClass(cat)+'" style="font-family:var(--mono);font-size:8px;font-weight:700;margin-right:6px">'+CAT_LABEL[cat]+'</span>'+title+(title.length<(m.question||"").length?"…":"")+'</div>'
+      +'<div class="div-bar-labels"><span>NO 0%</span><span style="color:var(--bright)">'+pct+'% YES</span><span>YES 100%</span></div>'
+      +'<div class="div-bar-track">'
+        +'<div class="div-bar-fill" style="width:'+pct+'%;background:'+fillColor+'"></div>'
+        +'<div class="div-bar-center"></div>'
+      +'</div>'
+      +'<div class="div-score-row"><span>D = |'+pct+'% − 50%| × √'+volFmt(vol).replace("$","")+'</span><span style="color:'+fillColor+'">D-SCORE: '+dScore+'</span></div>'
+      +'</div>';
+  });
+  el.innerHTML=html||'<div style="color:var(--dim);font-size:10px;padding:8px 0">No data</div>';
+  flash("div-rdot");
+}
+async function fetchMarkets(){
+  var now=Date.now();
+  if(__cache&&(now-__ts)<25000)return __cache;
+  var base="https://gamma-api.polymarket.com/markets?closed=false&limit=30&order=volume&ascending=false&active=true";
+  var data=await pFetch(base);
+  if(data&&data.length){__cache=data;__ts=now;}
+  return __cache;
+}
+async function loadOpps(){var m=await fetchMarkets();if(m)renderOpps(m);}
+async function loadNarr(){var m=await fetchMarkets();if(m)renderNarr(m);}
+async function loadCross(){var m=await fetchMarkets();if(m)renderCross(m);}
+async function loadFor(){var m=await fetchMarkets();if(m)renderForensics(m);}
+async function loadDiv(){var m=await fetchMarkets();if(m)renderDiv(m);}
+async function loadAll(){
+  var m=await fetchMarkets();
+  if(!m){
+    ["mi-opps","mi-narr","mi-cross","sf-body","mi-divtable"].forEach(function(id){
+      var e=document.getElementById(id);
+      if(e)e.innerHTML='<div style="color:var(--dim);font-size:10px;padding:8px 0">No data available</div>';
+    });
+    return;
   }
-  function probChip(p){
-    var pct=Math.round(p*100),cls=p>0.65?"prob-high":p>0.35?"prob-mid":"prob-low";
-    return '<span class="prob-chip '+cls+'">'+pct+'% YES</span>';
-  }
-  function volFmt(v){
-    if(!v)return "$0";
-    if(v>=1e6)return "$"+(v/1e6).toFixed(1)+"M";
-    if(v>=1e3)return "$"+(v/1e3).toFixed(0)+"K";
-    return "$"+Math.round(v);
-  }
-  async function loadMI(){
-    var base="https://gamma-api.polymarket.com/markets",
-        qs="?closed=false&limit=30&order=volume&ascending=false&active=true",
-        markets=await pFetch(base+qs);
-    if(!markets||!markets.length){
-      ["mi-opps","mi-narr","mi-cross","sf-body","mi-divtable"].forEach(function(id){
-        var el=document.getElementById(id);
-        if(el)el.innerHTML='<div style="color:var(--dim);font-size:10px;padding:8px 0">No data</div>';
-      });return;
-    }
-    var ts=new Date().toLocaleTimeString("en-US",{hour:"2-digit",minute:"2-digit"}),
-        tsEl=document.getElementById("mi-ts");
-    if(tsEl)tsEl.textContent="Updated "+ts;
-    function getP(m){
-      try{var op=JSON.parse(m.outcomePrices||"null");return op?parseFloat(op[0]):parseFloat(m.bestAsk||0.5);}
-      catch(e){return parseFloat(m.bestAsk||0.5);}
-    }
-    var oppsEl=document.getElementById("mi-opps");
-    if(oppsEl)oppsEl.innerHTML=markets.slice(0,5).map(function(m){
-      var p=getP(m);if(isNaN(p))p=0.5;
-      return '<div class="mi-item" style="display:flex;justify-content:space-between;align-items:center">'+
-        '<span style="font-size:10px;color:var(--text);flex:1;margin-right:6px">'+
-        (m.question||"").slice(0,60)+'</span>'+probChip(p)+'</div>';
-    }).join("");
-    var narrEl=document.getElementById("mi-narr");
-    if(narrEl)narrEl.innerHTML=markets.slice(0,5).map(function(m){
-      var p=getP(m);if(isNaN(p))p=0.5;
-      var arr=p>0.6?"↑":p<0.4?"↓":"→",col=p>0.6?"#22c55e":p<0.4?"#ef4444":"var(--dim)";
-      return '<div class="mi-item" style="display:flex;align-items:center;gap:6px">'+
-        '<span style="color:'+col+';font-size:14px;line-height:1">'+arr+'</span>'+
-        '<span style="font-size:10px;color:var(--text);flex:1">'+
-        (m.question||"").slice(0,55)+'</span>'+
-        '<span style="font-size:9px;color:var(--dim)">'+volFmt(parseFloat(m.volume||0))+'</span></div>';
-    }).join("");
-    var crossEl=document.getElementById("mi-cross");
-    if(crossEl)crossEl.innerHTML=markets.filter(function(m){var p=getP(m);return p>0.2&&p<0.8;}).slice(0,5).map(function(m){
-      var p=getP(m);if(isNaN(p))p=0.5;
-      var cls=p>0.55?"chip-bull":p<0.45?"chip-bear":"chip-neut",lbl=p>0.55?"BULLISH":p<0.45?"BEARISH":"NEUTRAL";
-      return '<div class="mi-item" style="display:flex;justify-content:space-between;align-items:center">'+
-        '<span style="font-size:10px;color:var(--text);flex:1;margin-right:6px">'+
-        (m.question||"").slice(0,55)+'</span>'+
-        '<span class="mi-chip '+cls+'">'+lbl+'</span></div>';
-    }).join("");
-    var sfBadge=document.getElementById("sf-badge");
-    if(sfBadge)sfBadge.textContent=markets.length+" signals";
-    var sfBody=document.getElementById("sf-body");
-    if(sfBody)sfBody.innerHTML=markets.slice(0,12).map(function(m){
-      var p=getP(m);if(isNaN(p))p=0.5;
-      return '<div class="sf-row">'+probChip(p)+
-        '<span style="font-size:10px;color:var(--text);flex:1">'+
-        (m.question||"").slice(0,70)+'</span>'+
-        '<span style="font-size:9px;color:var(--dim);white-space:nowrap">'+volFmt(parseFloat(m.volume||0))+'</span></div>';
-    }).join("");
-    var divMs=markets.slice(0,12),divBadge=document.getElementById("div-badge");
-    if(divBadge)divBadge.textContent=divMs.length+" markets";
-    var divTbl=document.getElementById("mi-divtable");
-    if(divTbl){
-      var rows=divMs.map(function(m){
-        var p=getP(m);if(isNaN(p))p=0.5;
-        return "<tr><td style='padding:5px 8px;border-bottom:1px solid var(--b1);color:var(--text)'>"+(m.question||"").slice(0,60)+
-          "</td><td style='padding:5px 8px;border-bottom:1px solid var(--b1);text-align:center'>"+probChip(p)+
-          "</td><td style='padding:5px 8px;border-bottom:1px solid var(--b1);text-align:right;color:var(--dim);font-size:9px'>"+
-          volFmt(parseFloat(m.volume||0))+"</td></tr>";
-      }).join("");
-      divTbl.innerHTML='<table class="div-table"><thead><tr>'+
-        '<th style="padding:4px 8px;text-align:left;font-family:var(--mono);font-size:9px;color:var(--dim);border-bottom:1px solid var(--b2)">MARKET</th>'+
-        '<th style="padding:4px 8px;text-align:center;font-family:var(--mono);font-size:9px;color:var(--dim);border-bottom:1px solid var(--b2)">PROB</th>'+
-        '<th style="padding:4px 8px;text-align:right;font-family:var(--mono);font-size:9px;color:var(--dim);border-bottom:1px solid var(--b2)">VOLUME</th>'+
-        '</tr></thead><tbody>'+rows+'</tbody></table>';
-    }
-  }
-  document.addEventListener("DOMContentLoaded",function(){loadMI();setInterval(loadMI,180000);});
-  if(document.readyState!=="loading")loadMI();
+  renderOpps(m);renderNarr(m);renderCross(m);renderForensics(m);renderDiv(m);
+}
+// Per-section independent refresh intervals
+setInterval(loadOpps,30000);
+setInterval(loadNarr,20000);
+setInterval(loadCross,45000);
+setInterval(loadFor,60000);
+setInterval(loadDiv,90000);
+// Initial load
+if(document.readyState!=="loading"){loadAll();}
+else{document.addEventListener("DOMContentLoaded",loadAll);}
 })();
 </script>
 </body>
