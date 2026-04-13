@@ -262,10 +262,13 @@
 // ============================================================
 // CONFIG
 // ============================================================
-const INFERA_BASE = '';           // same-origin; set to https://infera.melophon.com for remote
-const YF_BASE     = 'https://query1.finance.yahoo.com';
-const POLY_BASE   = 'https://gamma-api.polymarket.com';
-const AUTO_REFRESH_SEC = 60;      // seconds between auto-refreshes
+const INFERA_BASE    = '';         // same-origin; set to https://infera.melophon.com for remote
+const CORS_PROXY     = 'https://corsproxy.io/?';
+const YF_BASE        = CORS_PROXY + 'https://query1.finance.yahoo.com';
+const POLY_BASE      = CORS_PROXY + 'https://gamma-api.polymarket.com';
+const FRED_API_KEY   = '';         // Free key: https://fred.stlouisfed.org/docs/api/api_key.html
+const NEWS_API_KEY   = '';         // Free key: https://newsapi.org
+const AUTO_REFRESH_SEC = 60;       // seconds between auto-refreshes
 
 const MARKET_TICKERS = ['SPY','QQQ','IWM','VIX','GLD','TLT','UUP','BTC-USD','ETH-USD'];
 const SECTOR_TICKERS = ['XLF','XLK','XLE','XLV','XLI','XLP','XLY','XLB','XLRE','XLU','XLC'];
@@ -453,7 +456,34 @@ async function loadDivergence() {
 // ============================================================
 // MACRO RATES — via Infera backend (FRED)
 // ============================================================
+async function loadRatesFred() {
+  const ids = ['DGS10', 'DGS2', 'DFF'];
+  const base = 'https://api.stlouisfed.org/fred/series/observations';
+  const reqs = ids.map(id =>
+    fetchJSON(base + '?series_id=' + id + '&api_key=' + FRED_API_KEY + '&file_type=json&limit=1&sort_order=desc')
+  );
+  const [t10Res, t2Res, dffRes] = await Promise.all(reqs);
+  const v = res => { const x = res?.observations?.[0]?.value; return x && x !== '.' ? parseFloat(x) : null; };
+  const d = res => res?.observations?.[0]?.date || '';
+  const t10 = v(t10Res), t2 = v(t2Res), dff = v(dffRes);
+  const spread = t10 != null && t2 != null ? +(t10 - t2).toFixed(2) : null;
+  const inverted = spread != null ? spread < 0 : null;
+  const spreadClass = inverted === true ? 'inverted' : inverted === false ? 'normal' : '';
+  const tile = (label, val, sub, cls) =>
+    '<div class="rate-tile"><div class="rate-label">' + label + '</div>' +
+    '<div class="rate-value ' + (cls||'') + '">' + (val != null ? val.toFixed(2) + '%' : '—') + '</div>' +
+    '<div class="rate-sub">' + sub + '</div></div>';
+  document.getElementById('ratesTiles').innerHTML = '<div class="rate-grid">' +
+    tile('10Y Treasury', t10, d(t10Res)) +
+    tile('2Y Treasury', t2, d(t2Res)) +
+    tile('Yield Curve', spread, inverted === true ? '⚠ Inverted' : inverted === false ? 'Normal' : '', spreadClass) +
+    tile('Fed Funds (Eff.)', dff, d(dffRes)) +
+  '</div>';
+  document.getElementById('ratesBadge').textContent = 'FRED · Live';
+}
+
 async function loadRates() {
+  if (FRED_API_KEY) { return loadRatesFred(); }
   const data = await fetchJSON(`${INFERA_BASE}/markets/macro/rates`);
 
   if (!data || data.error) {
@@ -720,6 +750,24 @@ async function loadSpyChart() {
 // NEWS FEED — Infera trending endpoint
 // ============================================================
 async function loadNews() {
+  if (NEWS_API_KEY) {
+    const data = await fetchJSON('https://newsapi.org/v2/top-headlines?q=markets+stocks+economy&language=en&pageSize=8&apiKey=' + NEWS_API_KEY);
+    const articles = (data?.articles || []).filter(a => a.title && a.title !== '[Removed]');
+    if (articles.length) {
+      const html = articles.map(a => {
+        const sent = sentiment(a.title || '');
+        return '<div class="news-item">' +
+          '<div class="news-headline"><a href="' + a.url + '" target="_blank" style="color:var(--text);text-decoration:none;">' + (a.title||'').slice(0,100) + '</a></div>' +
+          '<div class="news-meta">' +
+            (a.source?.name ? '<span class="news-source">' + a.source.name + '</span>' : '') +
+            (a.publishedAt ? '<span>' + ago(a.publishedAt) + '</span>' : '') +
+            '<span class="sentiment ' + sent.cls + '">' + sent.label + '</span>' +
+          '</div></div>';
+      }).join('');
+      document.getElementById('newsFeed').innerHTML = '<div class="news-list">' + html + '</div>';
+      return;
+    }
+  }
   const data = await fetchJSON(`${INFERA_BASE}/trending`);
   const stories = data?.stories || [];
 
