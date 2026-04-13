@@ -278,44 +278,6 @@ details[open] .ref-toggle{transform:rotate(180deg)}
 .ob-text{font-size:12px;color:var(--text);line-height:1.5}
 .ob-text strong{color:var(--bright)}
 
-.social-section{margin-bottom:28px}
-.social-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:10px;margin-top:12px}
-.social-card{background:var(--s1);border:1px solid var(--b1);border-radius:5px;padding:12px 14px;cursor:pointer;transition:border-color .15s}
-.social-card:hover{border-color:var(--b2)}
-.sc-platform{display:flex;align-items:center;gap:6px;margin-bottom:8px}
-.sc-platform-badge{font-family:var(--mono);font-size:8px;letter-spacing:.1em;text-transform:uppercase;padding:2px 7px;border-radius:2px;font-weight:600}
-.sc-title{font-size:12px;color:var(--text);line-height:1.45;font-weight:500;margin-bottom:6px}
-.sc-meta{font-family:var(--mono);font-size:9px;color:var(--dim);display:flex;gap:10px;align-items:center;flex-wrap:wrap}
-.sc-score{color:var(--teal)}
-.sc-hashtags{display:flex;flex-wrap:wrap;gap:5px;margin-top:10px}
-.sc-tag{font-family:var(--mono);font-size:9px;color:var(--purple);background:rgba(155,109,255,.1);border:1px solid rgba(155,109,255,.2);padding:2px 7px;border-radius:2px;cursor:pointer}
-.sc-archive{font-family:var(--mono);font-size:8px;color:var(--dim);text-decoration:none;padding:2px 5px;border:1px solid var(--b1);border-radius:2px;margin-left:auto;white-space:nowrap}
-.sc-archive:hover{color:var(--gold);border-color:rgba(240,180,41,.4)}
-.social-tabs{display:flex;gap:4px;margin-bottom:12px;border-bottom:1px solid var(--b1);padding-bottom:8px}
-.stab{font-family:var(--mono);font-size:9px;letter-spacing:.1em;text-transform:uppercase;padding:4px 10px;border-radius:3px;cursor:pointer;color:var(--dim);border:1px solid transparent}
-.stab.active{color:var(--purple);background:rgba(155,109,255,.1);border-color:rgba(155,109,255,.25)}
-.nc-archive{font-family:var(--mono);font-size:8px;color:var(--dim);border:1px solid var(--b1);border-radius:2px;padding:2px 6px;white-space:nowrap;text-decoration:none}
-.nc-archive:hover{color:var(--gold);border-color:rgba(240,180,41,.35)}
-.deep-disclaimer{font-family:var(--mono);font-size:9px;color:var(--dim);letter-spacing:.04em;line-height:1.65;padding:14px 16px;background:var(--s1);border:1px solid var(--b1);border-radius:3px;border-left:2px solid var(--b2);margin-top:32px}
-
-/* Shared */
-.spinner{width:14px;height:14px;border-radius:50%;border:2px solid var(--b2);border-top-color:var(--purple);animation:spin .8s linear infinite;flex-shrink:0}
-@keyframes spin{to{transform:rotate(360deg)}}
-.loading-row{display:flex;align-items:center;gap:10px;color:var(--dim);font-family:var(--mono);font-size:10px;letter-spacing:.1em;padding:8px 0}
-.skel{background:linear-gradient(90deg,var(--s2) 25%,var(--s3) 50%,var(--s2) 75%);background-size:200% 100%;animation:shimmer 1.5s infinite;border-radius:3px}
-@keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
-::-webkit-scrollbar{width:4px}
-::-webkit-scrollbar-track{background:var(--bg)}
-::-webkit-scrollbar-thumb{background:var(--b2);border-radius:2px}
-
-@media(max-width:900px){
-  .feed-layout{grid-template-columns:1fr}
-  .left-panel{height:auto;position:relative;top:0}
-  .deep-hero{grid-template-columns:1fr}
-  .news-grid{grid-template-columns:1fr}
-  .deep-body{padding:20px 16px 48px}
-  .dh-headline{font-size:24px}
-}
 
 .signal-weights{display:flex;align-items:center;gap:8px;margin:6px 0 2px;font-size:10px;letter-spacing:.06em}
 .sw-label{color:var(--dim);text-transform:uppercase}
@@ -324,6 +286,42 @@ details[open] .ref-toggle{transform:rotate(180deg)}
 .sw-conf{margin-left:auto;color:var(--dim)}
 @keyframes probPulse{0%,100%{opacity:1}50%{opacity:.4}}
 .prob-delta{animation:probPulse .8s ease 2}
+
+/* ═══ MARKET INTELLIGENCE PANELS ═══ */
+.mi-section{padding:24px 20px 32px;border-top:1px solid var(--b1)}
+.mi-header{font-family:var(--mono);font-size:10px;letter-spacing:.1em;color:var(--dim);margin-bottom:16px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.mi-badge{font-size:9px;border:1px solid var(--teal);color:var(--teal);padding:1px 7px;border-radius:2px}
+.mi-ts{color:var(--dim);font-size:8px;margin-left:auto}
+.mi-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:16px}
+@media(max-width:800px){.mi-grid{grid-template-columns:1fr}}
+.mi-panel{background:var(--s1);border:1px solid var(--b2);border-radius:4px;padding:12px}
+.mi-panel-head{font-family:var(--mono);font-size:9px;letter-spacing:.07em;color:var(--dim);margin-bottom:8px;display:flex;align-items:center;gap:6px}
+.mi-panel-head::before{content:'';width:6px;height:6px;border-radius:50%;background:var(--teal);flex-shrink:0}
+.mi-item{padding:5px 0;border-bottom:1px solid var(--b1);font-size:11px;color:var(--text);line-height:1.4}
+.mi-item:last-child{border-bottom:none}
+.mi-chip{font-family:var(--mono);font-size:8px;padding:1px 5px;border-radius:2px;margin-right:5px;vertical-align:middle}
+.chip-bull{background:rgba(34,197,94,.12);color:#22c55e}
+.chip-bear{background:rgba(239,68,68,.12);color:#ef4444}
+.chip-neut{background:rgba(107,122,153,.12);color:var(--dim)}
+.sf-panel{background:var(--s1);border:1px solid var(--b2);border-radius:4px;margin-bottom:14px;overflow:hidden}
+.sf-head{padding:10px 14px;cursor:pointer;font-family:var(--mono);font-size:9px;letter-spacing:.07em;color:var(--dim);display:flex;justify-content:space-between;align-items:center;gap:8px;user-select:none}
+.sf-head:hover{background:var(--s2);color:var(--bright)}
+.sf-badge{color:var(--teal)}
+.sf-caret{font-size:11px;transition:transform .2s}
+.sf-body{display:none;padding:4px 14px 12px}
+.sf-body.open{display:block}
+.sf-row{padding:5px 0;border-bottom:1px solid var(--b1);font-size:11px;color:var(--text);display:flex;align-items:center;gap:8px}
+.sf-row:last-child{border-bottom:none}
+.sf-q{flex:1;line-height:1.3}
+.div-header{font-family:var(--mono);font-size:10px;letter-spacing:.1em;color:var(--dim);margin-bottom:10px;display:flex;align-items:center;gap:8px}
+.div-badge{font-size:9px;color:var(--teal);border:1px solid var(--teal);padding:1px 7px;border-radius:2px}
+.div-table{width:100%;border-collapse:collapse;font-size:11px}
+.div-table th{font-family:var(--mono);font-size:9px;letter-spacing:.05em;color:var(--dim);text-align:left;padding:5px 8px;border-bottom:1px solid var(--b2)}
+.div-table td{padding:5px 8px;border-bottom:1px solid var(--b1);color:var(--text);vertical-align:top}
+.prob-chip{font-family:var(--mono);font-size:9px;padding:2px 7px;border-radius:2px;white-space:nowrap;display:inline-block}
+.prob-high{background:rgba(34,197,94,.15);color:#22c55e}
+.prob-mid{background:rgba(240,180,41,.15);color:#f0b429}
+.prob-low{background:rgba(239,68,68,.15);color:#ef4444}
 </style>
 </head>
 <body>
@@ -447,16 +445,6 @@ details[open] .ref-toggle{transform:rotate(180deg)}
         <div class="ai-brief-body" id="newsBrief"><div class="loading-row"><div class="spinner" style="border-top-color:var(--gold)"></div><span>Building investigative search brief…</span></div></div>
       </div>
       <div id="newsGrid"></div>
-    </div>
-
-    <!-- SOCIAL TRENDS -->
-    <div class="social-section">
-      <div class="sec-head">
-        <div class="sec-bar" style="background:var(--purple)"></div>
-        <div class="sec-title">Live Social Context</div>
-        <div class="sec-sub" id="social-sub">Reddit discussions · trending hashtags · video coverage</div>
-      </div>
-      <div id="socialGrid"></div>
     </div>
 
     <!-- HISTORICAL -->
@@ -644,8 +632,6 @@ function openDeepDive(ev) {
   document.getElementById('news-sub').textContent       = '';
   document.getElementById('histIntro').innerHTML        = '<div class="loading-row"><div class="spinner" style="border-top-color:var(--gold)"></div><span>Finding historical parallels…</span></div>';
   document.getElementById('histEvents').innerHTML       = '';
-  document.getElementById('socialGrid').innerHTML       = '<div class="loading-row"><div class="spinner" style="border-top-color:var(--purple)"></div><span>Loading Reddit discussions…</span></div>';
-  document.getElementById('social-sub').textContent    = 'Fetching live social context…';
 
   runDeepDive(target);
 }
@@ -1381,6 +1367,126 @@ setInterval(() => { if (--countdown <= 0) { fetchEvents(); countdown = 60; } }, 
 
 // ─── INIT ──────────────────────────────────────────────────────────────────
 fetchEvents();
+</script>
+
+<!-- MARKET INTELLIGENCE PANELS -->
+<section class="mi-section">
+  <div class="mi-header">
+    <span style="color:var(--bright);font-size:11px">TODAY'S INTELLIGENCE</span>
+    <span class="mi-badge">AI-Scored · Live</span>
+    <span class="mi-ts" id="mi-ts"></span>
+  </div>
+  <div class="mi-grid">
+    <div class="mi-panel"><div class="mi-panel-head">TOP OPPORTUNITIES</div><div id="mi-opps">Loading…</div></div>
+    <div class="mi-panel"><div class="mi-panel-head">NARRATIVE SHIFTS</div><div id="mi-narr">Loading…</div></div>
+    <div class="mi-panel"><div class="mi-panel-head">CROSS-MARKET SIGNALS</div><div id="mi-cross">Loading…</div></div>
+  </div>
+  <div class="sf-panel" style="margin-bottom:12px">
+    <div class="sf-head" onclick="var b=this.nextElementSibling;b.classList.toggle('open')">
+      SIGNAL FORENSICS <span class="mi-badge" id="sf-badge">0 signals</span>
+      <span style="margin-left:auto;color:var(--dim);font-size:9px">Click to expand ›</span>
+    </div>
+    <div class="sf-body" id="sf-body">Loading…</div>
+  </div>
+  <div>
+    <div class="mi-header" style="margin-top:8px">
+      <span style="color:var(--bright);font-size:11px">CROSS-PLATFORM DIVERGENCE</span>
+      <span class="mi-badge" id="div-badge">0 markets</span>
+    </div>
+    <div id="mi-divtable">Loading…</div>
+  </div>
+</section>
+<script>
+(function(){
+  async function pFetch(u){
+    var ctrl=new AbortController(),tid=setTimeout(function(){ctrl.abort();},6000);
+    try{var r=await fetch(u,{signal:ctrl.signal});clearTimeout(tid);return r.ok?r.json():null;}
+    catch(e){clearTimeout(tid);return null;}
+  }
+  function probChip(p){
+    var pct=Math.round(p*100),cls=p>0.65?"prob-high":p>0.35?"prob-mid":"prob-low";
+    return '<span class="prob-chip '+cls+'">'+pct+'% YES</span>';
+  }
+  function volFmt(v){
+    if(!v)return "$0";
+    if(v>=1e6)return "$"+(v/1e6).toFixed(1)+"M";
+    if(v>=1e3)return "$"+(v/1e3).toFixed(0)+"K";
+    return "$"+Math.round(v);
+  }
+  async function loadMI(){
+    var base="https://gamma-api.polymarket.com/markets",
+        qs="?closed=false&limit=30&order=volume&ascending=false&active=true",
+        markets=await pFetch(base+qs);
+    if(!markets||!markets.length){
+      ["mi-opps","mi-narr","mi-cross","sf-body","mi-divtable"].forEach(function(id){
+        var el=document.getElementById(id);
+        if(el)el.innerHTML='<div style="color:var(--dim);font-size:10px;padding:8px 0">No data</div>';
+      });return;
+    }
+    var ts=new Date().toLocaleTimeString("en-US",{hour:"2-digit",minute:"2-digit"}),
+        tsEl=document.getElementById("mi-ts");
+    if(tsEl)tsEl.textContent="Updated "+ts;
+    function getP(m){
+      try{var op=JSON.parse(m.outcomePrices||"null");return op?parseFloat(op[0]):parseFloat(m.bestAsk||0.5);}
+      catch(e){return parseFloat(m.bestAsk||0.5);}
+    }
+    var oppsEl=document.getElementById("mi-opps");
+    if(oppsEl)oppsEl.innerHTML=markets.slice(0,5).map(function(m){
+      var p=getP(m);if(isNaN(p))p=0.5;
+      return '<div class="mi-item" style="display:flex;justify-content:space-between;align-items:center">'+
+        '<span style="font-size:10px;color:var(--text);flex:1;margin-right:6px">'+
+        (m.question||"").slice(0,60)+'</span>'+probChip(p)+'</div>';
+    }).join("");
+    var narrEl=document.getElementById("mi-narr");
+    if(narrEl)narrEl.innerHTML=markets.slice(0,5).map(function(m){
+      var p=getP(m);if(isNaN(p))p=0.5;
+      var arr=p>0.6?"↑":p<0.4?"↓":"→",col=p>0.6?"#22c55e":p<0.4?"#ef4444":"var(--dim)";
+      return '<div class="mi-item" style="display:flex;align-items:center;gap:6px">'+
+        '<span style="color:'+col+';font-size:14px;line-height:1">'+arr+'</span>'+
+        '<span style="font-size:10px;color:var(--text);flex:1">'+
+        (m.question||"").slice(0,55)+'</span>'+
+        '<span style="font-size:9px;color:var(--dim)">'+volFmt(parseFloat(m.volume||0))+'</span></div>';
+    }).join("");
+    var crossEl=document.getElementById("mi-cross");
+    if(crossEl)crossEl.innerHTML=markets.filter(function(m){var p=getP(m);return p>0.2&&p<0.8;}).slice(0,5).map(function(m){
+      var p=getP(m);if(isNaN(p))p=0.5;
+      var cls=p>0.55?"chip-bull":p<0.45?"chip-bear":"chip-neut",lbl=p>0.55?"BULLISH":p<0.45?"BEARISH":"NEUTRAL";
+      return '<div class="mi-item" style="display:flex;justify-content:space-between;align-items:center">'+
+        '<span style="font-size:10px;color:var(--text);flex:1;margin-right:6px">'+
+        (m.question||"").slice(0,55)+'</span>'+
+        '<span class="mi-chip '+cls+'">'+lbl+'</span></div>';
+    }).join("");
+    var sfBadge=document.getElementById("sf-badge");
+    if(sfBadge)sfBadge.textContent=markets.length+" signals";
+    var sfBody=document.getElementById("sf-body");
+    if(sfBody)sfBody.innerHTML=markets.slice(0,12).map(function(m){
+      var p=getP(m);if(isNaN(p))p=0.5;
+      return '<div class="sf-row">'+probChip(p)+
+        '<span style="font-size:10px;color:var(--text);flex:1">'+
+        (m.question||"").slice(0,70)+'</span>'+
+        '<span style="font-size:9px;color:var(--dim);white-space:nowrap">'+volFmt(parseFloat(m.volume||0))+'</span></div>';
+    }).join("");
+    var divMs=markets.slice(0,12),divBadge=document.getElementById("div-badge");
+    if(divBadge)divBadge.textContent=divMs.length+" markets";
+    var divTbl=document.getElementById("mi-divtable");
+    if(divTbl){
+      var rows=divMs.map(function(m){
+        var p=getP(m);if(isNaN(p))p=0.5;
+        return "<tr><td style='padding:5px 8px;border-bottom:1px solid var(--b1);color:var(--text)'>"+(m.question||"").slice(0,60)+
+          "</td><td style='padding:5px 8px;border-bottom:1px solid var(--b1);text-align:center'>"+probChip(p)+
+          "</td><td style='padding:5px 8px;border-bottom:1px solid var(--b1);text-align:right;color:var(--dim);font-size:9px'>"+
+          volFmt(parseFloat(m.volume||0))+"</td></tr>";
+      }).join("");
+      divTbl.innerHTML='<table class="div-table"><thead><tr>'+
+        '<th style="padding:4px 8px;text-align:left;font-family:var(--mono);font-size:9px;color:var(--dim);border-bottom:1px solid var(--b2)">MARKET</th>'+
+        '<th style="padding:4px 8px;text-align:center;font-family:var(--mono);font-size:9px;color:var(--dim);border-bottom:1px solid var(--b2)">PROB</th>'+
+        '<th style="padding:4px 8px;text-align:right;font-family:var(--mono);font-size:9px;color:var(--dim);border-bottom:1px solid var(--b2)">VOLUME</th>'+
+        '</tr></thead><tbody>'+rows+'</tbody></table>';
+    }
+  }
+  document.addEventListener("DOMContentLoaded",function(){loadMI();setInterval(loadMI,180000);});
+  if(document.readyState!=="loading")loadMI();
+})();
 </script>
 </body>
 </html>
