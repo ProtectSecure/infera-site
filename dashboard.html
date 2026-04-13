@@ -333,16 +333,24 @@ function ago(dateStr) {
   return `${Math.round(mins/1440)}d ago`;
 }
 
-// Wrap a URL through the allorigins /get CORS proxy (always returns CORS headers + JSON wrapper)
-function proxied(url) {
-  return AO_PROXY + encodeURIComponent(url);
+// Fetch via CORS proxy — tries allorigins /get first (JSON envelope), then corsproxy.io (raw)
+async function proxiedFetch(url) {
+  // Primary: allorigins /get wraps response in {contents, status}
+  const w = await fetchJSON('https://api.allorigins.win/get?url=' + encodeURIComponent(url));
+  if (w?.contents) { try { return JSON.parse(w.contents); } catch(e) {} }
+  // Fallback: corsproxy.io returns the raw body with CORS headers added
+  return await fetchJSON('https://corsproxy.io/?' + encodeURIComponent(url));
 }
 
-// Fetch via allorigins /get proxy — unwraps {contents, status} JSON envelope
-async function proxiedFetch(url) {
-  const w = await fetchJSON(proxied(url));
-  if (!w?.contents) return null;
-  try { return JSON.parse(w.contents); } catch(e) { return null; }
+// Polymarket gamma-api returns outcomePrices as a JSON-stringified array, e.g. '["0.82","0.18"]'
+// This helper parses it safely and returns the YES (first) probability as a float 0-1.
+function parseOutcomePrice(m) {
+  let op = m.outcomePrices;
+  if (typeof op === 'string') { try { op = JSON.parse(op); } catch(e) { op = null; } }
+  const raw = op?.[0] ?? m.bestBid ?? m.lastTradePrice ?? 0;
+  const v = parseFloat(raw);
+  // gamma-api returns prices in range 0-1; older endpoints may return 0-100
+  return v > 1 ? v / 100 : v;
 }
 
 // Fetch a single equity quote via Yahoo v8 chart meta (works without API key)
@@ -450,7 +458,7 @@ async function loadDivergence() {
 
   // Build table rows
   const rows = markets.slice(0, 12).map(m => {
-    const prob = parseFloat(m.outcomePrices?.[0] ?? m.bestBid ?? m.lastTradePrice ?? 0);
+    const prob = parseOutcomePrice(m);
     const vol  = parseInt(m.volumeNum || m.volume || 0);
     const volFmt = vol > 1e6 ? `$${(vol/1e6).toFixed(1)}M` : vol > 1e3 ? `$${(vol/1e3).toFixed(0)}K` : `$${vol}`;
     const cls  = probClass(prob);
@@ -604,7 +612,7 @@ async function loadPredictionMarkets() {
     return;
   }
   const rows = pMarkets.map(m => {
-    const prob = parseFloat(m.outcomePrices?.[0] ?? 0);
+    const prob = parseOutcomePrice(m);
     const cls  = probClass(prob);
     return `
       <div style="padding:7px 0; border-bottom:1px solid rgba(31,41,64,0.5);">
@@ -831,7 +839,6 @@ let refreshCount = 0;
 async function refreshAll() {
   refreshCount++;
   document.getElementById('lastRefresh').textContent = 'Refreshing…';
-
   await Promise.allSettled([
     loadTickerTape(),
     loadSectors(),
