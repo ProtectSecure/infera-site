@@ -10,6 +10,7 @@
     --bg:        #0a0d13;
     --surface:   #111520;
     --surface2:  #171d2e;
+    --surface3:  #1c2338;
     --border:    #1f2940;
     --text:      #e2e8f4;
     --muted:     #6b7a99;
@@ -17,6 +18,7 @@
     --green:     #22c55e;
     --red:       #ef4444;
     --yellow:    #eab308;
+    --orange:    #f97316;
     --purple:    #a855f7;
     --cyan:      #06b6d4;
     --font:      'SF Mono', 'Fira Code', monospace;
@@ -36,6 +38,11 @@
   .refresh-btn { background: var(--surface2); border: 1px solid var(--border); color: var(--muted); padding: 4px 12px; border-radius: 6px; cursor: pointer; font-size: 11px; transition: all 0.2s; }
   .refresh-btn:hover { border-color: var(--accent); color: var(--accent); }
 
+  /* ── LIVE indicator ── */
+  .live-dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: var(--green); box-shadow: 0 0 8px var(--green); animation: livepulse 1.5s ease-in-out infinite; margin-right: 4px; }
+  @keyframes livepulse { 0%,100% { opacity:1; transform:scale(1); } 50% { opacity:0.5; transform:scale(0.8); } }
+  .live-label { font-size: 10px; font-weight: 700; letter-spacing: 1px; color: var(--green); }
+
   /* ── Layout ── */
   main { padding: 16px 24px; max-width: 1600px; margin: 0 auto; }
 
@@ -44,9 +51,9 @@
   .ticker-tape::-webkit-scrollbar { display: none; }
   .ticker-chip { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 8px 14px; min-width: 110px; flex-shrink: 0; cursor: default; transition: border-color 0.2s; }
   .ticker-chip:hover { border-color: var(--accent); }
-  .ticker-sym  { font-size: 11px; font-weight: 700; color: var(--muted); letter-spacing: 0.5px; margin-bottom: 2px; }
+  .ticker-sym   { font-size: 11px; font-weight: 700; color: var(--muted); letter-spacing: 0.5px; margin-bottom: 2px; }
   .ticker-price { font-size: 15px; font-weight: 600; color: var(--text); font-family: var(--font); }
-  .ticker-chg  { font-size: 11px; font-family: var(--font); margin-top: 1px; }
+  .ticker-chg   { font-size: 11px; font-family: var(--font); margin-top: 1px; }
   .pos { color: var(--green); }
   .neg { color: var(--red); }
   .neu { color: var(--muted); }
@@ -64,8 +71,92 @@
   .card-title .dot { width: 6px; height: 6px; border-radius: 50%; }
   .dot-green  { background: var(--green); box-shadow: 0 0 6px var(--green); animation: pulse 2s infinite; }
   .dot-yellow { background: var(--yellow); box-shadow: 0 0 6px var(--yellow); }
+  .dot-orange { background: var(--orange); box-shadow: 0 0 6px var(--orange); }
   .dot-muted  { background: var(--muted); }
   @keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:0.5; } }
+
+  /* ── TODAY'S INTELLIGENCE section ── */
+  .intel-section { margin-bottom: 16px; }
+  .intel-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+  .intel-title { font-size: 13px; font-weight: 700; color: var(--text); letter-spacing: 0.3px; display: flex; align-items: center; gap: 8px; }
+  .intel-subtitle { font-size: 10px; color: var(--muted); margin-top: 1px; }
+  .intel-timestamp { font-size: 10px; color: var(--muted); font-family: var(--font); }
+
+  /* ── Opportunity cards ── */
+  .opp-list { display: flex; flex-direction: column; gap: 8px; }
+  .opp-card { background: var(--surface2); border-radius: 10px; padding: 10px 12px; border-left: 3px solid; transition: all 0.2s; animation: fadein 0.4s ease; }
+  .opp-card:hover { background: var(--surface3); }
+  .opp-card.tier-1 { border-color: var(--red); }
+  .opp-card.tier-2 { border-color: var(--yellow); }
+  .opp-card.tier-3 { border-color: var(--muted); }
+  @keyframes fadein { from { opacity:0; transform:translateY(4px); } to { opacity:1; transform:translateY(0); } }
+  .opp-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; margin-bottom: 5px; }
+  .opp-sym { font-size: 13px; font-weight: 700; color: var(--text); font-family: var(--font); }
+  .opp-score { font-size: 10px; font-weight: 700; background: rgba(59,130,246,0.15); color: var(--accent); border-radius: 4px; padding: 2px 7px; white-space: nowrap; }
+  .opp-desc { font-size: 11px; color: var(--muted); line-height: 1.4; }
+  .opp-meta { display: flex; gap: 6px; margin-top: 6px; flex-wrap: wrap; }
+  .opp-tag { font-size: 10px; font-weight: 600; border-radius: 4px; padding: 1px 6px; }
+  .tag-vol  { background: rgba(168,85,247,0.12); color: var(--purple); }
+  .tag-pct  { background: rgba(34,197,94,0.12); color: var(--green); }
+  .tag-pct-neg { background: rgba(239,68,68,0.12); color: var(--red); }
+  .tag-mom  { background: rgba(6,182,212,0.12); color: var(--cyan); }
+  .tag-news { background: rgba(234,179,8,0.12); color: var(--yellow); }
+  .conf-bar { height: 3px; background: var(--border); border-radius: 2px; margin-top: 5px; overflow: hidden; }
+  .conf-fill { height: 100%; border-radius: 2px; background: linear-gradient(90deg, var(--accent), var(--cyan)); transition: width 0.5s ease; }
+
+  /* ── Narrative shifts ── */
+  .narrative-list { display: flex; flex-direction: column; gap: 8px; }
+  .narrative-card { background: var(--surface2); border-radius: 10px; padding: 10px 12px; animation: fadein 0.4s ease; }
+  .narr-header { display: flex; align-items: center; gap: 6px; margin-bottom: 4px; }
+  .narr-direction { font-size: 14px; }
+  .narr-label { font-size: 11px; font-weight: 700; color: var(--text); }
+  .narr-shift { font-size: 10px; font-weight: 600; border-radius: 4px; padding: 1px 6px; margin-left: auto; }
+  .shift-bullish  { background: rgba(34,197,94,0.12); color: var(--green); }
+  .shift-bearish  { background: rgba(239,68,68,0.12); color: var(--red); }
+  .shift-neutral  { background: rgba(107,122,153,0.12); color: var(--muted); }
+  .narr-body { font-size: 11px; color: var(--muted); line-height: 1.4; }
+  .narr-timeline { display: flex; align-items: center; gap: 6px; margin-top: 5px; font-size: 10px; color: var(--muted); }
+  .narr-prev { color: var(--muted); }
+  .narr-arrow { color: var(--accent); font-weight: 700; }
+  .narr-curr { font-weight: 600; }
+
+  /* ── Cross-market signals ── */
+  .crossmkt-list { display: flex; flex-direction: column; gap: 8px; }
+  .cross-card { background: var(--surface2); border-radius: 10px; padding: 10px 12px; animation: fadein 0.4s ease; }
+  .cross-chain { display: flex; align-items: center; gap: 6px; margin-bottom: 4px; flex-wrap: wrap; }
+  .cross-cause { font-size: 12px; font-weight: 700; color: var(--yellow); font-family: var(--font); }
+  .cross-arrow { color: var(--muted); font-size: 11px; }
+  .cross-effect { font-size: 12px; font-weight: 700; color: var(--cyan); font-family: var(--font); }
+  .cross-strength { font-size: 10px; background: rgba(249,115,22,0.12); color: var(--orange); border-radius: 4px; padding: 1px 6px; margin-left: auto; }
+  .cross-body { font-size: 11px; color: var(--muted); line-height: 1.4; }
+  .cross-pct { font-family: var(--font); font-weight: 700; }
+
+  /* ── Signal Forensics ── */
+  .forensics-list { display: flex; flex-direction: column; gap: 6px; }
+  .forensic-card { background: var(--surface2); border-radius: 8px; overflow: hidden; }
+  .forensic-header { display: flex; align-items: center; gap: 8px; padding: 9px 12px; cursor: pointer; user-select: none; transition: background 0.15s; }
+  .forensic-header:hover { background: var(--surface3); }
+  .forensic-expand { font-size: 10px; color: var(--muted); margin-left: auto; transition: transform 0.2s; }
+  .forensic-card.open .forensic-expand { transform: rotate(90deg); }
+  .forensic-body { display: none; padding: 0 12px 10px; border-top: 1px solid var(--border); }
+  .forensic-card.open .forensic-body { display: block; padding-top: 8px; }
+  .forensic-sym { font-size: 12px; font-weight: 700; color: var(--text); font-family: var(--font); min-width: 44px; }
+  .forensic-type { font-size: 10px; border-radius: 4px; padding: 1px 6px; font-weight: 600; }
+  .type-breakout  { background: rgba(34,197,94,0.15); color: var(--green); }
+  .type-reversal  { background: rgba(239,68,68,0.15); color: var(--red); }
+  .type-momentum  { background: rgba(6,182,212,0.15); color: var(--cyan); }
+  .type-volume    { background: rgba(168,85,247,0.15); color: var(--purple); }
+  .type-news      { background: rgba(234,179,8,0.15); color: var(--yellow); }
+  .type-anomaly   { background: rgba(249,115,22,0.15); color: var(--orange); }
+  .forensic-score-label { font-size: 10px; color: var(--muted); margin-left: 6px; }
+  .forensic-score-val { font-size: 11px; font-weight: 700; font-family: var(--font); color: var(--accent); }
+  .forensic-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 4px; }
+  .forensic-field { background: var(--surface); border-radius: 6px; padding: 6px 8px; }
+  .forensic-field-label { font-size: 9px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: var(--muted); margin-bottom: 2px; }
+  .forensic-field-val { font-size: 12px; font-weight: 600; font-family: var(--font); color: var(--text); }
+  .forensic-classification { margin-top: 8px; background: var(--surface); border-radius: 6px; padding: 6px 8px; }
+  .forensic-class-label { font-size: 9px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: var(--muted); margin-bottom: 2px; }
+  .forensic-class-val { font-size: 11px; color: var(--text); line-height: 1.4; }
 
   /* ── Divergence table ── */
   .div-table { width: 100%; border-collapse: collapse; }
@@ -139,6 +230,9 @@
   @keyframes dots { 0%,20% { content:''; } 40% { content:'.'; } 60% { content:'..'; } 80%,100% { content:'...'; } }
   .error-msg { color: var(--red); font-size: 11px; text-align: center; padding: 16px; }
   .empty-msg { color: var(--muted); font-size: 11px; text-align: center; padding: 16px; }
+
+  /* ── Section divider ── */
+  .section-divider { border: none; border-top: 1px solid var(--border); margin: 4px 0 16px; }
 </style>
 </head>
 <body>
@@ -146,6 +240,7 @@
 <header>
   <div class="logo">INFERA <span>·</span> Markets Intelligence</div>
   <div class="status-bar">
+    <span id="liveIndicator" style="display:none;"><span class="live-dot"></span><span class="live-label">LIVE</span></span>
     <div class="market-status" id="mktStatus">LOADING</div>
     <span class="refresh-info" id="lastRefresh">—</span>
     <button class="refresh-btn" onclick="refreshAll()">↻ Refresh</button>
@@ -158,6 +253,68 @@
   <div class="ticker-tape" id="tickerTape">
     <div class="loading dot-flash">Loading market data</div>
   </div>
+
+  <!-- TODAY'S INTELLIGENCE -->
+  <div class="intel-section">
+    <div class="intel-header">
+      <div>
+        <div class="intel-title">
+          <span>🧠</span> TODAY'S INTELLIGENCE
+          <span class="badge" style="background:rgba(59,130,246,0.12); color:var(--accent); border-radius:20px; padding:1px 9px; font-size:10px; font-weight:600; text-transform:none; letter-spacing:0;">AI-Scored · Live</span>
+        </div>
+        <div class="intel-subtitle">Signal scoring, narrative detection, and cross-market causality</div>
+      </div>
+      <span class="intel-timestamp" id="intelTimestamp">—</span>
+    </div>
+
+    <div class="grid-3">
+
+      <!-- Top Opportunities -->
+      <div class="card">
+        <div class="card-title">
+          <div class="dot dot-orange"></div>
+          Top Opportunities
+          <span class="badge" id="oppBadge">scoring⁩</span>
+        </div>
+        <div id="oppList"><div class="loading dot-flash">Scoring signals</div></div>
+      </div>
+
+      <!-- Narrative Shifts -->
+      <div class="card">
+        <div class="card-title">
+          <div class="dot dot-yellow"></div>
+          Narrative Shifts
+          <span class="badge" id="narrativeBadge">detecting…</span>
+        </div>
+        <div id="narrativeList"><div class="loading dot-flash">Detecting narratives</div></div>
+      </div>
+
+      <!-- Cross-Market Signals -->
+      <div class="card">
+        <div class="card-title">
+          <div class="dot dot-green"></div>
+          Cross-Market Signals
+          <span class="badge" id="crossBadge">mapping…</span>
+        </div>
+        <div id="crossList"><div class="loading dot-flash">Mapping relationships</div></div>
+      </div>
+
+    </div>
+
+    <!-- Signal Forensics (full-width expandable) -->
+    <div class="card">
+      <div class="card-title">
+        <div class="dot dot-muted"></div>
+        Signal Forensics
+        <span class="badge" id="forensicsBadge">0 signals</span>
+        <span style="margin-left:auto; font-size:10px; color:var(--muted); font-weight:400; text-transform:none; letter-spacing:0;">Click to expand ›</span>
+      </div>
+      <div id="forensicsList"><div class="loading dot-flash">Building forensics</div></div>
+    </div>
+
+  </div>
+
+  <hr class="section-divider">
 
   <!-- Row 1: Divergence + Sector performance -->
   <div class="grid-2">
@@ -177,7 +334,7 @@
       <div class="card-title">
         <div class="dot dot-yellow"></div>
         Sector Performance Today
-        <span class="badge" id="sectorBadge">S&P 500</span>
+        <span class="badge" id="sectorBadge">S&amp;P 500</span>
       </div>
       <div id="sectorBars"><div class="loading dot-flash">Loading sectors</div></div>
     </div>
@@ -262,14 +419,13 @@
 // ============================================================
 // CONFIG
 // ============================================================
-const INFERA_BASE    = '';         // same-origin; set to https://infera.melophon.com for remote
-const AO_PROXY       = 'https://api.allorigins.win/get?url='; // /get always returns CORS headers
-const YF_HOST        = 'https://query2.finance.yahoo.com';   // v8/finance/chart works; v7/quote is down
-const POLY_HOST      = 'https://gamma-api.polymarket.com';
-const FRED_API_KEY   = '';         // Free key: https://fred.stlouisfed.org/docs/api/api_key.html
-const NEWS_API_KEY   = '';         // Free key: https://newsapi.org
-const FINNHUB_API_KEY = '';        // Free key: https://finnhub.io (60 calls/min, real-time quotes)
-const AUTO_REFRESH_SEC = 60;       // seconds between auto-refreshes
+const INFERA_BASE     = '';
+const YF_HOST         = 'https://query2.finance.yahoo.com';
+const POLY_HOST       = 'https://gamma-api.polymarket.com';
+const FRED_API_KEY    = '';
+const NEWS_API_KEY    = '';
+const FINNHUB_API_KEY = '';
+const AUTO_REFRESH_SEC = 60;
 
 const MARKET_TICKERS = ['SPY','QQQ','IWM','VIX','GLD','TLT','UUP','BTC-USD','ETH-USD'];
 const SECTOR_TICKERS = ['XLF','XLK','XLE','XLV','XLI','XLP','XLY','XLB','XLRE','XLU','XLC'];
@@ -279,16 +435,31 @@ const SECTOR_NAMES = {
   XLU:'Utilities', XLC:'Comm. Services'
 };
 
+// Cross-market causality map: [cause, effect, relationship description]
+const CROSS_MARKET_MAP = [
+  ['TLT',     'QQQ',      'Bond prices ↑ → rate pressure eases → tech multiple expansion',     'inverse rates'],
+  ['VIX',     'SPY',      'Fear gauge ↑ → broad selling pressure → S&P drawdown',              'fear gauge'],
+  ['GLD',     'UUP',      'Dollar strength ↑ → gold headwinds → rotation to USD assets',       'dollar hedge'],
+  ['TLT',     'XLF',      'Long yields ↑ (TLT ↓) → bank NIM expansion → financials rally',    'yield curve'],
+  ['BTC-USD', 'QQQ',      'Crypto risk appetite → high-beta tech proxy flow',                  'risk proxy'],
+  ['XLE',     'UUP',      'Oil/energy ↑ → petrodollar demand → dollar strength',               'petrodollar'],
+  ['GLD',     'XLV',      'Defensive rotation: gold + healthcare both bid in risk-off',        'risk-off'],
+  ['IWM',     'SPY',      'Small-cap breadth divergence signals broad market health',          'breadth'],
+];
+
 // ============================================================
 // UTILITIES
 // ============================================================
 async function fetchJSON(url, opts = {}) {
   try {
-    const r = await fetch(url, { ...opts, mode: 'cors', cache: 'no-cache' });
+    const controller = new AbortController();
+    const tid = setTimeout(() => controller.abort(), 6000);
+    const r = await fetch(url, { ...opts, mode: 'cors', cache: 'no-cache', signal: controller.signal });
+    clearTimeout(tid);
     if (!r.ok) throw new Error(`HTTP ${r.status}`);
     return await r.json();
   } catch(e) {
-    console.warn('[infera]', url, e.message);
+    console.warn('[infera]', url.slice(0, 80), e.message);
     return null;
   }
 }
@@ -300,8 +471,15 @@ function fmt(n, dec = 2) {
 
 function fmtPct(n) {
   if (n == null || isNaN(n)) return '—';
-  const s = (n >= 0 ? '+' : '') + n.toFixed(2) + '%';
-  return s;
+  return (n >= 0 ? '+' : '') + n.toFixed(2) + '%';
+}
+
+function fmtVolShort(n) {
+  if (!n || isNaN(n)) return '—';
+  if (n >= 1e9) return (n/1e9).toFixed(2) + 'B';
+  if (n >= 1e6) return (n/1e6).toFixed(1) + 'M';
+  if (n >= 1e3) return (n/1e3).toFixed(0) + 'K';
+  return String(n);
 }
 
 function pctClass(n) {
@@ -316,8 +494,8 @@ function probClass(p) {
 }
 
 function sentiment(text) {
-  const bull = /\b(surge|rally|rise|gain|bull|growth|record|profit|beat|upgrade|buy|strong|boom|recover)\b/gi;
-  const bear = /\b(fall|drop|crash|decline|loss|bear|weak|cut|downgrade|sell|miss|recession|fear|risk|concern)\b/gi;
+  const bull = /\b(surge|rally|rise|gain|bull|growth|record|profit|beat|upgrade|buy|strong|boom|recover|jump|soar|climb)\b/gi;
+  const bear = /\b(fall|drop|crash|decline|loss|bear|weak|cut|downgrade|sell|miss|recession|fear|risk|concern|plunge|slide|tumble)\b/gi;
   const bScore = (text.match(bull) || []).length;
   const sScore = (text.match(bear) || []).length;
   if (bScore > sScore) return { cls: 'sent-bull', label: '↑ Bullish' };
@@ -333,73 +511,446 @@ function ago(dateStr) {
   return `${Math.round(mins/1440)}d ago`;
 }
 
-// Fetch via CORS proxy — tries codetabs first (raw JSON), then allorigins /get (JSON envelope)
+// CORS proxy — codetabs first (raw JSON), allorigins fallback
 async function proxiedFetch(url) {
-  // Primary: codetabs returns raw content directly
   const c = await fetchJSON('https://api.codetabs.com/v1/proxy?quest=' + encodeURIComponent(url));
   if (c !== null) return c;
-  // Fallback: allorigins /get wraps response in {contents, status}
   const w = await fetchJSON('https://api.allorigins.win/get?url=' + encodeURIComponent(url));
   if (w?.contents) { try { return JSON.parse(w.contents); } catch(e) {} }
   return null;
 }
 
-// Polymarket gamma-api returns outcomePrices as a JSON-stringified array, e.g. '["0.82","0.18"]'
-// This helper parses it safely and returns the YES (first) probability as a float 0-1.
+// Polymarket outcomePrices is a JSON-stringified array — parse it safely
 function parseOutcomePrice(m) {
   let op = m.outcomePrices;
   if (typeof op === 'string') { try { op = JSON.parse(op); } catch(e) { op = null; } }
   const raw = op?.[0] ?? m.bestBid ?? m.lastTradePrice ?? 0;
   const v = parseFloat(raw);
-  // gamma-api returns prices in range 0-1; older endpoints may return 0-100
   return v > 1 ? v / 100 : v;
 }
 
-// Fetch a single equity quote via Yahoo v8 chart meta (works without API key)
+// ============================================================
+// SHARED QUOTE CACHE — populated once per refresh cycle,
+// reused by Today's Intelligence + ticker tape + sectors
+// ============================================================
+let _quoteCache = {};   // sym → quote object
+let _quotesReady = false;
+
 async function yfQuote(sym) {
-  const d = await proxiedFetch(`${YF_HOST}/v8/finance/chart/${encodeURIComponent(sym)}?range=1d&interval=1d&includePrePost=false`);
+  const d = await proxiedFetch(
+    `${YF_HOST}/v8/finance/chart/${encodeURIComponent(sym)}?range=1d&interval=1d&includePrePost=false`
+  );
   const m = d?.chart?.result?.[0]?.meta;
   if (!m?.regularMarketPrice) return null;
-  const prev = m.chartPreviousClose || m.previousClose || m.regularMarketPrice;
-  const pct = prev ? (m.regularMarketPrice - prev) / prev * 100 : 0;
-  return { symbol: sym, regularMarketPrice: m.regularMarketPrice, regularMarketChangePercent: pct, marketState: m.marketState || '' };
+  const prev    = m.chartPreviousClose || m.previousClose || m.regularMarketPrice;
+  const pct     = prev ? (m.regularMarketPrice - prev) / prev * 100 : 0;
+  const vol     = m.regularMarketVolume || 0;
+  const avgVol  = m.averageDailyVolume10Day || m.averageDailyVolume3Month || 0;
+  const volRatio = avgVol > 0 ? vol / avgVol : 1;
+  return {
+    symbol: sym,
+    regularMarketPrice: m.regularMarketPrice,
+    regularMarketChangePercent: pct,
+    marketState: m.marketState || '',
+    volume: vol,
+    avgVolume: avgVol,
+    volRatio,
+    absPct: Math.abs(pct),
+    // Signal score: pct change weighted + volume ratio bonus
+    score: Math.abs(pct) * 1.5 + Math.max(0, (volRatio - 1) * 0.5),
+  };
 }
 
-// Fetch quote via Finnhub (requires FINNHUB_API_KEY)
 async function fhQuote(sym) {
   const d = await fetchJSON(`https://finnhub.io/api/v1/quote?symbol=${sym}&token=${FINNHUB_API_KEY}`);
   if (!d || d.c == null || d.c === 0) return null;
-  return { symbol: sym, regularMarketPrice: d.c, regularMarketChangePercent: d.dp, marketState: '' };
+  return {
+    symbol: sym,
+    regularMarketPrice: d.c,
+    regularMarketChangePercent: d.dp,
+    marketState: '',
+    volume: 0, avgVolume: 0, volRatio: 1,
+    absPct: Math.abs(d.dp || 0),
+    score: Math.abs(d.dp || 0) * 1.5,
+  };
 }
+
+// Fetch all tickers (market + sector) concurrently and populate cache
+async function getAllQuotes() {
+  const allTickers = [...new Set([...MARKET_TICKERS, ...SECTOR_TICKERS])];
+  const quoteFn = FINNHUB_API_KEY ? fhQuote : yfQuote;
+  const results = await Promise.all(allTickers.map(quoteFn));
+  _quoteCache = {};
+  results.forEach(q => { if (q) _quoteCache[q.symbol] = q; });
+  _quotesReady = true;
+  return _quoteCache;
+}
+
+function getQuote(sym) { return _quoteCache[sym] || null; }
 
 let spyChartInst = null;
 
 // ============================================================
-// TICKER TAPE — Finnhub (with key) or Yahoo Finance v8 chart
+// TODAY'S INTELLIGENCE — Top Opportunities
+// ============================================================
+function buildTopOpportunities() {
+  const allQuotes = Object.values(_quoteCache);
+  if (!allQuotes.length) {
+    document.getElementById('oppList').innerHTML = '<div class="empty-msg">No quote data available</div>';
+    return;
+  }
+
+  // Score and rank all tickers
+  const ranked = allQuotes
+    .filter(q => q.score > 0)
+    .sort((a, b) => b.score - a.score)
+    .slice(0, 6);
+
+  if (!ranked.length) {
+    document.getElementById('oppList').innerHTML = '<div class="empty-msg">No signals scored yet</div>';
+    return;
+  }
+
+  const maxScore = ranked[0].score;
+
+  const html = ranked.map((q, i) => {
+    const tier = i === 0 ? 'tier-1' : i <= 2 ? 'tier-2' : 'tier-3';
+    const conf = Math.round((q.score / maxScore) * 100);
+    const pctCls = q.regularMarketChangePercent >= 0 ? 'tag-pct' : 'tag-pct-neg';
+    const volTag = q.volRatio >= 1.5
+      ? `<span class="opp-tag tag-vol">Vol ${q.volRatio.toFixed(1)}× avg</span>`
+      : '';
+    const momTag = Math.abs(q.regularMarketChangePercent) > 1
+      ? `<span class="opp-tag tag-mom">Momentum</span>`
+      : '';
+
+    const sectorName = SECTOR_NAMES[q.symbol] || '';
+    const desc = sectorName
+      ? `${sectorName} sector ${q.regularMarketChangePercent >= 0 ? 'outperforming' : 'underperforming'} today`
+      : `${q.regularMarketChangePercent >= 0 ? 'Upside' : 'Downside'} move with ${q.volRatio >= 1.2 ? 'elevated' : 'normal'} volume`;
+
+    return `
+      <div class="opp-card ${tier}">
+        <div class="opp-top">
+          <span class="opp-sym">${q.symbol}</span>
+          <span class="opp-score">Score ${q.score.toFixed(1)}</span>
+        </div>
+        <div class="opp-desc">${desc}</div>
+        <div class="opp-meta">
+          <span class="opp-tag ${pctCls}">${fmtPct(q.regularMarketChangePercent)}</span>
+          ${volTag}${momTag}
+          ${q.volume > 0 ? `<span class="opp-tag" style="background:rgba(107,122,153,0.1);color:var(--muted);">Vol ${fmtVolShort(q.volume)}</span>` : ''}
+        </div>
+        <div class="conf-bar"><div class="conf-fill" style="width:${conf}%;"></div></div>
+      </div>`;
+  }).join('');
+
+  document.getElementById('oppList').innerHTML = `<div class="opp-list">${html}</div>`;
+  document.getElementById('oppBadge').textContent = `${ranked.length} ranked`;
+}
+
+// ============================================================
+// TODAY'S INTELLIGENCE — Narrative Shifts
+// ============================================================
+function buildNarrativeShifts() {
+  const quotes = _quoteCache;
+
+  // Derive narratives from live prices
+  const narratives = [];
+
+  // 1. Risk-On / Risk-Off regime
+  const spy = quotes['SPY'], vix = quotes['VIX'], tlt = quotes['TLT'];
+  if (spy && vix) {
+    const spyUp = (spy.regularMarketChangePercent || 0) > 0;
+    const vixUp = (vix.regularMarketChangePercent || 0) > 0;
+    const regime = spyUp && !vixUp ? 'Risk-On' : !spyUp && vixUp ? 'Risk-Off' : 'Mixed';
+    const dir = regime === 'Risk-On' ? '↑' : regime === 'Risk-Off' ? '↓' : '↔';
+    const cls = regime === 'Risk-On' ? 'shift-bullish' : regime === 'Risk-Off' ? 'shift-bearish' : 'shift-neutral';
+    const spyPct = fmtPct(spy.regularMarketChangePercent);
+    const vixPct = fmtPct(vix.regularMarketChangePercent);
+    narratives.push({
+      dir, label: `${regime} Regime`, cls,
+      body: `SPY ${spyPct} · VIX ${vixPct}. ${regime === 'Risk-On' ? 'Equities bid, fear gauge retreating.' : regime === 'Risk-Off' ? 'Equities sold, volatility rising.' : 'Conflicting signals across risk assets.'}`,
+      prev: regime === 'Risk-On' ? 'Defensive' : regime === 'Risk-Off' ? 'Neutral' : 'Directional',
+      curr: regime
+    });
+  }
+
+  // 2. Tech vs. Value rotation
+  const xlk = quotes['XLK'], xlf = quotes['XLF'], qqq = quotes['QQQ'];
+  if (xlk && xlf) {
+    const techLead = (xlk.regularMarketChangePercent || 0) - (xlf.regularMarketChangePercent || 0);
+    const dir = techLead > 0.5 ? '↑' : techLead < -0.5 ? '↓' : '↔';
+    const label = techLead > 0.5 ? 'Tech Outperformance' : techLead < -0.5 ? 'Value Rotation' : 'Tech/Value Parity';
+    const cls = techLead > 0 ? 'shift-bullish' : techLead < 0 ? 'shift-bearish' : 'shift-neutral';
+    narratives.push({
+      dir, label, cls,
+      body: `XLK ${fmtPct(xlk.regularMarketChangePercent)} vs XLF ${fmtPct(xlf.regularMarketChangePercent)}. Spread: ${(techLead >= 0 ? '+' : '') + techLead.toFixed(2)}%.`,
+      prev: techLead > 0 ? 'Value-led' : 'Growth-led',
+      curr: label
+    });
+  }
+
+  // 3. Safe haven demand
+  const gld = quotes['GLD'], uup = quotes['UUP'];
+  if (gld && tlt) {
+    const havenBid = ((gld.regularMarketChangePercent || 0) + (tlt.regularMarketChangePercent || 0)) / 2;
+    const dir = havenBid > 0.3 ? '↑' : havenBid < -0.3 ? '↓' : '↔';
+    const label = havenBid > 0.3 ? 'Haven Demand' : havenBid < -0.3 ? 'Haven Selling' : 'Haven Neutral';
+    const cls = havenBid > 0 ? 'shift-bullish' : havenBid < 0 ? 'shift-bearish' : 'shift-neutral';
+    narratives.push({
+      dir, label, cls,
+      body: `GLD ${fmtPct(gld.regularMarketChangePercent)} · TLT ${fmtPct(tlt.regularMarketChangePercent)}. ${havenBid > 0 ? 'Defensive bid active.' : havenBid < 0 ? 'Risk appetite suppressing havens.' : 'Havens range-bound.'}`,
+      prev: havenBid > 0 ? 'Risk-On rotation' : 'Defensive bid',
+      curr: label
+    });
+  }
+
+  // 4. Energy narrative
+  const xle = quotes['XLE'];
+  if (xle) {
+    const pct = xle.regularMarketChangePercent || 0;
+    const dir = pct > 0.5 ? '↑' : pct < -0.5 ? '↓' : '↔';
+    const label = pct > 1 ? 'Energy Surge' : pct > 0.2 ? 'Energy Bid' : pct < -1 ? 'Energy Selling' : pct < -0.2 ? 'Energy Softness' : 'Energy Flat';
+    const cls = pct > 0 ? 'shift-bullish' : pct < 0 ? 'shift-bearish' : 'shift-neutral';
+    narratives.push({
+      dir, label, cls,
+      body: `XLE ${fmtPct(pct)}. ${pct > 0 ? 'Oil sector outperforming — watch for commodity inflation narrative.' : 'Energy lagging — potential demand concern signal.'}`,
+      prev: pct > 0 ? 'Underperforming' : 'Outperforming',
+      curr: label
+    });
+  }
+
+  // 5. Crypto risk appetite
+  const btc = quotes['BTC-USD'];
+  if (btc) {
+    const pct = btc.regularMarketChangePercent || 0;
+    const dir = pct > 1 ? '↑' : pct < -1 ? '↓' : '↔';
+    const label = pct > 3 ? 'Crypto Risk-On' : pct > 0.5 ? 'Crypto Bid' : pct < -3 ? 'Crypto Selling' : pct < -0.5 ? 'Crypto Softness' : 'Crypto Flat';
+    const cls = pct > 0 ? 'shift-bullish' : pct < 0 ? 'shift-bearish' : 'shift-neutral';
+    narratives.push({
+      dir, label, cls,
+      body: `BTC ${fmtPct(pct)}. Crypto often leads high-beta risk appetite by 4–8 hours.`,
+      prev: pct > 0 ? 'Bearish / neutral' : 'Bullish / neutral',
+      curr: label
+    });
+  }
+
+  if (!narratives.length) {
+    document.getElementById('narrativeList').innerHTML = '<div class="empty-msg">Insufficient data for narrative detection</div>';
+    return;
+  }
+
+  const html = narratives.slice(0, 5).map(n => `
+    <div class="narrative-card">
+      <div class="narr-header">
+        <span class="narr-direction">${n.dir}</span>
+        <span class="narr-label">${n.label}</span>
+        <span class="narr-shift ${n.cls}">${n.cls.replace('shift-', '')}</span>
+      </div>
+      <div class="narr-body">${n.body}</div>
+      <div class="narr-timeline">
+        <span class="narr-prev">${n.prev}</span>
+        <span class="narr-arrow">→</span>
+        <span class="narr-curr">${n.curr}</span>
+      </div>
+    </div>`).join('');
+
+  document.getElementById('narrativeList').innerHTML = `<div class="narrative-list">${html}</div>`;
+  document.getElementById('narrativeBadge').textContent = `${narratives.length} detected`;
+}
+
+// ============================================================
+// TODAY'S INTELLIGENCE — Cross-Market Signals
+// ============================================================
+function buildCrossMarketSignals() {
+  const active = [];
+
+  CROSS_MARKET_MAP.forEach(([cause, effect, desc, relType]) => {
+    const cq = _quoteCache[cause];
+    const eq = _quoteCache[effect];
+    if (!cq || !eq) return;
+
+    const causePct  = cq.regularMarketChangePercent || 0;
+    const effectPct = eq.regularMarketChangePercent || 0;
+
+    // Only surface when cause has moved meaningfully (>0.5%)
+    if (Math.abs(causePct) < 0.3) return;
+
+    // Check if effect is moving in expected direction
+    const expectedDir = relType === 'inverse rates' || relType === 'fear gauge' ? -1 : 1;
+    const actualDir   = causePct > 0 ? 1 : -1;
+    const effDir      = effectPct > 0 ? 1 : -1;
+    const confirming  = actualDir * expectedDir === effDir;
+
+    const strength = Math.abs(causePct) > 1.5 ? 'Strong' : Math.abs(causePct) > 0.7 ? 'Moderate' : 'Weak';
+
+    active.push({ cause, effect, desc, causePct, effectPct, confirming, strength, relType });
+  });
+
+  if (!active.length) {
+    document.getElementById('crossList').innerHTML = '<div class="empty-msg">No significant cross-market moves detected</div>';
+    document.getElementById('crossBadge').textContent = '0 active';
+    return;
+  }
+
+  // Sort: confirming signals first, then by cause move magnitude
+  active.sort((a, b) => {
+    if (a.confirming !== b.confirming) return b.confirming - a.confirming;
+    return Math.abs(b.causePct) - Math.abs(a.causePct);
+  });
+
+  const html = active.slice(0, 5).map(s => {
+    const confirmIcon = s.confirming ? '✓' : '✗';
+    const confirmColor = s.confirming ? 'var(--green)' : 'var(--red)';
+    const cPctCls = s.causePct >= 0 ? 'pos' : 'neg';
+    const ePctCls = s.effectPct >= 0 ? 'pos' : 'neg';
+    const strengthCls = s.strength === 'Strong' ? 'color:var(--red)' : s.strength === 'Moderate' ? 'color:var(--yellow)' : 'color:var(--muted)';
+    return `
+      <div class="cross-card">
+        <div class="cross-chain">
+          <span class="cross-cause">${s.cause}</span>
+          <span class="cross-arrow">→</span>
+          <span class="cross-effect">${s.effect}</span>
+          <span class="cross-strength" style="${strengthCls}">${s.strength}</span>
+          <span style="font-size:11px; font-weight:700; margin-left:2px; color:${confirmColor};">${confirmIcon}</span>
+        </div>
+        <div class="cross-body">
+          ${s.desc} ·
+          <span class="cross-pct ${cPctCls}">${fmtPct(s.causePct)}</span>
+          cause,
+          <span class="cross-pct ${ePctCls}">${fmtPct(s.effectPct)}</span>
+          effect
+          ${s.confirming ? '— <span style="color:var(--green)">aligned</span>' : '— <span style="color:var(--red)">diverging</span>'}
+        </div>
+      </div>`;
+  }).join('');
+
+  document.getElementById('crossList').innerHTML = `<div class="crossmkt-list">${html}</div>`;
+  document.getElementById('crossBadge').textContent = `${active.length} active`;
+}
+
+// ============================================================
+// SIGNAL FORENSICS — expandable deep-dive cards
+// ============================================================
+function buildForensics() {
+  const allQuotes = Object.values(_quoteCache);
+  if (!allQuotes.length) {
+    document.getElementById('forensicsList').innerHTML = '<div class="empty-msg">No quote data available</div>';
+    return;
+  }
+
+  // Build forensic records for top movers
+  const movers = allQuotes
+    .filter(q => q.absPct > 0.2 || q.volRatio > 1.3)
+    .sort((a, b) => b.score - a.score)
+    .slice(0, 10);
+
+  if (!movers.length) {
+    document.getElementById('forensicsList').innerHTML = '<div class="empty-msg">No significant movers detected</div>';
+    return;
+  }
+
+  const classifySignal = (q) => {
+    if (q.volRatio > 2.0 && q.absPct > 1.5) return { type: 'breakout', label: 'Breakout', cls: 'type-breakout' };
+    if (q.volRatio > 2.0 && q.absPct < 0.5) return { type: 'volume',   label: 'Vol Spike', cls: 'type-volume' };
+    if (q.absPct > 2.0)                       return { type: 'momentum', label: 'Momentum', cls: 'type-momentum' };
+    if (q.volRatio > 1.5)                     return { type: 'volume',   label: 'High Vol',  cls: 'type-volume' };
+    return { type: 'anomaly', label: 'Anomaly', cls: 'type-anomaly' };
+  };
+
+  const classifyOutlook = (q) => {
+    const pct = q.regularMarketChangePercent || 0;
+    const vol = q.volRatio;
+    if (pct > 1.5 && vol > 1.5)  return 'Confirmed upside with volume conviction. Watch for continuation.';
+    if (pct > 1.5 && vol < 1.0)  return 'Price up on light volume — possible false breakout. Monitor.';
+    if (pct < -1.5 && vol > 1.5) return 'High-volume selloff. Capitulation possible; watch support.';
+    if (pct < -1.5 && vol < 1.0) return 'Light-volume decline. May reverse intraday on any catalyst.';
+    if (vol > 2.0)               return 'Unusual volume without price move — accumulation or distribution signal.';
+    return 'Below-average signal strength. Low conviction move.';
+  };
+
+  const html = movers.map((q, idx) => {
+    const sig = classifySignal(q);
+    const outlook = classifyOutlook(q);
+    const pct = q.regularMarketChangePercent || 0;
+    const pctCls = pct >= 0 ? 'pos' : 'neg';
+
+    return `
+      <div class="forensic-card" id="fc-${idx}">
+        <div class="forensic-header" onclick="toggleForensic('fc-${idx}')">
+          <span class="forensic-sym">${q.symbol}</span>
+          <span class="forensic-type ${sig.cls}">${sig.label}</span>
+          <span class="forensic-score-label">score</span>
+          <span class="forensic-score-val">${q.score.toFixed(2)}</span>
+          <span class="forensic-expand">›</span>
+        </div>
+        <div class="forensic-body">
+          <div class="forensic-grid">
+            <div class="forensic-field">
+              <div class="forensic-field-label">Price Change</div>
+              <div class="forensic-field-val ${pctCls}">${fmtPct(pct)}</div>
+            </div>
+            <div class="forensic-field">
+              <div class="forensic-field-label">Vol vs Avg</div>
+              <div class="forensic-field-val ${q.volRatio > 1.5 ? 'pos' : 'neu'}">${q.volRatio >= 1 ? q.volRatio.toFixed(2) : q.volRatio.toFixed(2)}×</div>
+            </div>
+            <div class="forensic-field">
+              <div class="forensic-field-label">Volume Today</div>
+              <div class="forensic-field-val">${fmtVolShort(q.volume)}</div>
+            </div>
+            <div class="forensic-field">
+              <div class="forensic-field-label">Signal Type</div>
+              <div class="forensic-field-val" style="font-size:11px;">${sig.type}</div>
+            </div>
+          </div>
+          <div class="forensic-classification">
+            <div class="forensic-class-label">Classification</div>
+            <div class="forensic-class-val">${outlook}</div>
+          </div>
+        </div>
+      </div>`;
+  }).join('');
+
+  document.getElementById('forensicsList').innerHTML = `<div class="forensics-list">${html}</div>`;
+  document.getElementById('forensicsBadge').textContent = `${movers.length} signals`;
+}
+
+function toggleForensic(id) {
+  const el = document.getElementById(id);
+  if (el) el.classList.toggle('open');
+}
+
+// ============================================================
+// TICKER TAPE
 // ============================================================
 async function loadTickerTape() {
   const tickers = MARKET_TICKERS;
-  const quoteFn = FINNHUB_API_KEY ? fhQuote : yfQuote;
-  const results = (await Promise.all(tickers.map(quoteFn))).filter(Boolean);
+  const results = tickers.map(sym => _quoteCache[sym]).filter(Boolean);
 
   if (!results.length) {
     document.getElementById('tickerTape').innerHTML = '<div class="error-msg">Could not load market data</div>';
     return;
   }
 
-  // Market open status
   const isOpen = results.some(r => r.marketState === 'REGULAR');
   const mkt = document.getElementById('mktStatus');
   mkt.textContent = isOpen ? 'MARKET OPEN' : 'MARKET CLOSED';
   mkt.className = `market-status ${isOpen ? 'open' : 'close'}`;
 
+  document.getElementById('liveIndicator').style.display = isOpen ? 'flex' : 'none';
+
   const chips = results.map(r => {
     const pct = r.regularMarketChangePercent;
     const cls = pctClass(pct);
+    const price = r.regularMarketPrice;
+    const priceStr = r.symbol.includes('-USD')
+      ? '$' + price.toLocaleString(undefined, { maximumFractionDigits: 0 })
+      : price.toFixed(2);
     return `
       <div class="ticker-chip">
         <div class="ticker-sym">${r.symbol}</div>
-        <div class="ticker-price">${r.regularMarketPrice != null ? (r.symbol.includes('-USD') ? '$' + r.regularMarketPrice.toLocaleString(undefined, {maximumFractionDigits: 0}) : r.regularMarketPrice.toFixed(2)) : '—'}</div>
+        <div class="ticker-price">${price != null ? priceStr : '—'}</div>
         <div class="ticker-chg ${cls}">${fmtPct(pct)}</div>
       </div>`;
   }).join('');
@@ -408,11 +959,10 @@ async function loadTickerTape() {
 }
 
 // ============================================================
-// SECTOR PERFORMANCE — Finnhub (with key) or Yahoo Finance v8 chart
+// SECTOR PERFORMANCE
 // ============================================================
 async function loadSectors() {
-  const quoteFn = FINNHUB_API_KEY ? fhQuote : yfQuote;
-  const results = (await Promise.all(SECTOR_TICKERS.map(quoteFn))).filter(Boolean);
+  const results = SECTOR_TICKERS.map(sym => _quoteCache[sym]).filter(Boolean);
 
   if (!results.length) {
     document.getElementById('sectorBars').innerHTML = '<div class="error-msg">Could not load sectors</div>';
@@ -420,15 +970,14 @@ async function loadSectors() {
   }
 
   results.sort((a, b) => (b.regularMarketChangePercent || 0) - (a.regularMarketChangePercent || 0));
-
   const maxAbs = Math.max(...results.map(r => Math.abs(r.regularMarketChangePercent || 0)), 0.01);
 
   const html = results.map(r => {
-    const pct  = r.regularMarketChangePercent || 0;
-    const cls  = pctClass(pct);
-    const barW = Math.round(Math.abs(pct) / maxAbs * 100);
+    const pct    = r.regularMarketChangePercent || 0;
+    const cls    = pctClass(pct);
+    const barW   = Math.round(Math.abs(pct) / maxAbs * 100);
     const barColor = pct >= 0 ? '#22c55e' : '#ef4444';
-    const name = SECTOR_NAMES[r.symbol] || r.symbol;
+    const name   = SECTOR_NAMES[r.symbol] || r.symbol;
     return `
       <div class="sector-row">
         <div class="sector-label">${r.symbol}</div>
@@ -446,10 +995,9 @@ async function loadSectors() {
 }
 
 // ============================================================
-// CROSS-PLATFORM DIVERGENCE — compare same events on Poly vs PredictIt
+// CROSS-PLATFORM DIVERGENCE (Polymarket)
 // ============================================================
 async function loadDivergence() {
-  // Fetch Polymarket top markets
   const polyData = await proxiedFetch(`${POLY_HOST}/markets?closed=false&limit=30&order=volume&ascending=false&active=true`);
   const markets = Array.isArray(polyData) ? polyData : (polyData?.markets || []);
 
@@ -458,13 +1006,12 @@ async function loadDivergence() {
     return;
   }
 
-  // Build table rows
   const rows = markets.slice(0, 12).map(m => {
-    const prob = parseOutcomePrice(m);
-    const vol  = parseInt(m.volumeNum || m.volume || 0);
+    const prob   = parseOutcomePrice(m);
+    const vol    = parseInt(m.volumeNum || m.volume || 0);
     const volFmt = vol > 1e6 ? `$${(vol/1e6).toFixed(1)}M` : vol > 1e3 ? `$${(vol/1e3).toFixed(0)}K` : `$${vol}`;
-    const cls  = probClass(prob);
-    const endDate = m.endDate ? new Date(m.endDate).toLocaleDateString('en-US', {month:'short', day:'numeric'}) : '';
+    const cls    = probClass(prob);
+    const endDate = m.endDate ? new Date(m.endDate).toLocaleDateString('en-US', { month:'short', day:'numeric' }) : '';
     return `
       <tr>
         <td class="question">
@@ -489,7 +1036,7 @@ async function loadDivergence() {
 }
 
 // ============================================================
-// MACRO RATES — via Infera backend (FRED)
+// MACRO RATES
 // ============================================================
 async function loadRatesFred() {
   const ids = ['DGS10', 'DGS2', 'DFF'];
@@ -517,11 +1064,27 @@ async function loadRatesFred() {
   document.getElementById('ratesBadge').textContent = 'FRED · Live';
 }
 
+async function loadRatesFallback() {
+  const syms   = ['^VIX', 'UUP', 'GLD', 'TLT'];
+  const labels = { '^VIX': 'VIX', 'UUP': 'Dollar (UUP)', 'GLD': 'Gold (GLD)', 'TLT': '20Y Bond (TLT)' };
+  const quoteFn = FINNHUB_API_KEY ? fhQuote : yfQuote;
+  const results = (await Promise.all(syms.map(quoteFn))).filter(Boolean);
+  if (!results.length) return;
+  const tiles = results.map(r => `
+    <div class="rate-tile">
+      <div class="rate-label">${labels[r.symbol] || r.symbol}</div>
+      <div class="rate-value">${r.regularMarketPrice?.toFixed(2) || '—'}</div>
+      <div class="rate-sub ${pctClass(r.regularMarketChangePercent)}">${fmtPct(r.regularMarketChangePercent)}</div>
+    </div>`).join('');
+  const el = document.getElementById('fredFallback');
+  if (el) el.innerHTML = `<div class="rate-grid">${tiles}</div>`;
+}
+
 async function loadRates() {
   if (FRED_API_KEY) { return loadRatesFred(); }
   const data = await fetchJSON(`${INFERA_BASE}/markets/macro/rates`);
+
   if (!data || data.error) {
-    // Fallback: show placeholder tiles
     document.getElementById('ratesTiles').innerHTML = `
       <div class="rate-grid">
         <div class="rate-tile"><div class="rate-label">FRED API Key</div><div class="rate-value" style="font-size:13px; color:var(--muted)">Set FRED_API_KEY env var to enable</div></div>
@@ -529,13 +1092,14 @@ async function loadRates() {
       </div>
       <div style="margin-top:10px;"></div>
       <div id="fredFallback"></div>`;
-    // Try to load VIX/DXY from Yahoo as fallback
     loadRatesFallback();
     return;
   }
+
   const r = data.rates || {};
-  const spread = data.yield_curve_spread;
+  const spread   = data.yield_curve_spread;
   const inverted = data.curve_inverted;
+
   function tile(id, label) {
     const v = r[id]?.value;
     return `<div class="rate-tile">
@@ -544,6 +1108,7 @@ async function loadRates() {
       <div class="rate-sub">${r[id]?.date || ''}</div>
     </div>`;
   }
+
   const spreadClass = inverted === true ? 'inverted' : inverted === false ? 'normal' : '';
   document.getElementById('ratesTiles').innerHTML = `
     <div class="rate-grid">
@@ -559,30 +1124,12 @@ async function loadRates() {
   document.getElementById('ratesBadge').textContent = 'FRED · Live';
 }
 
-async function loadRatesFallback() {
-  const syms = ['^VIX', 'UUP', 'GLD', 'TLT'];
-  const labels = { '^VIX': 'VIX', 'UUP': 'Dollar (UUP)', 'GLD': 'Gold (GLD)', 'TLT': '20Y Bond (TLT)' };
-  const quoteFn = FINNHUB_API_KEY ? fhQuote : yfQuote;
-  const results = (await Promise.all(syms.map(quoteFn))).filter(Boolean);
-  if (!results.length) return;
-  const tiles = results.map(r => `
-    <div class="rate-tile">
-      <div class="rate-label">${labels[r.symbol] || r.symbol}</div>
-      <div class="rate-value">${r.regularMarketPrice?.toFixed(2) || '—'}</div>
-      <div class="rate-sub ${pctClass(r.regularMarketChangePercent)}">${fmtPct(r.regularMarketChangePercent)}</div>
-    </div>`).join('');
-  const el = document.getElementById('fredFallback');
-  if (el) el.innerHTML = `<div class="rate-grid">${tiles}</div>`;
-}
-
 // ============================================================
 // TOP PREDICTION MARKETS
 // ============================================================
-as===
 async function loadPredictionMarkets() {
-  // First try Infera backend
   const inferaData = await fetchJSON(`${INFERA_BASE}/markets`);
-  const markets = inferaData?.markets || [];
+  const markets    = inferaData?.markets || [];
 
   if (markets.length > 0) {
     const rows = markets.slice(0, 8).map(m => {
@@ -601,8 +1148,7 @@ async function loadPredictionMarkets() {
     return;
   }
 
-  // Fallback: direct Polymarket via proxy
-  const data = await proxiedFetch(`${POLY_HOST}/markets?closed=false&limit=8&order=volume&ascending=false&active=true`);
+  const data     = await proxiedFetch(`${POLY_HOST}/markets?closed=false&limit=8&order=volume&ascending=false&active=true`);
   const pMarkets = Array.isArray(data) ? data : (data?.markets || []);
   if (!pMarkets.length) {
     document.getElementById('predMarkets').innerHTML = '<div class="error-msg">Could not load markets</div>';
@@ -624,28 +1170,20 @@ async function loadPredictionMarkets() {
 }
 
 // ============================================================
-// CORRELATIONS — Infera backend
+// CORRELATIONS
 // ============================================================
 async function loadCorrelations() {
   const data = await fetchJSON(`${INFERA_BASE}/analytics/correlations`);
-
-  if (!data || data.error) {
-    document.getElementById('corrBadge').textContent = 'needs data';
-    return;
-  }
-
+  if (!data || data.error) { document.getElementById('corrBadge').textContent = 'needs data'; return; }
   const pairs = data.pairs || [];
-  if (!pairs.length) {
-    document.getElementById('corrBadge').textContent = 'collecting data';
-    return;
-  }
+  if (!pairs.length) { document.getElementById('corrBadge').textContent = 'collecting data'; return; }
 
   const html = pairs.slice(0, 6).map(p => {
-    const r = p.r ?? p.pearson_r ?? 0;
+    const r   = p.r ?? p.pearson_r ?? 0;
     const cls = r >= 0 ? 'r-pos' : 'r-neg';
-    const direction = r >= 0 ? '↑ corr' : '↓ inv';
-    const nameA = (p.question_a || p.market_a || '').replace('equity:', '').replace('macro:', '').replace('poly:', '');
-    const nameB = (p.question_b || p.market_b || '').replace('equity:', '').replace('macro:', '').replace('poly:', '');
+    const dir = r >= 0 ? '↑ corr' : '↓ inv';
+    const nameA = (p.question_a || p.market_a || '').replace(/equity:|macro:|poly:/g, '');
+    const nameB = (p.question_b || p.market_b || '').replace(/equity:|macro:|poly:/g, '');
     return `
       <div class="pair-row">
         <div class="pair-names">
@@ -654,7 +1192,7 @@ async function loadCorrelations() {
         </div>
         <div>
           <div class="pair-r ${cls}">${r.toFixed(2)}</div>
-          <div class="pair-arrow">${direction}</div>
+          <div class="pair-arrow">${dir}</div>
         </div>
       </div>`;
   }).join('');
@@ -664,23 +1202,19 @@ async function loadCorrelations() {
 }
 
 // ============================================================
-// DIVERGENCE SIGNALS — Infera backend
+// DIVERGENCE SIGNALS
 // ============================================================
 async function loadSignals() {
   const data = await fetchJSON(`${INFERA_BASE}/analytics/divergence`);
-
-  if (!data || data.error || !data.signals?.length) {
-    document.getElementById('sigBadge').textContent = '0';
-    return;
-  }
+  if (!data || data.error || !data.signals?.length) { document.getElementById('sigBadge').textContent = '0'; return; }
 
   const sigs = data.signals;
   document.getElementById('sigBadge').textContent = sigs.length;
 
   const html = sigs.slice(0, 5).map(s => {
     const strength = s.strength || 'weak';
-    const div = ((s.divergence ?? s.gap ?? 0) * 100).toFixed(1);
-    const q = (s.question || s.market_id || '').replace(/^(equity:|macro:|poly:|kalshi:)/, '');
+    const div      = ((s.divergence ?? s.gap ?? 0) * 100).toFixed(1);
+    const q        = (s.question || s.market_id || '').replace(/^(equity:|macro:|poly:|kalshi:)/, '');
     return `
       <div class="signal-row signal-${strength}">
         <div class="signal-q">${q.length > 55 ? q.slice(0,55)+'…' : q}</div>
@@ -699,37 +1233,29 @@ async function loadSignals() {
 // SPY INTRADAY CHART
 // ============================================================
 async function loadSpyChart() {
-  // Try Infera backend first
   const data = await fetchJSON(`${INFERA_BASE}/markets/equities/ohlcv/SPY?period=5d&interval=15m`);
   let bars = data?.bars?.filter(b => b.close != null) || [];
 
   if (!bars.length) {
-    // Fallback: Yahoo Finance v8 chart via allorigins proxy
     const yData = await proxiedFetch(`${YF_HOST}/v8/finance/chart/SPY?range=5d&interval=15m&includePrePost=false`);
     const c = yData?.chart?.result?.[0];
     if (c) {
-      const ts  = c.timestamp || [];
+      const ts     = c.timestamp || [];
       const closes = c.indicators?.quote?.[0]?.close || [];
       bars = ts.map((t, i) => ({ ts: t, close: closes[i] })).filter(b => b.close != null);
     }
   }
 
-  if (!bars.length) {
-    document.getElementById('spyBadge').textContent = 'No data';
-    return;
-  }
+  if (!bars.length) { document.getElementById('spyBadge').textContent = 'No data'; return; }
 
-  const labels = bars.map(b => {
+  const labels  = bars.map(b => {
     const d = new Date(b.ts * 1000);
     return d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', month:'short', day:'numeric' });
   });
-  const prices = bars.map(b => b.close);
-  const startPrice = prices[0];
-  const bgColors = prices.map(p => p >= startPrice ? 'rgba(34,197,94,0.08)' : 'rgba(239,68,68,0.08)');
-  const lineColors = prices.map(p => p >= startPrice ? '#22c55e' : '#ef4444');
+  const prices    = bars.map(b => b.close);
   const lastPrice = prices[prices.length - 1];
   const firstPrice = prices[0];
-  const chg = ((lastPrice - firstPrice) / firstPrice * 100).toFixed(2);
+  const chg       = ((lastPrice - firstPrice) / firstPrice * 100).toFixed(2);
 
   document.getElementById('spyBadge').textContent = `$${lastPrice.toFixed(2)} (${chg >= 0 ? '+' : ''}${chg}%)`;
 
@@ -754,21 +1280,21 @@ async function loadSpyChart() {
     options: {
       responsive: true,
       maintainAspectRatio: false,
-      plugins: { legend: { display: false }, tooltip: {
-        mode: 'index', intersect: false,
-        backgroundColor: '#111520', borderColor: '#1f2940', borderWidth: 1,
-        titleColor: '#6b7a99', bodyColor: '#e2e8f4', titleFont: { size: 10 },
-        callbacks: {
-          label: ctx => `$${ctx.parsed.y.toFixed(2)}`
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          mode: 'index', intersect: false,
+          backgroundColor: '#111520', borderColor: '#1f2940', borderWidth: 1,
+          titleColor: '#6b7a99', bodyColor: '#e2e8f4', titleFont: { size: 10 },
+          callbacks: { label: ctx => `$${ctx.parsed.y.toFixed(2)}` }
         }
-      }},
+      },
       scales: {
         x: { display: false },
         y: {
           position: 'right',
           grid: { color: 'rgba(31,41,64,0.5)', lineWidth: 0.5 },
-          ticks: { color: '#6b7a99', font: { size: 10 }, maxTicksLimit: 4,
-            callback: v => '$' + v.toFixed(0) }
+          ticks: { color: '#6b7a99', font: { size: 10 }, maxTicksLimit: 4, callback: v => '$' + v.toFixed(0) }
         }
       },
       interaction: { mode: 'index', intersect: false },
@@ -777,10 +1303,9 @@ async function loadSpyChart() {
 }
 
 // ============================================================
-// NEWS FEED — Infera trending endpoint
+// NEWS FEED
 // ============================================================
 async function loadNews() {
-  // Direct NewsAPI path if key is configured
   if (NEWS_API_KEY) {
     const data = await fetchJSON(`https://newsapi.org/v2/top-headlines?q=markets+stocks+economy&language=en&pageSize=8&apiKey=${NEWS_API_KEY}`);
     const articles = (data?.articles || []).filter(a => a.title && a.title !== '[Removed]');
@@ -801,7 +1326,7 @@ async function loadNews() {
     }
   }
 
-  const data = await fetchJSON(`${INFERA_BASE}/trending`);
+  const data   = await fetchJSON(`${INFERA_BASE}/trending`);
   const stories = data?.stories || [];
 
   if (!stories.length) {
@@ -810,15 +1335,15 @@ async function loadNews() {
   }
 
   const html = stories.slice(0, 8).map(s => {
-    const sent = sentiment(s.headline || s.title || '');
-    const src  = s.source || s.feed || '';
-    const time_str = s.published ? ago(s.published) : '';
+    const sent    = sentiment(s.headline || s.title || '');
+    const src     = s.source || s.feed || '';
+    const timeStr = s.published ? ago(s.published) : '';
     return `
       <div class="news-item">
         <div class="news-headline">${(s.headline || s.title || '').slice(0, 100)}</div>
         <div class="news-meta">
           ${src ? `<span class="news-source">${src}</span>` : ''}
-          ${time_str ? `<span>${time_str}</span>` : ''}
+          ${timeStr ? `<span>${timeStr}</span>` : ''}
           <span class="sentiment ${sent.cls}">${sent.label}</span>
         </div>
       </div>`;
@@ -831,15 +1356,25 @@ async function loadNews() {
 // MAIN REFRESH LOOP
 // ============================================================
 let refreshTimer = null;
-let refreshCount = 0;
+var refreshCount = 0;
 
 async function refreshAll() {
   refreshCount++;
   document.getElementById('lastRefresh').textContent = 'Refreshing…';
 
+  // Phase 1: Fetch all quotes concurrently (single cache-fill pass)
+  await getAllQuotes();
+
+  // Phase 2: Render panels that depend only on cached quotes (instant)
+  loadTickerTape();
+  loadSectors();
+  buildTopOpportunities();
+  buildNarrativeShifts();
+  buildCrossMarketSignals();
+  buildForensics();
+
+  // Phase 3: Fetch panels with separate network calls concurrently
   await Promise.allSettled([
-    loadTickerTape(),
-    loadSectors(),
     loadDivergence(),
     loadRates(),
     loadPredictionMarkets(),
@@ -851,8 +1386,8 @@ async function refreshAll() {
 
   const now = new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
   document.getElementById('lastRefresh').textContent = `Last refresh: ${now}`;
+  document.getElementById('intelTimestamp').textContent = `Updated ${now}`;
 
-  // Reset auto-refresh timer
   if (refreshTimer) clearTimeout(refreshTimer);
   refreshTimer = setTimeout(refreshAll, AUTO_REFRESH_SEC * 1000);
 }
