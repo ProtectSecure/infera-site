@@ -11,7 +11,7 @@
   --b1:#1c2233; --b2:#252d40; --b3:#2f3a55;
   --text:#b8c6de; --dim:#46536b; --bright:#e4edfb;
   --accent:#e84040; --teal:#00c9a7; --gold:#f0b429;
-  --blue:#3d8bff; --purple:#9b6dff; --orange:#ff6b35;
+  --blue:#3d8bff; --purple:#9b6dff; --orange:#ff6b3;
   --mono:'JetBrains Mono',monospace;
   --sans:'DM Sans',sans-serif;
   --serif:'Fraunces',serif;
@@ -746,7 +746,7 @@ async function runDeepDive(ev) {
 async function buildBrief(topic, desc) {
   const prompt = 'You are an investigative editor at a major international news desk.\n\nA topic is drawing global attention: "' + topic + '"\n' + (desc ? 'Context: ' + desc + '\n' : '') + '\nGenerate a structured search brief to fetch the most targeted, relevant news articles — not random headlines, but pieces that directly bear on the specific outcome.\n\nReturn ONLY valid JSON, no markdown:\n\n{"coreQuestion":"The single most important journalistic question this topic raises","investigativeAngles":[{"question":"Specific investigative question","why":"Why this angle matters to the outcome","keywords":["keyword1","keyword2","keyword3"],"guardianSection":"politics","timeWindow":"30d"},{"question":"...","why":"...","keywords":["..."],"guardianSection":"world","timeWindow":"7d"},{"question":"...","why":"...","keywords":["..."],"guardianSection":"business","timeWindow":"30d"},{"question":"...","why":"...","keywords":["..."],"guardianSection":"us-news","timeWindow":"90d"}],"mustInclude":["critical term 1","critical term 2"],"relevanceTest":"One sentence: what makes an article directly relevant to this specific outcome"}\n\nRules: 4 distinct angles (policy, reaction, background, stakeholder). Keywords must be precise. guardianSection must be one of: politics|world|business|technology|us-news|environment|science|society|sport|culture. timeWindow: 7d|30d|90d.';
 
-  const res  = await callClaude(prompt, 2500);
+  const res  = await callClaude(prompt, 4000);
   const text = res.content?.find(b => b.type === 'text')?.text || '';
   return JSON.parse(text.replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim());
 }
