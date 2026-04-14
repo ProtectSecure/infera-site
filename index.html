@@ -1656,10 +1656,12 @@ else{document.addEventListener("DOMContentLoaded",loadAll);}
 </script>
 
 <script>
-// INFERA Deep Dive Intelligence Engine v3
-// Zero-key reliable sources: HackerNews Algolia + Wikipedia REST
+
+// INFERA Deep Dive Intelligence Engine v3.1
+// Sources: HackerNews Algolia + The Guardian API + GDELT + Wikipedia REST
 // v3 fixes: prediction-verb stop words, phrase-based wiki queries,
 //           topHits threshold for relevance, richer historical context
+// v3.1 adds: Guardian (free key, CORS-ok in production) + GDELT (keyless, AP/Reuters/CNN/BBC)
 (function(){
 'use strict';
 
@@ -1795,7 +1797,48 @@ async function fetchHN(query){
   }catch(e){ return []; }
 }
 
-// ── SOURCE 2: Wikipedia REST (keyless, CORS-ok) ──────────────────────────────
+// ── SOURCE 2: The Guardian Open Platform (free key, CORS-ok on production) ───
+async function fetchGuardian(query){
+  try{
+    var u='https://content.guardianapis.com/search?q='+encodeURIComponent(query)
+      +'&api-key=3065ee76-7de6-414f-899e-58b95c3f3705'
+      +'&show-fields=trailText&order-by=newest&page-size=5';
+    var r=await fetch(u);
+    if(!r.ok) return [];
+    var d=await r.json();
+    return ((d.response&&d.response.results)||[]).map(function(a){
+      return {
+        title: a.webTitle||'',
+        description: (a.fields&&a.fields.trailText)||'',
+        url: a.webUrl||'',
+        source: 'The Guardian',
+        publishedAt: a.webPublicationDate||''
+      };
+    });
+  }catch(e){ return []; }
+}
+
+// ── SOURCE 3: GDELT (keyless, indexes AP/Reuters/CNN/BBC/etc.) ───────────────
+async function fetchGDELT(query){
+  try{
+    var u='https://api.gdeltproject.org/api/v2/doc/doc?query='
+      +encodeURIComponent(query)+'&mode=artlist&maxrecords=10&format=json&timespan=3d';
+    var r=await fetch(u);
+    if(!r.ok) return [];
+    var d=await r.json();
+    return ((d.articles)||[]).filter(function(a){ return a.title; }).map(function(a){
+      return {
+        title: a.title||'',
+        description: '',
+        url: a.url||'',
+        source: a.domain||'GDELT',
+        publishedAt: a.seendate||''
+      };
+    });
+  }catch(e){ return []; }
+}
+
+// ── SOURCE 4: Wikipedia REST (keyless, CORS-ok) ──────────────────────────────
 // v3: full-text search API for phrase queries, direct lookup for single entities
 // Full-text search finds "China–United States trade war" from "china trade"
 // whereas opensearch only finds "China trade" (weak disambiguation)
@@ -1836,7 +1879,14 @@ async function fetchWikiSummary(term){
 async function fetchAllNews(question, category){
   var queries=buildQuerySet(question,category);
   var keywords=kw(question);
-  var settled=await Promise.allSettled(queries.map(function(q){ return fetchHN(q); }));
+  // Fire all three sources in parallel for each query
+  var allCalls=[];
+  queries.forEach(function(q){
+    allCalls.push(fetchHN(q));
+    allCalls.push(fetchGuardian(q));
+    allCalls.push(fetchGDELT(q));
+  });
+  var settled=await Promise.allSettled(allCalls);
   var raw=[];
   settled.forEach(function(r){ if(r.status==='fulfilled') raw=raw.concat(r.value||[]); });
 
@@ -1919,7 +1969,7 @@ function generateBrief(market, articles, wikiData){
     +(ctx ? '<div class="ib-ctx">'+ctx+'</div>' : '')
     +(sigs
       ? '<div class="ib-signals">'+sigs+'</div>'
-      : '<div class="ib-nosig">No signals found for(this topic — try a broader market.</div>')
+      : '<div class="ib-nosig">No signals found for this topic — try a broader market.</div>')
     +'<div class="ib-src">'+srcStr+'</div>'
   +'</div>';
 }
@@ -2098,7 +2148,8 @@ window.runDeepDive=async function(market){
   document.head.appendChild(s);
 })();
 
-console.log('[INFERA] DD engine v3 ready — phrase queries / topHits gate / disambiguation filter');
+console.log('[INFERA] DD engine v3.1 ready — HackerNews + Guardian + GDELT + Wikipedia');
 })();
+
 </script>
 </body>>
