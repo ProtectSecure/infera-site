@@ -376,6 +376,37 @@ body.light-mode{--bg:#f4f4ef;--s1:#e8e8e2;--s2:#d5d5ce;--b1:#b8b8b0;--b2:#9a9a92
 </style>
 </head>
 <body>
+<!-- PASSCODE GATE -->
+<div id="passcode-gate" style="position:fixed;inset:0;z-index:99999;background:#07090d;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;font-family:'DM Sans',sans-serif;">
+  <div style="font-family:'Bebas Neue',sans-serif;font-size:2.4rem;letter-spacing:.15em;color:#e4edfb;">INFERA</div>
+  <div style="font-size:.85rem;color:#46536b;letter-spacing:.08em;text-transform:uppercase;">Enter passcode to continue</div>
+  <input id="passcode-input" type="password" placeholder="••••••••" autocomplete="off"
+    style="background:#0c0f16;border:1px solid #1c2233;color:#e4edfb;padding:12px 20px;font-size:1rem;border-radius:6px;width:220px;text-align:center;outline:none;letter-spacing:.2em;"
+    onkeydown="if(event.key==='Enter')checkPass()">
+  <button onclick="checkPass()"
+    style="background:#e84040;color:#fff;border:none;padding:10px 32px;font-size:.9rem;border-radius:6px;cursor:pointer;letter-spacing:.06em;">UNLOCK</button>
+  <div id="passcode-err" style="color:#e84040;font-size:.8rem;opacity:0;transition:opacity .3s;">Incorrect passcode</div>
+</div>
+<script>
+(function(){
+  if(sessionStorage.getItem('infera_unlocked')==='1'){
+    document.getElementById('passcode-gate').style.display='none';
+  }
+})();
+function checkPass(){
+  var v=document.getElementById('passcode-input').value;
+  if(v.toUpperCase()==='MELOPHON'){
+    sessionStorage.setItem('infera_unlocked','1');
+    document.getElementById('passcode-gate').style.display='none';
+  } else {
+    var err=document.getElementById('passcode-err');
+    err.style.opacity='1';
+    document.getElementById('passcode-input').value='';
+    setTimeout(function(){err.style.opacity='0';},2000);
+  }
+}
+</script>
+<!-- END PASSCODE GATE -->
 
 <!-- HEADER -->
 <div class="header">
