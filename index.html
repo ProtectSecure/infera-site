@@ -2087,6 +2087,14 @@ window.runDeepDive=async function(market){
     nb.querySelectorAll('.inv-brief').forEach(function(el){ms+=el.outerHTML;});
     renderBrief(brief);
     if(ms)nb.innerHTML+=ms;
+// Step 2 -- articles per angle + renderNewsGrid
+    var _ks=GNEWS_KEY!=='YOUR_GNEWS_API_KEY'||GUARDIAN_KEY!=='YOUR_GUARDIAN_API_KEY'||NEWSAPI_KEY!=='YOUR_NEWSAPI_KEY';
+    var _from=new Date(Date.now()-30*86400000).toISOString().split('T')[0];
+    Promise.allSettled(brief.investigativeAngles&&_ks?brief.investigativeAngles.map(function(a){return fetchAngle(a,_from);}): []).then(function(fetched){
+      var arts=[];fetched.forEach(function(r){if(r.status==='fulfilled')arts=arts.concat(r.value);});
+      var seen=new Set();
+      renderNewsGrid(arts.filter(function(a){var k=(a.title||'').toLowerCase().slice(0,50);if(seen.has(k))return false;seen.add(k);return true;}),brief,_ks);
+    });
   }).catch(function(e){console.warn('brief:',e);});
   // Historical section (old engine)
   fetchHistoricalSources(_ddTopic,_ddDesc).then(function(data){
