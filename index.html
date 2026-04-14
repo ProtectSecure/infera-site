@@ -1656,30 +1656,449 @@ else{document.addEventListener("DOMContentLoaded",loadAll);}
 </script>
 
 <script>
-// INFERA Deep Dive Intelligence Engine v2
-// Replaces broken API-key-dependent system with zero-key reliable sources
-// Sources: HackerNews Algolia (keyless) + Wikipedia REST (keyless)
-// Multi-query methodology with TF-IDF-style relevance scoring
+// INFERA Deep Dive Intelligence Engine v3
+// Zero-key reliable sources: HackerNews Algolia + Wikipedia REST
+// v3 fixes: prediction-verb stop words, phrase-based wiki queries,
+//           topHits threshold for relevance, richer historical context
 (function(){
 'use strict';
-var STOP=(typeof __STOP!=='undefined')?__STOP:new Set('will the and for in to be is are was were has have had not that this with from they their there than then more when what who which how any all can would could should does did been being make over under about after before during within without above below between against through because also both each most other some such into itself'.split(' '));
-var CAT_CTX={crypto:['bitcoin','cryptocurrency','blockchain','BTC','ETH','digital asset'],sports:['championship','tournament','match','league','playoff','team'],politics:['election','vote','policy','government','congress','legislation'],econ:['federal reserve','inflation','GDP','interest rate','recession','treasury'],climate:['temperature','weather','forecast','climate','hurricane','storm'],tech:['technology','AI','software','startup','innovation'],other:['market','forecast','analysis','trend','outlook']};
-function kw(q){var words=(q||'').toLowerCase().replace(/[^a-z0-9\s$%]/g,' ').split(/\s+/).filter(function(w){return w.length>2&&!STOP.has(w);});var seen=new Set();var out=[];words.forEach(function(w){if(!seen.has(w)){seen.add(w);out.push(w);}});return out.slice(0,8);}
-function buildQuerySet(question,category){var K=kw(question);var ctx=(CAT_CTX[category]||CAT_CTX.other)[0];var literal=question.replace(/^will |^is |^are |^does |^can /i,'').replace(/\?.*$/,'').trim().substring(0,55);var queries=[K.slice(0,3).join(' '),K.slice(1,4).join(' '),(K[0]||'')+' '+ctx,literal].map(function(q){return q.trim();}).filter(function(q){return q.length>3;});var seen=new Set();return queries.filter(function(q){var k=q.toLowerCase();if(seen.has(k))return false;seen.add(k);return true;}).slice(0,4);}
+
+// ── STOP WORDS ───────────────────────────────────────────────────────────────
+var STOP = (typeof __STOP!=='undefined') ? __STOP : new Set(
+  'will the and for in to be is are was were has have had not that this with from they their there than then more when what who which how any all can would could should does did been being make over under about after before during within without above below between against through because also both each most other some such into itself'.split(' ')
+);
+// Prediction-market verbs + numeric years that dilute entity keywords
+var PRED_STOP = new Set(
+  'reach achieve happen occur become pass win lose gain fall rise stay remain end begin start complete finish reach get hit cross exceed surpass drop decline increase decrease grow shrink'.split(' ')
+);
+
+// ── CATEGORY CONTEXT EXPANSION ───────────────────────────────────────────────
+var CAT_CTX = {
+  crypto:    ['bitcoin','cryptocurrency','blockchain','digital asset','crypto market'],
+  sports:    ['championship','tournament','match','league','playoff'],
+  politics:  ['election','vote','policy','government','legislation','senate'],
+  econ:      ['federal reserve','inflation','GDP','interest rate','recession','monetary'],
+  economics: ['trade','tariff','GDP','monetary policy','fiscal','sanctions'],
+  world:     ['international','diplomacy','conflict','treaty','relations'],
+  climate:   ['temperature','climate','hurricane','emissions','fossil fuel'],
+  tech:      ['technology','AI','software','startup','innovation'],
+  other:     ['market','forecast','analysis','trend','outlook']
+};
+
+// ── KEYWORD EXTRACTOR v3 ─────────────────────────────────────────────────────
+// Filters stop words, prediction verbs, and pure numerics for clean entity terms
+function kw(q){
+  var words=(q||'').toLowerCase()
+    .replace(/[^a-z0-9\s$%]/g,' ')
+    .split(/\s+/)
+    .filter(function(w){
+      return w.length>2
+        && !STOP.has(w)
+        && !PRED_STOP.has(w)
+        && !/^\d{4}$/.test(w)    // strip years like 2026
+        && !/^\d+$/.test(w);     // strip pure numbers
+    });
+  var seen=new Set(); var out=[];
+  words.forEach(function(w){ if(!seen.has(w)){ seen.add(w); out.push(w); } });
+  return out.slice(0,8);
+}
+
+// ── MULTI-QUERY BUILDER ──────────────────────────────────────────────────────
+// K = keyword vector (stop-filtered, entity-focused)
+// C = category context expansion vector
+// Q_set = {
+//   Q0: K[0..2].join(' ')       ← primary entity phrase (e.g. "china trade deal")
+//   Q1: K[1..3].join(' ')       ← shifted entity phrase  (e.g. "trade deal tariff")
+//   Q2: K[0] + ' ' + C[0]      ← contextual expansion   (e.g. "china tariff")
+//   Q3: literal title stripped  ← natural language form
+// }
+function buildQuerySet(question, category){
+  var K=kw(question);
+  var cat=category.toLowerCase();
+  var ctx=(CAT_CTX[cat]||CAT_CTX.other)[0];
+  var literal=question.replace(/^will |^is |^are |^does |^can /i,'')
+    .replace(/\?.*$/,'').trim().substring(0,55);
+  var queries=[
+    K.slice(0,3).join(' '),
+    K.slice(1,4).join(' '),
+    (K[0]||'')+' '+ctx,
+    literal
+  ].map(function(q){ return q.trim(); })
+   .filter(function(q){ return q.length>3; });
+  var seen=new Set();
+  return queries.filter(function(q){
+    var k=q.toLowerCase();
+    if(seen.has(k)) return false;
+    seen.add(k); return true;
+  }).slice(0,4);
+}
+
+// ── RELEVANCE SCORER v3 ──────────────────────────────────────────────────────
+// score(a,K) = [Σ_i (n-i)/n · I(K_i∈text)] · exp(-λ·age_days)
+// v3 adds: topHits gate — must match ≥1 of top-3 keywords or be rejected
+// λ = 0.08 → half-life ≈ 8.7 days
 var LAMBDA=0.08;
-function scoreArticle(a,keywords){var text=((a.title||'')+' '+(a.description||a.story_text||'')).toLowerCase();var n=keywords.length||1;var rel=0;keywords.forEach(function(w,i){if(text.indexOf(w)>=0)rel+=(n-i)/n;});if(rel===0)return 0;var ts=a.publishedAt||a.created_at||0;var age=ts?(Date.now()-new Date(typeof ts==='number'?ts*1000:ts))/86400000:3;return rel*Math.exp(-LAMBDA*Math.max(0,age));}
-function isSimilar(t1,t2){var s1=new Set(t1.toLowerCase().split(/\s+/).filter(function(w){return w.length>3;}));var s2=t2.toLowerCase().split(/\s+/).filter(function(w){return w.length>3;});if(!s1.size)return false;var o=s2.filter(function(w){return s1.has(w);}).length;return(o/Math.max(s1.size,s2.length))>0.5;}
-function dedup(articles){var out=[];articles.forEach(function(a){var t=a.title||'';if(!out.some(function(b){return isSimilar(t,b.title||'');}))out.push(a);});return out;}
-async function fetchHN(query){try{var since=Math.floor((Date.now()-30*86400000)/1000);var r=await fetch('https://hn.algolia.com/api/v1/search?query='+encodeURIComponent(query)+'&tags=story&hitsPerPage=7&numericFilters=created_at_i>'+since);if(!r.ok)return[];var d=await r.json();return(d.hits||[]).filter(function(h){return h.title;}).map(function(h){return{title:h.title,description:h.story_text?h.story_text.replace(/<[^>]+>/g,'').substring(0,200):'',url:h.url||('https://news.ycombinator.com/item?id='+h.objectID),source:'HackerNews',publishedAt:new Date(h.created_at_i*1000).toISOString(),created_at:h.created_at_i};});}catch(e){return[];}}
-async function fetchWikiSummary(term){try{var t=encodeURIComponent(term.replace(/\s+/g,'_'));var r=await fetch('https://en.wikipedia.org/api/rest_v1/page/summary/'+t);if(!r.ok){var sr=await fetch('https://en.wikipedia.org/w/api.php?action=opensearch&search='+encodeURIComponent(term)+'&limit=1&format=json&origin=*');if(!sr.ok)return null;var sd=await sr.json();if(!sd[1]||!sd[1][0])return null;t=encodeURIComponent(sd[1][0].replace(/\s+/g,'_'));r=await fetch('https://en.wikipedia.org/api/rest_v1/page/summary/'+t);if(!r.ok)return null;}var d=await r.json();return{extract:d.extract||'',title:d.title||'',url:d.content_urls&&d.content_urls.desktop&&d.content_urls.desktop.page};}catch(e){return null;}}
-async function fetchAllNews(question,category){var queries=buildQuerySet(question,category);var keywords=kw(question);var settled=await Promise.allSettled(queries.map(function(q){return fetchHN(q);}));var raw=[];settled.forEach(function(r){if(r.status==='fulfilled')raw=raw.concat(r.value||[]);});var withScores=raw.map(function(a){return{a:a,s:scoreArticle(a,keywords)};});var scored=withScores.filter(function(x){return x.s>0;}).sort(function(a,b){return b.s-a.s;});var result=dedup(scored.map(function(x){return x.a;}));if(result.length<3&&raw.length>0){var byDate=raw.slice().sort(function(a,b){var ta=a.created_at||0;var tb=b.created_at||0;return tb-ta;});byDate.forEach(function(a){if(result.length>=8)return;if(!result.some(function(r){return r.title===a.title;}))result.push(a);});}return result.slice(0,8);}
-function generateBrief(market,articles,wikiData){var getProb=typeof getP==='function'?getP:function(m){return m.probability||0.5;};var p=getProb(market);var pct=Math.round(p*100);var q=market.question||market.title||'';var K=kw(q);var frame,col,bias;if(p>=0.88){frame='STRONG YES CONSENSUS';col='var(--teal)';bias='Crowd has near-fully priced this outcome. Reversal requires a high-sigma catalyst.';}else if(p>=0.65){frame='YES LEAN';col='var(--teal)';bias='Market pricing YES at premium. Narrative momentum favors outcome â watch for mean-reversion risk.';}else if(p<=0.12){frame='STRONG NO CONSENSUS';col='var(--dim)';bias='Crowd has effectively ruled this out. Only a structural regime change reprices above 20%.';}else if(p<=0.35){frame='NO LEAN';col='var(--dim)';bias='Skepticism dominates. Macro or structural catalysts needed to push into contested territory.';}else{frame='PRICE DISCOVERY';col='#f5a623';bias='Market in contested equilibrium. Both scenarios live. High sensitivity to new information flow.';}var ctx='';if(wikiData&&wikiData.extract){ctx=wikiData.extract.split('. ').slice(0,2).join('. ')+'.';}var sigs=articles.slice(0,5).map(function(a,i){return'<div class="brief-signal"><span class="bsig-n">'+(i+1)+'</span><span class="bsig-t">'+a.title.substring(0,95)+(a.title.length>95?'\u2026':'')+'</span><span class="bsig-s">'+a.source+'</span></div>';}).join('');var srcs=[...new Set(articles.slice(0,4).map(function(a){return a.source||'';}).filter(Boolean))];var srcStr=srcs.length?'Sources: '+srcs.join(' \u00b7 '):'Scanning live intelligence feeds\u2026';return'<div class="inv-brief"><div class="ib-head"><span class="ib-frame" style="color:'+col+'">'+frame+'</span><span class="ib-pct">'+pct+'% YES</span></div><div class="ib-bias">'+bias+'</div>'+(ctx?'<div class="ib-ctx">'+ctx+'</div>':'')+(sigs?'<div class="ib-signals">'+sigs+'</div>':'<div class="ib-nosig">No signals found for this topic.</div>')+'<div class="ib-src">'+srcStr+'</div></div>';}
-function renderGrid(articles){if(!articles.length)return'<div class="ng-empty">No live signals found. Broadening query scope\u2026</div>';return articles.map(function(a){var date=a.publishedAt?new Date(a.publishedAt).toLocaleDateString('en-US',{month:'short',day:'numeric'}):'';return'<a class="ng-card" href="'+(a.url||'#')+'" target="_blank" rel="noopener"><div class="ng-src">'+a.source+'<span class="ng-date">'+date+'</span></div><div class="ng-title">'+a.title.substring(0,100)+(a.title.length>100?'\u2026':'')+'</div>'+(a.description?'<div class="ng-desc">'+a.description.substring(0,130)+'</div>':'')+'</a>';}).join('');}
-async function buildHistorical(market){var q=market.question||market.title||'';var K=kw(q);var settled=await Promise.allSettled(K.slice(0,3).map(function(term){return fetchWikiSummary(term);}));var wikiResults=settled.filter(function(r){return r.status==='fulfilled'&&r.value&&r.value.extract;}).map(function(r){return r.value;});var introHTML='<p class="hist-intro">SEMANTIC CONTEXT WINDOW \u00b7 query: "'+K.slice(0,3).join(' ')+'" \u00b7 '+wikiResults.length+' knowledge nodes found</p>';var eventsHTML=wikiResults.slice(0,4).map(function(w){var body=w.extract.split('. ').slice(0,3).join('. ')+'.';return'<div class="hist-event"><div class="hist-title">'+w.title.toUpperCase()+'</div><div class="hist-body">'+body+'</div></div>';}).join('');return{intro:introHTML,events:eventsHTML||'<div class="hist-event"><div class="hist-body">No direct historical context found. Expanding semantic space\u2026</div></div>'};}
-function setLoading(){var spinner='<div class="dd-loading"><span>\u25cc</span> scanning intelligence feeds\u2026</div>';['newsBrief','newsGrid','histIntro','histEvents'].forEach(function(id){var el=document.getElementById(id);if(el)el.innerHTML=spinner;});}
-window.runDeepDive=async function(market){if(!market)return;if(typeof market==='string')market={question:market,title:market,probability:0.5,category:'other'};var q=market.question||market.title||'';var cat=(market.category||(typeof getCategory==='function'?getCategory(q):'')||'other').toLowerCase();var K=kw(q);var queries=buildQuerySet(q,cat);setLoading();try{var results=await Promise.all([fetchAllNews(q,cat),fetchWikiSummary(K.slice(0,2).join(' ')),buildHistorical(market)]);var articles=results[0];var wikiMain=results[1];var histData=results[2];var briefEl=document.getElementById('newsBrief');if(briefEl)briefEl.innerHTML=generateBrief(market,articles,wikiMain);var gridEl=document.getElementById('newsGrid');if(gridEl)gridEl.innerHTML=renderGrid(articles);var introEl=document.getElementById('histIntro');var evEl=document.getElementById('histEvents');if(introEl)introEl.innerHTML=histData.intro;if(evEl)evEl.innerHTML=histData.events;var subEl=document.getElementById('news-sub');if(subEl)subEl.textContent=articles.length+' signals \u00b7 '+queries.length+' queries \u00b7 '+K.slice(0,3).join(', ');}catch(err){var briefEl=document.getElementById('newsBrief');if(briefEl)briefEl.innerHTML='<div class="dd-err">\u26a0 '+err.message+'</div>';}};
-var s=document.createElement('style');s.textContent='.inv-brief{padding:8px 0}.ib-head{display:flex;align-items:center;gap:10px;margin-bottom:6px}.ib-frame{font-family:"JetBrains Mono",monospace;font-size:9px;letter-spacing:.12em;font-weight:700}.ib-pct{font-family:"JetBrains Mono",monospace;font-size:9px;color:var(--dim);letter-spacing:.05em}.ib-bias{font-size:11px;color:var(--bright);line-height:1.65;margin-bottom:7px}.ib-ctx{font-size:10px;color:var(--text);line-height:1.7;margin-bottom:8px;padding:5px 8px;border-left:2px solid rgba(0,201,167,.3);font-style:italic}.ib-signals{display:flex;flex-direction:column;gap:3px;margin-bottom:7px}.brief-signal{display:flex;align-items:flex-start;gap:6px;padding:4px 0;border-bottom:1px solid rgba(255,255,255,.04)}.bsig-n{font-family:"JetBrains Mono",monospace;font-size:8px;color:var(--teal);min-width:14px;padding-top:1px}.bsig-t{font-size:10px;color:var(--bright);flex:1;line-height:1.5}.bsig-s{font-family:"JetBrains Mono",monospace;font-size:7px;color:var(--dim);margin-left:5px;white-space:nowrap;padding-top:2px}.ib-src{font-family:"JetBrains Mono",monospace;font-size:7px;color:var(--dim);letter-spacing:.05em;margin-top:3px}.ib-nosig{font-size:10px;color:var(--dim);font-style:italic}.ng-card{display:block;padding:8px 10px;border:1px solid rgba(255,255,255,.06);border-radius:3px;margin-bottom:6px;text-decoration:none;transition:border-color .15s;color:inherit}.ng-card:hover{border-color:rgba(0,201,167,.3)}.ng-src{font-family:"JetBrains Mono",monospace;font-size:7px;color:var(--teal);letter-spacing:.08em;margin-bottom:3px;display:flex;justify-content:space-between}.ng-date{color:var(--dim)}.ng-title{font-size:11px;color:var(--bright);line-height:1.5;margin-bottom:3px}.ng-desc{font-size:9px;color:var(--dim);line-height:1.5}.ng-empty{font-size:10px;color:var(--dim);font-style:italic;padding:10px 0}.hist-intro{font-family:"JetBrains Mono",monospace;font-size:8px;color:var(--dim);letter-spacing:.04em;margin-bottom:8px;line-height:1.5}.hist-event{padding:8px 0;border-bottom:1px solid rgba(255,255,255,.05)}.hist-title{font-family:"JetBrains Mono",monospace;font-size:8px;color:var(--teal);letter-spacing:.1em;margin-bottom:4px}.hist-body{font-size:10px;color:var(--text);line-height:1.7}.dd-loading{font-family:"JetBrains Mono",monospace;font-size:9px;color:var(--dim);letter-spacing:.1em;padding:12px 0;animation:ddpulse 1.4s ease-in-out infinite}.dd-err{font-size:9px;color:#e05c5c;font-family:"JetBrains Mono",monospace;padding:8px 0}@keyframes ddpulse{0%,100%{opacity:.3}50%{opacity:1}}';document.head.appendChild(s);
-console.log('[INFERA] DD engine v2 ready');
+function scoreArticle(article, keywords){
+  var text=((article.title||'')+' '+(article.description||article.story_text||'')).toLowerCase();
+  var n=keywords.length||1;
+  var rel=0;
+  var topHits=0;  // hits among top 3 highest-weight keywords
+  keywords.forEach(function(w,i){
+    if(text.indexOf(w)>=0){
+      rel+=(n-i)/n;
+      if(i<3) topHits++;
+    }
+  });
+  // Gate: require at least 1 top-3 keyword hit to prevent off-topic articles
+  if(topHits===0) return 0;
+  var ts=article.publishedAt||article.created_at||0;
+  var age=ts ? (Date.now()-new Date(typeof ts==='number'?ts*1000:ts))/86400000 : 3;
+  return rel * Math.exp(-LAMBDA * Math.max(0, age));
+}
+
+// ── DEDUPLICATION (word-overlap cosine-lite) ─────────────────────────────────
+function isSimilar(t1,t2){
+  var s1=new Set(t1.toLowerCase().split(/\s+/).filter(function(w){ return w.length>3; }));
+  var s2=t2.toLowerCase().split(/\s+/).filter(function(w){ return w.length>3; });
+  if(!s1.size) return false;
+  var overlap=s2.filter(function(w){ return s1.has(w); }).length;
+  return (overlap/Math.max(s1.size,s2.length))>0.5;
+}
+function dedup(articles){
+  var out=[];
+  articles.forEach(function(a){
+    var title=a.title||'';
+    if(!out.some(function(b){ return isSimilar(title,b.title||''); })) out.push(a);
+  });
+  return out;
+}
+
+// ── SOURCE 1: HackerNews via Algolia (keyless, CORS-ok) ──────────────────────
+async function fetchHN(query){
+  try{
+    var since=Math.floor((Date.now()-45*86400000)/1000); // 45-day window
+    var u='https://hn.algolia.com/api/v1/search?query='+encodeURIComponent(query)
+      +'&tags=story&hitsPerPage=8&numericFilters=created_at_i>'+since;
+    var r=await fetch(u);
+    if(!r.ok) return [];
+    var d=await r.json();
+    return (d.hits||[]).filter(function(h){ return h.title; }).map(function(h){
+      return {
+        title: h.title,
+        description: h.story_text ? h.story_text.replace(/<[^>]+>/g,'').substring(0,200) : '',
+        url: h.url||('https://news.ycombinator.com/item?id='+h.objectID),
+        source: 'HackerNews',
+        publishedAt: new Date(h.created_at_i*1000).toISOString(),
+        created_at: h.created_at_i
+      };
+    });
+  }catch(e){ return []; }
+}
+
+// ── SOURCE 2: Wikipedia REST (keyless, CORS-ok) ──────────────────────────────
+// v3: full-text search API for phrase queries, direct lookup for single entities
+// Full-text search finds "China–United States trade war" from "china trade"
+// whereas opensearch only finds "China trade" (weak disambiguation)
+async function fetchWikiSummary(term){
+  if(!term||!term.trim()) return null;
+  try{
+    var isPhrase = term.trim().indexOf(' ')>-1;
+    // Step 1: direct slug lookup (best for single entities like "China", "Bitcoin")
+    var slug=term.trim().replace(/\s+/g,'_');
+    var r=await fetch('https://en.wikipedia.org/api/rest_v1/page/summary/'+encodeURIComponent(slug));
+    if(r.ok){
+      var d=await r.json();
+      if(d.extract && d.extract.length>80 && !/may refer to:|disambiguation/i.test(d.extract)){
+        return { extract:d.extract, title:d.title||'', url:d.content_urls&&d.content_urls.desktop&&d.content_urls.desktop.page };
+      }
+    }
+    // Step 2: full-text search API (far better than opensearch for multi-word phrases)
+    // Finds "China–United States trade war" from "china trade", "US-China trade" etc.
+    var fts=await fetch('https://en.wikipedia.org/w/api.php?action=query&list=search'
+      +'&srsearch='+encodeURIComponent(term)+'&srlimit=3&format=json&origin=*');
+    if(!fts.ok) return null;
+    var ftd=await fts.json();
+    var hits=(ftd.query&&ftd.query.search)||[];
+    for(var i=0;i<hits.length;i++){
+      var slug2=encodeURIComponent(hits[i].title.replace(/\s+/g,'_'));
+      var r2=await fetch('https://en.wikipedia.org/api/rest_v1/page/summary/'+slug2);
+      if(!r2.ok) continue;
+      var d2=await r2.json();
+      if(d2.extract && d2.extract.length>80 && !/may refer to:|disambiguation/i.test(d2.extract)){
+        return { extract:d2.extract, title:d2.title||'', url:d2.content_urls&&d2.content_urls.desktop&&d2.content_urls.desktop.page };
+      }
+    }
+    return null;
+  }catch(e){ return null; }
+}
+
+// ── AGGREGATOR ───────────────────────────────────────────────────────────────
+async function fetchAllNews(question, category){
+  var queries=buildQuerySet(question,category);
+  var keywords=kw(question);
+  var settled=await Promise.allSettled(queries.map(function(q){ return fetchHN(q); }));
+  var raw=[];
+  settled.forEach(function(r){ if(r.status==='fulfilled') raw=raw.concat(r.value||[]); });
+
+  var withScores=raw.map(function(a){ return {a:a, s:scoreArticle(a,keywords)}; });
+  var scored=withScores.filter(function(x){ return x.s>0; })
+    .sort(function(a,b){ return b.s-a.s; });
+
+  var result=dedup(scored.map(function(x){ return x.a; }));
+  // Fallback: if weak coverage, pad with recency-sorted high-scoring articles
+  if(result.length<3 && raw.length>0){
+    // Relax threshold: accept any article with ≥1 keyword match (no topHits gate)
+    var relaxed=raw.filter(function(a){
+      var text=((a.title||'')+' '+(a.description||'')).toLowerCase();
+      return keywords.some(function(w){ return text.indexOf(w)>=0; });
+    }).sort(function(a,b){ return (b.created_at||0)-(a.created_at||0); });
+    relaxed.forEach(function(a){
+      if(result.length>=8) return;
+      if(!result.some(function(r){ return r.title===a.title; })) result.push(a);
+    });
+  }
+  return result.slice(0,8);
+}
+
+// ── BRIEF GENERATOR ──────────────────────────────────────────────────────────
+function generateBrief(market, articles, wikiData){
+  var p = market.probability != null ? market.probability
+        : market.p != null ? market.p
+        : null;
+  var q=market.question||market.title||'';
+  var K=kw(q);
+
+  // Probability frame
+  var frame,col,bias,pctStr;
+  if(p===null){
+    frame='MARKET SIGNAL'; col='var(--teal)'; pctStr='LIVE';
+    bias='Crowd attention signal active on this market. Positioning reflects real-money conviction.';
+  } else {
+    var pct=Math.round(p*100);
+    pctStr=pct+'% YES';
+    if(p>=0.88)      {frame='STRONG YES CONSENSUS'; col='var(--teal)';
+      bias='Crowd has nearly fully priced this in. A reversal requires a high-sigma catalyst — black swan territory.';}
+    else if(p>=0.65) {frame='YES LEAN'; col='var(--teal)';
+      bias='Market pricing YES at a premium. Narrative momentum favors the outcome, but mean-reversion risk is live.';}
+    else if(p<=0.12) {frame='STRONG NO CONSENSUS'; col='var(--dim)';
+      bias='Crowd has effectively ruled this out. Only a structural regime change would reprice above 20%.';}
+    else if(p<=0.35) {frame='NO LEAN'; col='var(--dim)';
+      bias='Skepticism dominates. Macro or structural catalysts needed to push into contested territory.';}
+    else             {frame='PRICE DISCOVERY'; col='#f5a623';
+      bias='Market in contested equilibrium. Both scenarios live. High sensitivity to new information flow.';}
+  }
+
+  // Wiki context snippet (2 sentences, filtered for relevance)
+  var ctx='';
+  if(wikiData&&wikiData.extract&&wikiData.extract.length>80){
+    // Check wiki is actually relevant — must share a keyword with our query
+    var wikiLow=(wikiData.extract||'').toLowerCase();
+    var relevant=K.slice(0,3).some(function(w){ return wikiLow.indexOf(w)>=0; });
+    if(relevant){
+      ctx=wikiData.extract.split('. ').slice(0,2).join('. ')+'.';
+    }
+  }
+
+  var sigs=articles.slice(0,5).map(function(a,i){
+    return '<div class="brief-signal">'
+      +'<span class="bsig-n">'+(i+1)+'</span>'
+      +'<span class="bsig-t">'+a.title.substring(0,95)+(a.title.length>95?'…':'')+'</span>'
+      +'<span class="bsig-s">'+a.source+'</span>'
+    +'</div>';
+  }).join('');
+
+  var srcs=[...new Set(articles.slice(0,4).map(function(a){ return a.source||''; }).filter(Boolean))];
+  var srcStr=srcs.length ? 'Sources: '+srcs.join(' · ') : 'Scanning live intelligence feeds…';
+
+  return '<div class="inv-brief">'
+    +'<div class="ib-head">'
+      +'<span class="ib-frame" style="color:'+col+'">'+frame+'</span>'
+      +'<span class="ib-pct">'+pctStr+'</span>'
+    +'</div>'
+    +'<div class="ib-bias">'+bias+'</div>'
+    +(ctx ? '<div class="ib-ctx">'+ctx+'</div>' : '')
+    +(sigs
+      ? '<div class="ib-signals">'+sigs+'</div>'
+      : '<div class="ib-nosig">No signals found for(this topic — try a broader market.</div>')
+    +'<div class="ib-src">'+srcStr+'</div>'
+  +'</div>';
+}
+
+// ── NEWS GRID RENDERER ───────────────────────────────────────────────────────
+function renderGrid(articles){
+  if(!articles.length) return '<div class="ng-empty">No live signals found. Broadening query scope…</div>';
+  return articles.map(function(a){
+    var date=a.publishedAt ? new Date(a.publishedAt).toLocaleDateString('en-US',{month:'short',day:'numeric'}) : '';
+    return '<a class="ng-card" href="'+(a.url||'#')+'" target="_blank" rel="noopener">'
+      +'<div class="ng-src">'+a.source+'<span class="ng-date">'+date+'</span></div>'
+      +'<div class="ng-title">'+a.title.substring(0,100)+(a.title.length>100?'…':'')+'</div>'
+      +(a.description ? '<div class="ng-desc">'+a.description.substring(0,130)+'</div>' : '')
+    +'</a>';
+  }).join('');
+}
+
+// ── HISTORICAL CONTEXT BUILDER v3 ────────────────────────────────────────────
+// v3: phrase-based Wikipedia queries instead of single keywords
+// "china trade deal" → US-China trade deal article (not generic "China" article)
+async function buildHistorical(market){
+  var q=market.question||market.title||'';
+  var K=kw(q);
+  var cat=(market.category||'other').toLowerCase();
+
+  // Build phrase queries from entity keyword combinations
+  // K for "Will the US and China reach a trade deal in 2026?" → ["china","trade","deal","us"]
+  // Phrases: "china trade deal", "china trade", "us china trade", "trade deal"
+  var phrases=[];
+  if(K.length>=3) phrases.push(K.slice(0,3).join(' '));   // e.g. "china trade deal"
+  if(K.length>=2) phrases.push(K.slice(0,2).join(' '));   // e.g. "china trade"
+  if(K.length>=2) phrases.push(K[1]+' '+K[0]);            // e.g. "trade china" (reversed for variety)
+  if(K.length>=1) phrases.push(K[0]);                      // e.g. "china" (fallback)
+
+  // Dedup phrases
+  var seenP=new Set();
+  phrases=phrases.filter(function(p){
+    var k=p.toLowerCase().trim();
+    if(seenP.has(k)||k.length<3) return false;
+    seenP.add(k); return true;
+  }).slice(0,3);
+
+  var settled=await Promise.allSettled(phrases.map(function(p){ return fetchWikiSummary(p); }));
+  var wikiResults=[];
+  settled.forEach(function(r,i){
+    if(r.status==='fulfilled'&&r.value&&r.value.extract&&r.value.extract.length>80){
+      // Relevance check: wiki article must share entity keyword with query
+      var wLow=r.value.extract.toLowerCase();
+      var isRelevant=K.slice(0,4).some(function(w){ return wLow.indexOf(w)>=0; });
+      if(isRelevant) wikiResults.push({wiki:r.value, phrase:phrases[i]||''});
+    }
+  });
+
+  // Build analyst-style intro paragraph
+  var topPhrase=K.slice(0,3).join(' ');
+  var nodeCount=wikiResults.length;
+  var catLabel=(CAT_CTX[cat]||CAT_CTX.other)[0]||cat;
+  var introHTML='<p class="hist-intro">'
+    +'CONTEXT INTELLIGENCE · "'+topPhrase+'" · '+nodeCount+' knowledge node'+(nodeCount!==1?'s':'')+' · '+(market.category||'General').toUpperCase()
+  +'</p>';
+
+  // Build event cards — show 3-sentence extracts with entity framing
+  var eventsHTML='';
+  if(wikiResults.length===0){
+    eventsHTML='<div class="hist-event"><div class="hist-body">Expanding semantic search for historical context on this topic. Check sources directly for precedent analysis.</div></div>';
+  } else {
+    eventsHTML=wikiResults.slice(0,3).map(function(item){
+      var w=item.wiki;
+      var sentences=w.extract.split('. ').filter(function(s){ return s.trim().length>20; });
+      // Take first 3 sentences for context richness
+      var body=sentences.slice(0,3).join('. ')+(sentences.length>0?'.':'');
+      // Highlight relevance: find which keyword matched
+      var matchedKw=K.slice(0,4).filter(function(kw){
+        return body.toLowerCase().indexOf(kw)>=0;
+      });
+      var tag=matchedKw.length ? matchedKw.slice(0,2).join(' · ').toUpperCase() : w.title.toUpperCase();
+      return '<div class="hist-event">'
+        +'<div class="hist-title">'+tag+'</div>'
+        +'<div class="hist-body">'+body+'</div>'
+        +(w.url ? '<div class="hist-src"><a href="'+w.url+'" target="_blank" rel="noopener" style="color:var(--teal);font-size:8px;text-decoration:none;font-family:\'JetBrains Mono\',monospace;letter-spacing:.05em">Wikipedia ↗</a></div>' : '')
+      +'</div>';
+    }).join('');
+  }
+
+  return { intro:introHTML, events:eventsHTML };
+}
+
+// ── LOADING STATE ────────────────────────────────────────────────────────────
+function setLoading(){
+  var spinner='<div class="dd-loading"><span>◌</span> scanning intelligence feeds…</div>';
+  ['newsBrief','newsGrid','histIntro','histEvents'].forEach(function(id){
+    var el=document.getElementById(id);
+    if(el) el.innerHTML=spinner;
+  });
+}
+
+// ── MAIN ENTRY POINT ─────────────────────────────────────────────────────────
+window.runDeepDive=async function(market){
+  if(!market) return;
+  if(typeof market==='string') market={question:market,title:market,probability:null,category:'other'};
+  var q=market.question||market.title||'';
+  var cat=(market.category||'other').toLowerCase();
+  var K=kw(q);
+  var queries=buildQuerySet(q,cat);
+
+  setLoading();
+
+  try{
+    // Primary wiki query: first 2 entity keywords as a phrase (e.g. "china trade")
+    var wikiQuery=K.slice(0,2).join(' ');
+
+    var results=await Promise.all([
+      fetchAllNews(q, cat),
+      fetchWikiSummary(wikiQuery),
+      buildHistorical(market)
+    ]);
+    var articles=results[0];
+    var wikiMain=results[1];
+    var histData=results[2];
+
+    var briefEl=document.getElementById('newsBrief');
+    if(briefEl) briefEl.innerHTML=generateBrief(market, articles, wikiMain);
+
+    var gridEl=document.getElementById('newsGrid');
+    if(gridEl) gridEl.innerHTML=renderGrid(articles);
+
+    var introEl=document.getElementById('histIntro');
+    var evEl=document.getElementById('histEvents');
+    if(introEl) introEl.innerHTML=histData.intro;
+    if(evEl) evEl.innerHTML=histData.events;
+
+    // Update signal counter
+    var subEl=document.getElementById('news-sub');
+    if(subEl) subEl.textContent=articles.length+' signals · '+queries.length+' queries · '+K.slice(0,3).join(', ');
+
+  }catch(err){
+    var msg='<div class="dd-err">⚠ Signal fetch error: '+err.message+'</div>';
+    var briefEl=document.getElementById('newsBrief');
+    if(briefEl) briefEl.innerHTML=msg;
+    console.error('[INFERA] runDeepDive error:', err);
+  }
+};
+
+// ── CSS ──────────────────────────────────────────────────────────────────────
+(function injectCSS(){
+  var s=document.createElement('style');
+  s.textContent=
+    '.inv-brief{padding:8px 0}'
+    +'.ib-head{display:flex;align-items:center;gap:10px;margin-bottom:6px}'
+    +'.ib-frame{font-family:"JetBrains Mono",monospace;font-size:9px;letter-spacing:.12em;font-weight:700}'
+    +'.ib-pct{font-family:"JetBrains Mono",monospace;font-size:9px;color:var(--dim);letter-spacing:.05em}'
+    +'.ib-bias{font-size:11px;color:var(--bright);line-height:1.65;margin-bottom:7px}'
+    +'.ib-ctx{font-size:10px;color:var(--text);line-height:1.7;margin-bottom:8px;padding:5px 8px;border-left:2px solid rgba(0,201,167,.3);font-style:italic}'
+    +'.ib-signals{display:flex;flex-direction:column;gap:3px;margin-bottom:7px}'
+    +'.brief-signal{display:flex;align-items:flex-start;gap:6px;padding:4px 0;border-bottom:1px solid rgba(255,255,255,.04)}'
+    +'.bsig-n{font-family:"JetBrains Mono",monospace;font-size:8px;color:var(--teal);min-width:14px;padding-top:1px}'
+    +'.bsig-t{font-size:10px;color:var(--bright);flex:1;line-height:1.5}'
+    +'.bsig-s{font-family:"JetBrains Mono",monospace;font-size:7px;color:var(--dim);margin-left:5px;white-space:nowrap;padding-top:2px}'
+    +'.ib-src{font-family:"JetBrains Mono",monospace;font-size:7px;color:var(--dim);letter-spacing:.05em;margin-top:3px}'
+    +'.ib-nosig{font-size:10px;color:var(--dim);font-style:italic}'
+    +'.ng-card{display:block;padding:8px 10px;border:1px solid rgba(255,255,255,.06);border-radius:3px;margin-bottom:6px;text-decoration:none;transition:border-color .15s;color:inherit}'
+    +'.ng-card:hover{border-color:rgba(0,201,167,.3)}'
+    +'.ng-src{font-family:"JetBrains Mono",monospace;font-size:7px;color:var(--teal);letter-spacing:.08em;margin-bottom:3px;display:flex;justify-content:space-between}'
+    +'.ng-date{color:var(--dim)}'
+    +'.ng-title{font-size:11px;color:var(--bright);line-height:1.5;margin-bottom:3px}'
+    +'.ng-desc{font-size:9px;color:var(--dim);line-height:1.5}'
+    +'.ng-empty{font-size:10px;color:var(--dim);font-style:italic;padding:10px 0}'
+    +'.hist-intro{font-family:"JetBrains Mono",monospace;font-size:8px;color:var(--dim);letter-spacing:.04em;margin-bottom:8px;line-height:1.5}'
+    +'.hist-event{padding:8px 0;border-bottom:1px solid rgba(255,255,255,.05)}'
+    +'.hist-title{font-family:"JetBrains Mono",monospace;font-size:8px;color:var(--teal);letter-spacing:.1em;margin-bottom:4px}'
+    +'.hist-body{font-size:10px;color:var(--text);line-height:1.7}'
+    +'.hist-src{margin-top:3px}'
+    +'.dd-loading{font-family:"JetBrains Mono",monospace;font-size:9px;color:var(--dim);letter-spacing:.1em;padding:12px 0;animation:ddpulse 1.4s ease-in-out infinite}'
+    +'.dd-err{font-size:9px;color:#e05c5c;font-family:"JetBrains Mono",monospace;padding:8px 0}'
+    +'@keyframes ddpulse{0%,100%{opacity:.3}50%{opacity:1}}';
+  document.head.appendChild(s);
+})();
+
+console.log('[INFERA] DD engine v3 ready — phrase queries / topHits gate / disambiguation filter');
 })();
 </script>
 </body>>
