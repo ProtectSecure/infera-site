@@ -1,9 +1,9 @@
-â<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>INFERA â World Attention Intelligence</title>
+<title>INFERA — World Attention Intelligence</title>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,600;1,9..144,400&family=DM+Sans:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 :root {
@@ -56,7 +56,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:14
 /* NOTICE */
 .notice{background:rgba(232,64,64,.05);border-bottom:1px solid rgba(232,64,64,.12);padding:6px 20px;font-family:var(--mono);font-size:9px;letter-spacing:.09em;color:#b87070;text-align:center}
 
-/* ââ FEED VIEW ââ */
+/* ── FEED VIEW ── */
 .feed-layout{display:grid;grid-template-columns:320px 1fr;min-height:calc(100vh - 90px)}
 
 .left-panel{border-right:1px solid var(--b1);overflow-y:auto;height:calc(100vh - 90px);position:sticky;top:90px}
@@ -107,7 +107,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:14
 .pc-cta{display:flex;align-items:center;justify-content:center;gap:10px;padding:14px;background:rgba(0,201,167,.06);border:1px dashed rgba(0,201,167,.3);border-radius:4px;cursor:pointer;transition:background .15s;font-family:var(--mono);font-size:10px;letter-spacing:.15em;color:var(--teal);text-transform:uppercase}
 .pc-cta:hover{background:rgba(0,201,167,.12)}
 
-/* ââ DEEP DIVE VIEW ââ */
+/* ── DEEP DIVE VIEW ── */
 #deepView{background:var(--bg);animation:slide-in .4s cubic-bezier(.22,.8,.35,1)}
 @keyframes slide-in{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
 
@@ -287,7 +287,7 @@ details[open] .ref-toggle{transform:rotate(180deg)}
 @keyframes probPulse{0%,100%{opacity:1}50%{opacity:.4}}
 .prob-delta{animation:probPulse .8s ease 2}
 
-/* âââ MARKET INTELLIGENCE PANELS âââ */
+/* ═══ MARKET INTELLIGENCE PANELS ═══ */
 .mi-section{padding:24px 20px 32px;border-top:1px solid var(--b1)}
 .mi-header{font-family:var(--mono);font-size:10px;letter-spacing:.1em;color:var(--dim);margin-bottom:16px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
 .mi-badge{font-size:9px;border:1px solid var(--teal);color:var(--teal);padding:1px 7px;border-radius:2px}
@@ -383,34 +383,34 @@ body.light-mode{--bg:#f4f4ef;--s1:#e8e8e2;--s2:#d5d5ce;--b1:#b8b8b0;--b2:#9a9a92
     <div class="logo-pulse"></div>INFERA
   </div>
   <div class="hdr-search">
-    <span class="s-icon">â</span>
-    <input class="s-input" id="searchInput" type="text" placeholder="Search topicsâ¦ (e.g. China, Fed, Bitcoin)" autocomplete="off">
+    <span class="s-icon">⌕</span>
+    <input class="s-input" id="searchInput" type="text" placeholder="Search topics… (e.g. China, Fed, Bitcoin)" autocomplete="off">
     <div class="s-results" id="searchResults"></div>
   </div>
   <div class="hdr-right">
     <div class="tap-hint" id="tapHint">double-tap to deep dive</div>
-    <div class="live-tag"><div class="logo-pulse" style="width:6px;height:6px"></div>LIVE</div><a href="/analysis.html" style="font-family:var(--mono);font-size:9px;letter-spacing:.1em;color:var(--dim);text-decoration:none;padding:4px 10px;border:1px solid var(--b1);border-radius:2px;transition:all .2s;text-transform:uppercase;margin-right:2px">ANALYSIS</a><button id="theme-toggle" onclick="document.body.classList.toggle('light-mode');this.textContent=document.body.classList.contains('light-mode')?'â LIGHT':'â DARK'">â DARK</button>
+    <div class="live-tag"><div class="logo-pulse" style="width:6px;height:6px"></div>LIVE</div><a href="/analysis.html" style="font-family:var(--mono);font-size:9px;letter-spacing:.1em;color:var(--dim);text-decoration:none;padding:4px 10px;border:1px solid var(--b1);border-radius:2px;transition:all .2s;text-transform:uppercase;margin-right:2px">ANALYSIS</a><button id="theme-toggle" onclick="document.body.classList.toggle('light-mode');this.textContent=document.body.classList.contains('light-mode')?'☀ LIGHT':'◐ DARK'">◐ DARK</button>
   </div>
 </div>
 
-<div class="notice">â  Journalistic context only â no odds, no betting data, no financial advice Â· Powered by Polymarket public signals + AI news intelligence</div>
+<div class="notice">⚠ Journalistic context only — no odds, no betting data, no financial advice · Powered by Polymarket public signals + AI news intelligence</div>
 
 <div class="ticker-wrap">
   <div class="ticker-track" id="tickerTrack">
-    <span class="tk"><span class="tk-name">Loading live topicsâ¦</span></span>
+    <span class="tk"><span class="tk-name">Loading live topics…</span></span>
   </div>
 </div>
 
-<div class="tap-tooltip" id="tapTooltip">ð Tap again to deep dive â</div>
+<div class="tap-tooltip" id="tapTooltip">👆 Tap again to deep dive →</div>
 
-<!-- ââ FEED VIEW ââ -->
+<!-- ══ FEED VIEW ══ -->
 <div class="view active" id="feedView">
   <div class="feed-layout">
 
     <div class="left-panel">
       <div class="panel-hdr">
         <div class="panel-title">Most Active Now</div>
-        <div class="panel-ct" id="eventCount">â</div>
+        <div class="panel-ct" id="eventCount">—</div>
       </div>
       <div class="cat-filters" id="catFilters">
         <button class="cat-btn active" data-cat="all">All</button>
@@ -429,10 +429,10 @@ body.light-mode{--bg:#f4f4ef;--s1:#e8e8e2;--s2:#d5d5ce;--b1:#b8b8b0;--b2:#9a9a92
 
     <div class="right-panel" id="rightPanel">
       <div class="empty-state" id="emptyState">
-        <div class="es-glyph">â</div>
+        <div class="es-glyph">◎</div>
         <div class="es-title">SELECT A TOPIC</div>
         <div class="es-sub">Tap once to preview<br>Double-tap for full intelligence dive</div>
-        <div class="es-hint">â Double-tap any topic for news + historical analysis</div>
+        <div class="es-hint">↓ Double-tap any topic for news + historical analysis</div>
       </div>
       <div class="preview-card" id="previewCard">
         <div class="pc-cat" id="pc-cat"></div>
@@ -440,7 +440,7 @@ body.light-mode{--bg:#f4f4ef;--s1:#e8e8e2;--s2:#d5d5ce;--b1:#b8b8b0;--b2:#9a9a92
         <div class="pc-attention" id="pc-attention"></div>
         <div class="pc-desc" id="pc-desc"></div>
         <div class="pc-cta" onclick="openDeepDive()">
-          <span style="font-size:18px">â</span>
+          <span style="font-size:18px">⊕</span>
           <span>Double-tap or click for full news context &amp; historical analysis</span>
         </div>
       </div>
@@ -449,11 +449,11 @@ body.light-mode{--bg:#f4f4ef;--s1:#e8e8e2;--s2:#d5d5ce;--b1:#b8b8b0;--b2:#9a9a92
   </div>
 </div>
 
-<!-- ââ DEEP DIVE VIEW ââ -->
+<!-- ══ DEEP DIVE VIEW ══ -->
 <div class="view" id="deepView">
 
   <div class="deep-hdr">
-    <button class="back-btn" onclick="goBack()">â Back</button>
+    <button class="back-btn" onclick="goBack()">← Back</button>
     <span class="dh-divider">|</span>
     <span class="dh-cat" id="dh-cat"></span>
     <span class="dh-title" id="dh-title-crumb"></span>
@@ -467,11 +467,11 @@ body.light-mode{--bg:#f4f4ef;--s1:#e8e8e2;--s2:#d5d5ce;--b1:#b8b8b0;--b2:#9a9a92
         <div class="dh-eyebrow" id="dh-eyebrow"></div>
         <div class="dh-headline" id="dh-headline"></div>
         <div class="dh-deck" id="dh-deck"></div>
-        <div class="dh-body" id="dh-body"><div class="loading-row"><div class="spinner"></div><span>Loading contextâ¦</span></div></div>
+        <div class="dh-body" id="dh-body"><div class="loading-row"><div class="spinner"></div><span>Loading context…</span></div></div>
       </div>
       <div>
         <div class="attn-pill">
-          <div class="ap-label">ð¡ Why this is surfaced</div>
+          <div class="ap-label">📡 Why this is surfaced</div>
           <div class="ap-text" id="ap-text"></div>
           <div class="apg-row"><span class="apg-label">Global Attention</span><span class="apg-level" id="apg-level"></span></div>
           <div class="apg-bar"><div class="apg-fill" id="apg-fill" style="width:0%"></div></div>
@@ -482,7 +482,7 @@ body.light-mode{--bg:#f4f4ef;--s1:#e8e8e2;--s2:#d5d5ce;--b1:#b8b8b0;--b2:#9a9a92
 
     <!-- NEWS CONTEXT -->
   <div class="context-section">
-    <div class="section-lbl">ð§­ Contextual Perspective</div>
+    <div class="section-lbl">🧭 Contextual Perspective</div>
     <div id="context-body"><div class="sk-line" style="height:80px;margin-bottom:14px"></div><div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px"><div class="sk-line" style="height:120px"></div><div class="sk-line" style="height:120px"></div><div class="sk-line" style="height:120px"></div></div></div>
   </div>
     <div class="news-section">
@@ -492,8 +492,8 @@ body.light-mode{--bg:#f4f4ef;--s1:#e8e8e2;--s2:#d5d5ce;--b1:#b8b8b0;--b2:#9a9a92
         <div class="sec-sub" id="news-sub"></div>
       </div>
       <div class="ai-brief">
-        <div class="ai-brief-label">Investigative framework Â· targeted article search Â· relevance scored by AI</div>
-        <div class="ai-brief-body" id="newsBrief"><div class="loading-row"><div class="spinner" style="border-top-color:var(--gold)"></div><span>Building investigative search briefâ¦</span></div></div>
+        <div class="ai-brief-label">Investigative framework · targeted article search · relevance scored by AI</div>
+        <div class="ai-brief-body" id="newsBrief"><div class="loading-row"><div class="spinner" style="border-top-color:var(--gold)"></div><span>Building investigative search brief…</span></div></div>
       </div>
       <div id="newsGrid"></div>
     </div>
@@ -505,7 +505,7 @@ body.light-mode{--bg:#f4f4ef;--s1:#e8e8e2;--s2:#d5d5ce;--b1:#b8b8b0;--b2:#9a9a92
         <div class="sec-title">Historical Comparisons &amp; Outcomes</div>
         <div class="sec-sub">What happened last time</div>
       </div>
-      <div class="hist-intro" id="histIntro"><div class="loading-row"><div class="spinner" style="border-top-color:var(--gold)"></div><span>Finding historical parallelsâ¦</span></div></div>
+      <div class="hist-intro" id="histIntro"><div class="loading-row"><div class="spinner" style="border-top-color:var(--gold)"></div><span>Finding historical parallels…</span></div></div>
       <div class="hist-events" id="histEvents"></div>
     </div>
 
@@ -520,17 +520,17 @@ body.light-mode{--bg:#f4f4ef;--s1:#e8e8e2;--s2:#d5d5ce;--b1:#b8b8b0;--b2:#9a9a92
 </div>
 
 <script>
-// âââ CONFIG ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+// ─── CONFIG ────────────────────────────────────────────────────────────────
 const GAMMA        = 'https://gamma-api.polymarket.com';
 const PROXY        = 'https://infera-api.onrender.com/proxy?url=';
-const GNEWS_KEY    = 'd29514c6f8b30d985172a4ac9625f598';    // https://gnews.io â free 100/day
-const GUARDIAN_KEY = 'f1ce8a12-55ea-4d2e-86fb-505fba83540f'; // https://open-platform.theguardian.com â free
-const NEWSAPI_KEY  = 'fb9e64dffc1a4f3d926132e43bdada7e';      // https://newsapi.org â free 100/day
-const YOUTUBE_KEY  = 'YOUR_YOUTUBE_API_KEY';  // https://console.cloud.google.com â free 10k/day
-// Reddit    â public JSON API, no key required â auto-fetched
-// Archive.ph â no key required â auto-linked on every article card
+const GNEWS_KEY    = 'd29514c6f8b30d985172a4ac9625f598';    // https://gnews.io — free 100/day
+const GUARDIAN_KEY = 'f1ce8a12-55ea-4d2e-86fb-505fba83540f'; // https://open-platform.theguardian.com — free
+const NEWSAPI_KEY  = 'fb9e64dffc1a4f3d926132e43bdada7e';      // https://newsapi.org — free 100/day
+const YOUTUBE_KEY  = 'YOUR_YOUTUBE_API_KEY';  // https://console.cloud.google.com — free 10k/day
+// Reddit    — public JSON API, no key required — auto-fetched
+// Archive.ph — no key required — auto-linked on every article card
 
-// âââ STATE âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+// ─── STATE ─────────────────────────────────────────────────────────────────
 let allEvents      = [];
 let eventMap       = {};
 let selectedEvent  = null;
@@ -540,7 +540,7 @@ let lastTapId      = null;
 let lastTapTime    = 0;
 const DBL_MS       = 500;
 
-// âââ FETCH POLYMARKET âââââââââââââââââââââââââââââââââââââââââââââââââââââ
+// ─── FETCH POLYMARKET ─────────────────────────────────────────────────────
 async function fetchEvents() {
   try {
     const url = PROXY + encodeURIComponent(`${GAMMA}/events?active=true&closed=false&limit=40&order=volume24hr&ascending=false`);
@@ -571,7 +571,7 @@ function mockEvents() {
   ];
 }
 
-// âââ RENDER LIST âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+// ─── RENDER LIST ───────────────────────────────────────────────────────────
 function renderList(cat, q) {
   cat = cat || 'all'; q = q || '';
   let evs = allEvents;
@@ -600,7 +600,7 @@ function renderList(cat, q) {
   }).join('');
 }
 
-// âââ DOUBLE-TAP ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+// ─── DOUBLE-TAP ────────────────────────────────────────────────────────────
 function rowClick(e, id) {
   e.stopPropagation();
   const ev = eventMap[id];
@@ -649,7 +649,7 @@ function showTip(e) {
 }
 function hideTip() { document.getElementById('tapTooltip').classList.remove('show'); }
 
-// âââ OPEN DEEP DIVE ââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+// ─── OPEN DEEP DIVE ────────────────────────────────────────────────────────
 function openDeepDive(ev) {
   const target = ev || selectedEvent;
   if (!target) return;
@@ -670,31 +670,31 @@ function openDeepDive(ev) {
   document.getElementById('dh-cat').textContent         = cat.toUpperCase();
   document.getElementById('dh-title-crumb').textContent = target.title || '';
   document.getElementById('dh-source').textContent      = target.resolutionSource || 'Public Records';
-  document.getElementById('dh-eyebrow').textContent     = cat.toUpperCase() + ' Â· WORLD INTELLIGENCE';
+  document.getElementById('dh-eyebrow').textContent     = cat.toUpperCase() + ' · WORLD INTELLIGENCE';
   document.getElementById('dh-headline').textContent    = target.title || '';
   document.getElementById('dh-deck').textContent        = target.description || '';
-  document.getElementById('dh-body').innerHTML          = '<div class="loading-row"><div class="spinner"></div><span>Loading contextâ¦</span></div>';
-  document.getElementById('ap-text').innerHTML          = 'This topic has <strong>' + aTxt.toLowerCase() + ' global attention</strong>. Used here as a journalistic triage signal â not as financial data.';
+  document.getElementById('dh-body').innerHTML          = '<div class="loading-row"><div class="spinner"></div><span>Loading context…</span></div>';
+  document.getElementById('ap-text').innerHTML          = 'This topic has <strong>' + aTxt.toLowerCase() + ' global attention</strong>. Used here as a journalistic triage signal — not as financial data.';
   document.getElementById('apg-fill').style.width       = aPct + '%';
   document.getElementById('apg-level').textContent      = aTxt;
   document.getElementById('apg-level').className        = 'apg-level ' + aKey;
   document.getElementById('ap-enddate').textContent     = endD;
-  document.getElementById('newsBrief').innerHTML        = '<div class="loading-row"><div class="spinner" style="border-top-color:var(--gold)"></div><span>Building investigative search briefâ¦</span></div>';
+  document.getElementById('newsBrief').innerHTML        = '<div class="loading-row"><div class="spinner" style="border-top-color:var(--gold)"></div><span>Building investigative search brief…</span></div>';
   document.getElementById('newsGrid').innerHTML         = '';
   document.getElementById('news-sub').textContent       = '';
-  document.getElementById('histIntro').innerHTML        = '<div class="loading-row"><div class="spinner" style="border-top-color:var(--gold)"></div><span>Finding historical parallelsâ¦</span></div>';
+  document.getElementById('histIntro').innerHTML        = '<div class="loading-row"><div class="spinner" style="border-top-color:var(--gold)"></div><span>Finding historical parallels…</span></div>';
   document.getElementById('histEvents').innerHTML       = '';
 
   runDeepDive(target);
 }
 
-// âââ DEEP DIVE ORCHESTRATOR ââââââââââââââââââââââââââââââââââââââââââââââââ
+// ─── DEEP DIVE ORCHESTRATOR ────────────────────────────────────────────────
 async function runDeepDive(ev) {
   const topic = ev.title || '';
   const desc  = ev.description || '';
   const keysSet = GNEWS_KEY !== 'YOUR_GNEWS_API_KEY' || GUARDIAN_KEY !== 'YOUR_GUARDIAN_API_KEY' || NEWSAPI_KEY !== 'YOUR_NEWSAPI_KEY';
 
-  // Step 1 â AI brief + historical in parallel
+  // Step 1 — AI brief + historical in parallel
   const [briefRes, aiRes, ctxRes, mktsRes, analogsRes] = await Promise.allSettled([
     buildBrief(topic, desc),
     fetchHistoricalSources(topic, desc),
@@ -714,7 +714,7 @@ async function runDeepDive(ev) {
   if (ai) renderHistoricalSection(ai);
   renderContextualPerspective(ctx, mkts, analogs);
 
-  // Step 2 â fetch articles + social in parallel
+  // Step 2 — fetch articles + social in parallel
   let articles = [];
   const q = (topic + ' ' + (desc || '')).slice(0, 120);
   const socialKws = brief && brief.investigativeAngles
@@ -742,16 +742,16 @@ async function runDeepDive(ev) {
   renderSocialFeed(socialData, topic);
 }
 
-// âââ BUILD INVESTIGATIVE BRIEF âââââââââââââââââââââââââââââââââââââââââââââ
+// ─── BUILD INVESTIGATIVE BRIEF ─────────────────────────────────────────────
 async function buildBrief(topic, desc) {
-  const prompt = 'You are an investigative editor at a major international news desk.\n\nA topic is drawing global attention: "' + topic + '"\n' + (desc ? 'Context: ' + desc + '\n' : '') + '\nGenerate a structured search brief to fetch the most targeted, relevant news articles â not random headlines, but pieces that directly bear on the specific outcome.\n\nReturn ONLY valid JSON, no markdown:\n\n{"coreQuestion":"The single most important journalistic question this topic raises","investigativeAngles":[{"question":"Specific investigative question","why":"Why this angle matters to the outcome","keywords":["keyword1","keyword2","keyword3"],"guardianSection":"politics","timeWindow":"30d"},{"question":"...","why":"...","keywords":["..."],"guardianSection":"world","timeWindow":"7d"},{"question":"...","why":"...","keywords":["..."],"guardianSection":"business","timeWindow":"30d"},{"question":"...","why":"...","keywords":["..."],"guardianSection":"us-news","timeWindow":"90d"}],"mustInclude":["critical term 1","critical term 2"],"relevanceTest":"One sentence: what makes an article directly relevant to this specific outcome"}\n\nRules: 4 distinct angles (policy, reaction, background, stakeholder). Keywords must be precise. guardianSection must be one of: politics|world|business|technology|us-news|environment|science|society|sport|culture. timeWindow: 7d|30d|90d.';
+  const prompt = 'You are an investigative editor at a major international news desk.\n\nA topic is drawing global attention: "' + topic + '"\n' + (desc ? 'Context: ' + desc + '\n' : '') + '\nGenerate a structured search brief to fetch the most targeted, relevant news articles — not random headlines, but pieces that directly bear on the specific outcome.\n\nReturn ONLY valid JSON, no markdown:\n\n{"coreQuestion":"The single most important journalistic question this topic raises","investigativeAngles":[{"question":"Specific investigative question","why":"Why this angle matters to the outcome","keywords":["keyword1","keyword2","keyword3"],"guardianSection":"politics","timeWindow":"30d"},{"question":"...","why":"...","keywords":["..."],"guardianSection":"world","timeWindow":"7d"},{"question":"...","why":"...","keywords":["..."],"guardianSection":"business","timeWindow":"30d"},{"question":"...","why":"...","keywords":["..."],"guardianSection":"us-news","timeWindow":"90d"}],"mustInclude":["critical term 1","critical term 2"],"relevanceTest":"One sentence: what makes an article directly relevant to this specific outcome"}\n\nRules: 4 distinct angles (policy, reaction, background, stakeholder). Keywords must be precise. guardianSection must be one of: politics|world|business|technology|us-news|environment|science|society|sport|culture. timeWindow: 7d|30d|90d.';
 
   const res  = await callClaude(prompt, 800);
   const text = res.content?.find(b => b.type === 'text')?.text || '';
   return JSON.parse(text.replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim());
 }
 
-// âââ FETCH ARTICLES PER ANGLE ââââââââââââââââââââââââââââââââââââââââââââââ
+// ─── FETCH ARTICLES PER ANGLE ──────────────────────────────────────────────
 async function fetchAngle(angle, from) {
   const q    = (angle.keywords || []).slice(0, 3).join(' ');
   const wFrom = getWindowFrom(angle.timeWindow);
@@ -818,7 +818,7 @@ async function fetchBluesky(query) {
 }
 
 async function fetchSocialPosts(keywords) {
-  // Build short focused queries (first 3 words of each keyword) â avoids over-specific HN misses
+  // Build short focused queries (first 3 words of each keyword) — avoids over-specific HN misses
   const queries = [...new Set(
     keywords.slice(0, 4).map(k => k.split(' ').slice(0, 3).join(' ')).filter(Boolean)
   )];
@@ -861,9 +861,9 @@ function getWindowFrom(tw) {
   return new Date(Date.now() - days * 86400000).toISOString().split('T')[0];
 }
 
-// âââ SCORE ARTICLES ââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+// ─── SCORE ARTICLES ────────────────────────────────────────────────────────
 async function scoreArticles(articles, brief) {
-  const list = articles.slice(0, 28).map((a, i) => i + ': "' + a.title + '" â ' + (a.description || '').replace(/<[^>]+>/g, '').slice(0, 100)).join('\n');
+  const list = articles.slice(0, 28).map((a, i) => i + ': "' + a.title + '" — ' + (a.description || '').replace(/<[^>]+>/g, '').slice(0, 100)).join('\n');
   const prompt = 'Score these news articles for relevance to an investigative topic.\n\nCORE QUESTION: "' + brief.coreQuestion + '"\nRELEVANCE TEST: "' + brief.relevanceTest + '"\n\nArticles:\n' + list + '\n\nReturn ONLY a JSON array, sorted by score descending, include only score >= 5:\n[{"index":0,"score":9,"relevanceNote":"Why this is relevant in 1 sentence","tag":"key-evidence"},{"index":1,"score":7,"relevanceNote":"...","tag":"background"},...]\n\ntag must be one of: key-evidence|background|reaction|analysis';
 
   try {
@@ -879,16 +879,16 @@ async function scoreArticles(articles, brief) {
   }
 }
 
-// âââ FETCH AI ANALYSIS âââââââââââââââââââââââââââââââââââââââââââââââââââââ
+// ─── FETCH AI ANALYSIS ─────────────────────────────────────────────────────
 async function fetchAI(topic, desc) {
-  const prompt = 'You are a senior international news editor and historian.\n\nTOPIC: "' + topic + '"\n' + (desc ? 'CONTEXT: ' + desc + '\n' : '') + '\nReturn ONLY valid JSON, no markdown:\n\n{"deck":"One sentence â key tension/stakes written like a Reuters lede","leadParagraphs":["paragraph 1","paragraph 2","paragraph 3"],"histIntro":"2 sentences explaining why historical comparison matters here","historicalEvents":[{"year":"YYYY","era":"Era name","title":"Short title","description":"2-3 sentences what happened and why comparable","fullContext":["deeper para 1","deeper para 2"],"outcomes":[{"icon":"ð","label":"Economic Impact","text":"Documented fact"},{"icon":"ð","label":"Geopolitical Shift","text":"How world order changed"},{"icon":"â±","label":"Timeline","text":"How long it lasted and resolved"},{"icon":"ð","label":"Key Lesson","text":"Most important lesson for today"}],"similarity":"high"},{"year":"...","era":"...","title":"...","description":"...","fullContext":["...","..."],"outcomes":[{"icon":"ð","label":"...","text":"..."},{"icon":"ð","label":"...","text":"..."},{"icon":"â±","label":"Timeline","text":"..."},{"icon":"ð","label":"Key Lesson","text":"..."}],"similarity":"medium"},{"year":"...","era":"...","title":"...","description":"...","fullContext":["...","..."],"outcomes":[{"icon":"ð¼","label":"...","text":"..."},{"icon":"ðº","label":"...","text":"..."},{"icon":"â±","label":"Timeline","text":"..."},{"icon":"ð","label":"Key Lesson","text":"..."}],"similarity":"low"}]}\n\nRULES: No odds. No betting. Historical events = real, documented. Outcomes = what actually happened.';
+  const prompt = 'You are a senior international news editor and historian.\n\nTOPIC: "' + topic + '"\n' + (desc ? 'CONTEXT: ' + desc + '\n' : '') + '\nReturn ONLY valid JSON, no markdown:\n\n{"deck":"One sentence — key tension/stakes written like a Reuters lede","leadParagraphs":["paragraph 1","paragraph 2","paragraph 3"],"histIntro":"2 sentences explaining why historical comparison matters here","historicalEvents":[{"year":"YYYY","era":"Era name","title":"Short title","description":"2-3 sentences what happened and why comparable","fullContext":["deeper para 1","deeper para 2"],"outcomes":[{"icon":"📉","label":"Economic Impact","text":"Documented fact"},{"icon":"🌍","label":"Geopolitical Shift","text":"How world order changed"},{"icon":"⏱","label":"Timeline","text":"How long it lasted and resolved"},{"icon":"🔑","label":"Key Lesson","text":"Most important lesson for today"}],"similarity":"high"},{"year":"...","era":"...","title":"...","description":"...","fullContext":["...","..."],"outcomes":[{"icon":"📊","label":"...","text":"..."},{"icon":"🌐","label":"...","text":"..."},{"icon":"⏱","label":"Timeline","text":"..."},{"icon":"🔑","label":"Key Lesson","text":"..."}],"similarity":"medium"},{"year":"...","era":"...","title":"...","description":"...","fullContext":["...","..."],"outcomes":[{"icon":"💼","label":"...","text":"..."},{"icon":"🗺","label":"...","text":"..."},{"icon":"⏱","label":"Timeline","text":"..."},{"icon":"🔑","label":"Key Lesson","text":"..."}],"similarity":"low"}]}\n\nRULES: No odds. No betting. Historical events = real, documented. Outcomes = what actually happened.';
 
   const res  = await callClaude(prompt, 1000);
   const text = res.content?.find(b => b.type === 'text')?.text || '';
   return JSON.parse(text.replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim());
 }
 
-// âââ CLAUDE API HELPER âââââââââââââââââââââââââââââââââââââââââââââââââââââ
+// ─── CLAUDE API HELPER ─────────────────────────────────────────────────────
 async function callClaude(prompt, maxTokens) {
   const res = await fetch('https://infera-api.onrender.com/ai', {
     method: 'POST',
@@ -901,7 +901,7 @@ async function callClaude(prompt, maxTokens) {
   return res.json();
 }
 
-// âââ HISTORICAL SOURCES ââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+// ─── HISTORICAL SOURCES ──────────────────────────────────────────────────────
 async function fetchWikipedia(query) {
   try {
     const enc = encodeURIComponent(query);
@@ -919,7 +919,7 @@ async function fetchWikipedia(query) {
         const sr = await fetch('https://en.wikipedia.org/api/rest_v1/page/summary/' + encodeURIComponent(h.title));
         const s = await sr.json();
         if (s.extract) results.push({
-          source: 'Wikipedia', sourceIcon: 'ð',
+          source: 'Wikipedia', sourceIcon: '📖',
           title: s.title,
           excerpt: s.extract.slice(0, 320),
           url: (s.content_urls && s.content_urls.desktop && s.content_urls.desktop.page) || 'https://en.wikipedia.org/wiki/' + encodeURIComponent(h.title),
@@ -938,9 +938,9 @@ async function fetchLocNewspapers(query) {
     const r = await fetch('https://chroniclingamerica.loc.gov/search/pages/results/?format=json&rows=6&proxtext=' + enc);
     const d = await r.json();
     return (d.items || []).slice(0, 4).map(item => ({
-      source: 'Library of Congress', sourceIcon: 'ðï¸',
+      source: 'Library of Congress', sourceIcon: '🏛️',
       title: item.title_normal || item.title || 'Historical Newspaper Article',
-      excerpt: item.ocr_eng ? item.ocr_eng.slice(0, 280) + 'â¦' : 'Historical newspaper from the Chronicling America collection.',
+      excerpt: item.ocr_eng ? item.ocr_eng.slice(0, 280) + '…' : 'Historical newspaper from the Chronicling America collection.',
       url: item.url ? 'https://chroniclingamerica.loc.gov' + item.url : 'https://chroniclingamerica.loc.gov',
       date: item.date ? String(item.date).slice(0,4) : null,
       thumbnail: null
@@ -959,13 +959,13 @@ async function fetchInternetArchive(query) {
       const text = ((doc.title || '') + ' ' + ((doc.subject || []).join(' '))).toLowerCase();
       return { doc, score: kws.filter(w => text.includes(w)).length };
     }).filter(x => kws.length === 0 || x.score > 0).sort((a, b) => b.score - a.score).slice(0, 3).map(({doc}) => ({
-      source: 'Open Library', sourceIcon: 'ð',
+      source: 'Open Library', sourceIcon: '📚',
       title: doc.title || 'Untitled',
       excerpt: [
         doc.author_name ? 'By ' + doc.author_name.slice(0, 2).join(', ') : '',
         doc.first_publish_year ? 'First published ' + doc.first_publish_year : '',
         doc.subject ? 'Topics: ' + doc.subject.slice(0, 3).join(', ') : ''
-      ].filter(Boolean).join(' Â· '),
+      ].filter(Boolean).join(' · '),
       url: 'https://openlibrary.org' + doc.key,
       date: doc.first_publish_year ? String(doc.first_publish_year) : null,
       thumbnail: null
@@ -981,7 +981,7 @@ async function fetchNewsAPIHist(query) {
     const r = await fetch(PROXY + encodeURIComponent(apiUrl));
     const d = await r.json();
     return (d.articles || []).slice(0, 5).map(a => ({
-      source: (a.source && a.source.name) || 'News', sourceIcon: 'ð°',
+      source: (a.source && a.source.name) || 'News', sourceIcon: '📰',
       title: a.title || '',
       excerpt: a.description || (a.content && a.content.slice(0, 280)) || '',
       url: a.url || '',
@@ -1056,7 +1056,7 @@ function renderContextualPerspective(data, mkts, analogs) {
   const CC = {recession:'#ff6b6b',recovery:'#51cf66',escalation:'#ff9f43',policy:'#6b7cff',conflict:'#e84393'};
   let aHtml = '', sigHtml = '';
   if (analogs && analogs.analogs && analogs.analogs.length) {
-    sigHtml = (analogs.confidence!=null?'<div class="confidence-row"><span class="confidence-label">Pattern confidence</span><div class="confidence-bar-wrap"><div class="confidence-bar" style="width:'+Math.round(analogs.confidence*100)+'%"></div></div><span class="confidence-label">'+Math.round(analogs.confidence*100)+'%</span></div><p class="conf-desc">Cluster match strength â how closely this eventâs keyword signature aligns with historical pattern databases across signal dimensions.</p>':'')
+    sigHtml = (analogs.confidence!=null?'<div class="confidence-row"><span class="confidence-label">Pattern confidence</span><div class="confidence-bar-wrap"><div class="confidence-bar" style="width:'+Math.round(analogs.confidence*100)+'%"></div></div><span class="confidence-label">'+Math.round(analogs.confidence*100)+'%</span></div><p class="conf-desc">Cluster match strength — how closely this event’s keyword signature aligns with historical pattern databases across signal dimensions.</p>':'')
     +(analogs.signal_vector?(()=>{const sv=analogs.signal_vector;const dims=[['geo','GEO',sv.geo||0],['market','MKT',sv.market||0],['macro','MACRO',sv.macro||0],['policy','POL',sv.policy||0]];const active=dims.filter(d=>d[2]>0.05).sort((a,b)=>b[2]-a[2]);return active.length?'<div class="sig-profile">'+active.map(d=>'<span class="sig-badge '+d[0]+'">'+d[1]+' '+Math.round(d[2]*100)+'%</span>').join('')+'</div>':'';})():'')
     aHtml = '<div class="analog-section"><div class="analog-cards">' + analogs.analogs.map(a => '<div class="analog-card"><span class="analog-name">' + a.name + '</span><span class="analog-year">' + a.year + '</span><div class="analog-outcome">' + a.outcome + '</div><div class="analog-sim-wrap"><div class="analog-sim-bar"><div class="analog-sim-fill" style="width:' + Math.round(a.similarity*100) + '%"></div></div><span class="analog-sim-pct">' + Math.round(a.similarity*100) + '%</span>'+(a.differs&&a.differs.length?'<div class="differs-label">Differs: '+a.differs.join(', ')+'</div>':'')+'</div></div>').join('') + '</div></div>';
   }
@@ -1107,7 +1107,7 @@ async function fetchHistoricalSources(topic, desc) {
   const sourceCtx = sources.slice(0, 6).map((s, i) =>
     '[' + (i + 1) + '] ' + s.source + ': "' + s.title + '"' + (s.date ? ' (' + s.date + ')' : '') + ' -- ' + s.excerpt.slice(0, 180)
   ).join(nl);
-  const prompt = 'You are a senior historian and news analyst. Topic: "' + topic + '".' + (desc ? ' Context: ' + desc.slice(0, 200) + '.' : '') + ' Sources: ' + (sourceCtx || 'No external sources.') + ' Return ONLY valid JSON: {"deck":"One sentence core historical lesson","histIntro":"2-3 sentences on historical parallels and what resulted","outcomes":[{"icon":"ð","label":"Historical Parallel","text":"specific event"},{"icon":"ð","label":"Key Outcome","text":"what resulted"},{"icon":"ð¡","label":"Lesson","text":"what this tells us"}],"similarity":75}';
+  const prompt = 'You are a senior historian and news analyst. Topic: "' + topic + '".' + (desc ? ' Context: ' + desc.slice(0, 200) + '.' : '') + ' Sources: ' + (sourceCtx || 'No external sources.') + ' Return ONLY valid JSON: {"deck":"One sentence core historical lesson","histIntro":"2-3 sentences on historical parallels and what resulted","outcomes":[{"icon":"📅","label":"Historical Parallel","text":"specific event"},{"icon":"📊","label":"Key Outcome","text":"what resulted"},{"icon":"💡","label":"Lesson","text":"what this tells us"}],"similarity":75}';
   let aiData = null;
   try {
     const res  = await callClaude(prompt, 700);
@@ -1117,7 +1117,7 @@ async function fetchHistoricalSources(topic, desc) {
   return { aiData, sources };
 }
 
-// âââ RENDER SOCIAL FEED ââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+// ─── RENDER SOCIAL FEED ──────────────────────────────────────────────────────
 function renderSocialFeed(posts, topic) {
   const grid = document.getElementById('socialGrid');
   const sub  = document.getElementById('social-sub');
@@ -1133,7 +1133,7 @@ function renderSocialFeed(posts, topic) {
 
   const bskyCount  = posts.filter(p => p._src === 'bluesky').length;
   const mastoCount = posts.filter(p => p._src === 'mastodon').length;
-  if (sub) sub.textContent = posts.length + ' live posts Â· ' + bskyCount + ' Bluesky Â· ' + mastoCount + ' Mastodon Â· refreshes every 5s';
+  if (sub) sub.textContent = posts.length + ' live posts · ' + bskyCount + ' Bluesky · ' + mastoCount + ' Mastodon · refreshes every 5s';
 
   window._socialPosts = posts;
   window._socialIdx   = 0;
@@ -1158,7 +1158,7 @@ function renderSocialFeed(posts, topic) {
             (time ? '<span style="font-size:10px;color:var(--dim);flex-shrink:0">' + time + '</span>' : '') +
           '</div>' +
           '<div class="sc-title" style="font-size:12px;line-height:1.45;margin-bottom:6px">' + (p.title || '').replace(/</g,'&lt;').slice(0, 220) + '</div>' +
-          '<div class="sc-meta"><span class="sc-score">â¥â¯' + (p.likes||0) + 'ââºâ¯' + (p.reposts||0) + (p.replies ? 'âð¬â¯' + p.replies : '') + '</span></div>' +
+          '<div class="sc-meta"><span class="sc-score">♥ ' + (p.likes||0) + ' ↺ ' + (p.reposts||0) + (p.replies ? ' 💬 ' + p.replies : '') + '</span></div>' +
         '</div>';
     }
     html += '</div>';
@@ -1170,7 +1170,7 @@ function renderSocialFeed(posts, topic) {
   window._socialInterval = setInterval(renderSlice, 5000);
 }
 
-// âââ RENDER BRIEF ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+// ─── RENDER BRIEF ──────────────────────────────────────────────────────────
 function renderBrief(brief) {
   const angles = (brief.investigativeAngles || []).map((a, i) =>
     '<div style="background:var(--s1);border:1px solid var(--b1);border-radius:4px;padding:10px 12px;display:flex;gap:12px;align-items:flex-start;margin-bottom:8px">' +
@@ -1194,10 +1194,10 @@ function renderBrief(brief) {
     '</div>' +
     angles +
     (brief.relevanceTest ? '<div style="margin-top:8px;padding:8px 12px;background:var(--s1);border:1px solid var(--b1);border-radius:3px;font-size:11px;color:var(--dim);font-family:var(--mono);font-style:italic">Relevance test: "' + brief.relevanceTest + '"</div>' : '') +
-    '<div class="loading-row" id="fetchStatus" style="margin-top:12px"><div class="spinner"></div><span>Fetching targeted articles across investigative anglesâ¦</span></div>';
+    '<div class="loading-row" id="fetchStatus" style="margin-top:12px"><div class="spinner"></div><span>Fetching targeted articles across investigative angles…</span></div>';
 }
 
-// âââ RENDER NEWS GRID ââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+// ─── RENDER NEWS GRID ──────────────────────────────────────────────────────
 function renderNewsGrid(articles, brief, keysSet) {
   const fs = document.getElementById('fetchStatus');
   if (fs) fs.remove();
@@ -1208,14 +1208,14 @@ function renderNewsGrid(articles, brief, keysSet) {
   if (!keysSet) {
     grid.innerHTML =
       '<div style="background:rgba(240,180,41,.06);border:1px solid rgba(240,180,41,.2);border-radius:4px;padding:14px 16px;margin-top:8px">' +
-        '<div style="font-family:var(--mono);font-size:9px;letter-spacing:.15em;color:var(--gold);text-transform:uppercase;margin-bottom:8px">â Add API Keys to Activate Live Articles</div>' +
+        '<div style="font-family:var(--mono);font-size:9px;letter-spacing:.15em;color:var(--gold);text-transform:uppercase;margin-bottom:8px">⚙ Add API Keys to Activate Live Articles</div>' +
         '<div style="font-family:var(--mono);font-size:11px;background:var(--s3);padding:10px 12px;border-radius:3px;line-height:2;color:var(--teal)">' +
-          'GNEWS_KEY â <a href="https://gnews.io" target="_blank" style="color:var(--gold)">gnews.io</a> Â· free 100/day<br>' +
-          'GUARDIAN_KEY â <a href="https://open-platform.theguardian.com" target="_blank" style="color:var(--gold)">open-platform.theguardian.com</a> Â· free unlimited<br>' +
-          'NEWSAPI_KEY â <a href="https://newsapi.org" target="_blank" style="color:var(--gold)">newsapi.org</a> Â· free 100/day<br>' +
-          'YOUTUBE_KEY â <a href="https://console.cloud.google.com" target="_blank" style="color:var(--gold)">Google Cloud Console</a> Â· free 10k/day<br>' +
-          '<span style="color:var(--purple)">Archive.ph</span> Â· auto-linked on every article â <span style="color:var(--dim)">no key needed</span><br>' +
-          '<span style="color:var(--purple)">Reddit</span> Â· social discussions auto-fetched â <span style="color:var(--dim)">no key needed</span>' +
+          'GNEWS_KEY — <a href="https://gnews.io" target="_blank" style="color:var(--gold)">gnews.io</a> · free 100/day<br>' +
+          'GUARDIAN_KEY — <a href="https://open-platform.theguardian.com" target="_blank" style="color:var(--gold)">open-platform.theguardian.com</a> · free unlimited<br>' +
+          'NEWSAPI_KEY — <a href="https://newsapi.org" target="_blank" style="color:var(--gold)">newsapi.org</a> · free 100/day<br>' +
+          'YOUTUBE_KEY — <a href="https://console.cloud.google.com" target="_blank" style="color:var(--gold)">Google Cloud Console</a> · free 10k/day<br>' +
+          '<span style="color:var(--purple)">Archive.ph</span> · auto-linked on every article — <span style="color:var(--dim)">no key needed</span><br>' +
+          '<span style="color:var(--purple)">Reddit</span> · social discussions auto-fetched — <span style="color:var(--dim)">no key needed</span>' +
         '</div>' +
         '<p style="margin-top:10px;color:var(--dim);font-size:12px">Articles are fetched per investigative angle, scored by AI, and grouped by quality. Reddit discussions and Archive.ph snapshots load automatically for every topic.</p>' +
       '</div>';
@@ -1233,7 +1233,7 @@ function renderNewsGrid(articles, brief, keysSet) {
   const supp = articles.filter(a => a._score >= 6 && a._score < 8);
   const ctx  = articles.filter(a => a._score < 6);
 
-  sub.textContent = articles.length + ' articles Â· ' + key.length + ' key evidence Â· scored by AI';
+  sub.textContent = articles.length + ' articles · ' + key.length + ' key evidence · scored by AI';
 
   function group(label, icon, items, color) {
     if (!items.length) return '';
@@ -1246,7 +1246,7 @@ function renderNewsGrid(articles, brief, keysSet) {
     '</div>';
   }
 
-  grid.innerHTML = group('Key Evidence', 'ð´', key, 'var(--accent)') + group('Supporting', 'ð¡', supp, 'var(--gold)') + group('Context', 'âª', ctx, 'var(--dim)');
+  grid.innerHTML = group('Key Evidence', '🔴', key, 'var(--accent)') + group('Supporting', '🟡', supp, 'var(--gold)') + group('Context', '⚪', ctx, 'var(--dim)');
 }
 
 function renderCard(a) {
@@ -1259,24 +1259,24 @@ function renderCard(a) {
 
   const archiveUrl = 'https://archive.ph/newest/' + encodeURIComponent(a.url || '');
   return '<div class="news-card" onclick="window.open(\'' + safeUrl + '\',\'_blank\')">' +
-    '<div class="nc-meta"><span class="nc-source" style="color:' + srcClr + '">' + (a.source || '') + '</span><span class="nc-dot">Â·</span><span class="nc-date">' + dateStr + '</span></div>' +
+    '<div class="nc-meta"><span class="nc-source" style="color:' + srcClr + '">' + (a.source || '') + '</span><span class="nc-dot">·</span><span class="nc-date">' + dateStr + '</span></div>' +
     '<div class="nc-hl">' + (a.title || '') + '</div>' +
-    (a.description ? '<div class="nc-body">' + a.description.replace(/<[^>]+>/g, '').slice(0, 160) + 'â¦</div>' : '') +
+    (a.description ? '<div class="nc-body">' + a.description.replace(/<[^>]+>/g, '').slice(0, 160) + '…</div>' : '') +
     (a._note ? '<div style="font-size:11px;color:var(--teal);margin-top:5px;line-height:1.45;font-style:italic;padding-left:8px;border-left:2px solid rgba(0,201,167,.3)">' + a._note + '</div>' : '') +
     '<div style="display:flex;align-items:center;justify-content:space-between;margin-top:6px;padding-top:6px;border-top:1px solid var(--b1)">' +
-      (a._angle ? '<div style="font-family:var(--mono);font-size:8px;color:var(--dim);letter-spacing:.04em;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">â³ ' + a._angle.slice(0,60) + '</div>' : '<div></div>') +
-      '<a class="nc-archive" href="' + archiveUrl + '" target="_blank" onclick="event.stopPropagation()" title="View archived snapshot">â Archive</a>' +
+      (a._angle ? '<div style="font-family:var(--mono);font-size:8px;color:var(--dim);letter-spacing:.04em;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">↳ ' + a._angle.slice(0,60) + '</div>' : '<div></div>') +
+      '<a class="nc-archive" href="' + archiveUrl + '" target="_blank" onclick="event.stopPropagation()" title="View archived snapshot">⊞ Archive</a>' +
     '</div>' +
-    (a._angle ? '<div style="font-family:var(--mono);font-size:8px;color:var(--dim);letter-spacing:.06em;margin-top:0px;padding-top:0px;border-top:1px solid var(--b1);display:flex;align-items:flex-start;gap:4px"><span style="color:var(--gold);flex-shrink:0">â³</span><span>' + a._angle + '</span></div>' : '') +
+    (a._angle ? '<div style="font-family:var(--mono);font-size:8px;color:var(--dim);letter-spacing:.06em;margin-top:0px;padding-top:0px;border-top:1px solid var(--b1);display:flex;align-items:flex-start;gap:4px"><span style="color:var(--gold);flex-shrink:0">↳</span><span>' + a._angle + '</span></div>' : '') +
     (a._score ? '<div style="display:flex;align-items:center;gap:6px;margin-top:7px"><div style="font-family:var(--mono);font-size:8px;color:var(--dim)">relevance</div><div style="flex:1;height:3px;background:var(--b1);border-radius:2px;overflow:hidden"><div style="height:100%;width:' + (a._score * 10) + '%;background:linear-gradient(90deg,var(--teal),var(--accent));border-radius:2px"></div></div><div style="font-family:var(--mono);font-size:8px;color:var(--bright);font-weight:600">' + a._score + '/10</div></div>' : '') +
     '<div style="display:flex;align-items:center;justify-content:space-between;margin-top:7px">' +
       '<span style="font-family:var(--mono);font-size:8px;letter-spacing:.09em;text-transform:uppercase;padding:2px 6px;border-radius:2px;background:' + bg + ';color:' + txt + ';border:1px solid ' + brd + '">' + (a._tag || 'background') + '</span>' +
-      '<span style="font-family:var(--mono);font-size:8px;color:var(--dim)">â Read</span>' +
+      '<span style="font-family:var(--mono);font-size:8px;color:var(--dim)">↗ Read</span>' +
     '</div>' +
   '</div>';
 }
 
-// âââ RENDER AI ANALYSIS ââââââââââââââââââââââââââââââââââââââââââââââââââââ
+// ─── RENDER AI ANALYSIS ────────────────────────────────────────────────────
 function renderHistoricalSection(data) {
   const introEl  = document.getElementById('histIntro');
   const eventsEl = document.getElementById('histEvents');
@@ -1300,21 +1300,21 @@ function renderHistoricalSection(data) {
   if (aiData && Array.isArray(aiData.outcomes) && aiData.outcomes.length) {
     html += '<div class="hist-outcomes">';
     for (const o of aiData.outcomes) {
-      html += '<div class="outcome-card"><span class="oc-icon">' + (o.icon || 'ð') + '</span>'
+      html += '<div class="outcome-card"><span class="oc-icon">' + (o.icon || '📈') + '</span>'
             + '<strong class="oc-label">' + (o.label || '') + '</strong>'
             + '<p class="oc-text">' + (o.text || '') + '</p></div>';
     }
     html += '</div>';
   }
   if (sources && sources.length) {
-    html += '<div class="hist-src-title">ð Sources &amp; Historical References</div>';
+    html += '<div class="hist-src-title">📋 Sources &amp; Historical References</div>';
     html += '<div class="hist-sources">';
     for (const s of sources.slice(0, 9)) {
       html += '<details class="ref-link"><summary><span class="ref-badge">' + (s.source||'SRC') + '</span>'
             + '<span class="ref-title">' + (s.title||'') + '</span>'
             + '<span class="ref-toggle">&#9660;</span></summary>'
-            + '<div class="ref-synopsis">' + (s.excerpt ? s.excerpt.slice(0,280) + (s.excerpt.length>280 ? 'â¦' : '') : '')
-            + ' <a href="' + (s.url||'#') + '" target="_blank" rel="noopener">Read more â</a></div></details>';
+            + '<div class="ref-synopsis">' + (s.excerpt ? s.excerpt.slice(0,280) + (s.excerpt.length>280 ? '…' : '') : '')
+            + ' <a href="' + (s.url||'#') + '" target="_blank" rel="noopener">Read more ↗</a></div></details>';
     }
     html += '</div>';
   }
@@ -1323,7 +1323,7 @@ function renderHistoricalSection(data) {
 }
 function toggleHist(i) { document.getElementById('he-' + i).classList.toggle('open'); }
 
-// âââ NAVIGATION ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+// ─── NAVIGATION ────────────────────────────────────────────────────────────
 function goBack() {
   document.getElementById('deepView').classList.remove('active');
   document.getElementById('feedView').classList.add('active');
@@ -1338,7 +1338,7 @@ function goHome() {
   document.querySelectorAll('.event-row').forEach(r => r.classList.remove('selected'));
 }
 
-// âââ SEARCH ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+// ─── SEARCH ────────────────────────────────────────────────────────────────
 let searchTO;
 document.getElementById('searchInput').addEventListener('input', function() {
   clearTimeout(searchTO);
@@ -1388,7 +1388,7 @@ function searchPick(id) {
 
 document.addEventListener('click', e => { if (!e.target.closest('.hdr-search')) document.getElementById('searchResults').classList.remove('open'); });
 
-// âââ CATEGORY FILTERS ââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+// ─── CATEGORY FILTERS ──────────────────────────────────────────────────────
 document.getElementById('catFilters').addEventListener('click', e => {
   const btn = e.target.closest('.cat-btn');
   if (!btn) return;
@@ -1398,26 +1398,26 @@ document.getElementById('catFilters').addEventListener('click', e => {
   renderList(activeCategory);
 });
 
-// âââ TICKER ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+// ─── TICKER ────────────────────────────────────────────────────────────────
 function buildTicker() {
   const items = allEvents.slice(0, 16).map(ev => {
     const vol = ev.volume24hr || 0;
     const cls = vol > 5e6 ? 'color:var(--accent)' : 'color:var(--teal)';
-    const lbl = vol > 5e6 ? 'ð¥' : 'â';
-    return '<span class="tk"><span class="tk-name">' + (ev.title || '').slice(0, 52) + (ev.title && ev.title.length > 52 ? 'â¦' : '') + '</span><span style="' + cls + '">' + lbl + '</span></span>';
+    const lbl = vol > 5e6 ? '🔥' : '●';
+    return '<span class="tk"><span class="tk-name">' + (ev.title || '').slice(0, 52) + (ev.title && ev.title.length > 52 ? '…' : '') + '</span><span style="' + cls + '">' + lbl + '</span></span>';
   });
   const t = document.getElementById('tickerTrack');
   t.innerHTML = items.concat(items).join('');
 }
 
-// âââ UTILS âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+// ─── UTILS ─────────────────────────────────────────────────────────────────
 function fmtVol(n) { return n >= 1e6 ? (n/1e6).toFixed(1)+'M' : n >= 1e3 ? Math.round(n/1e3)+'K' : String(n); }
 function getTagCat(tags) { return (tags && tags[0]) ? (tags[0].label || tags[0].slug || '') : ''; }
 
-// âââ REFRESH TIMER âââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+// ─── REFRESH TIMER ─────────────────────────────────────────────────────────
 setInterval(() => { if (--countdown <= 0) { fetchEvents(); countdown = 60; } }, 1000);
 
-// âââ INIT ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+// ─── INIT ──────────────────────────────────────────────────────────────────
 fetchEvents();
 </script>
 
@@ -1425,7 +1425,7 @@ fetchEvents();
 <section class="mi-section hub-glow">
   <div class="mi-header">
     <span class="mi-section-title">TODAY'S INTELLIGENCE</span>
-    <span class="mi-badge">AI-Scored Â· Live</span>
+    <span class="mi-badge">AI-Scored · Live</span>
     <span class="rdot" id="mi-rdot"></span>
     <span class="mi-ts" id="mi-ts"></span>
   </div>
@@ -1435,25 +1435,25 @@ fetchEvents();
     <div class="mi-panel">
       <div class="mi-panel-head">TOP OPPORTUNITIES</div>
       <div class="mi-panel-sub">Highest-volume markets ranked by conviction strength. Color-coded by sector for instant pattern recognition.</div>
-      <div class="flip-board" id="mi-opps"><div style="color:var(--dim);font-size:10px;padding:8px 0">Loadingâ¦</div></div>
+      <div class="flip-board" id="mi-opps"><div style="color:var(--dim);font-size:10px;padding:8px 0">Loading…</div></div>
     </div>
     <div class="mi-panel">
       <div class="mi-panel-head">NARRATIVE SHIFTS</div>
-      <div class="mi-panel-sub">Fast-moving markets showing momentum divergence. Tracks velocity of probability changes â where the story is changing.</div>
-      <div id="mi-narr"><div style="color:var(--dim);font-size:10px;padding:8px 0">Loadingâ¦</div></div>
+      <div class="mi-panel-sub">Fast-moving markets showing momentum divergence. Tracks velocity of probability changes — where the story is changing.</div>
+      <div id="mi-narr"><div style="color:var(--dim);font-size:10px;padding:8px 0">Loading…</div></div>
     </div>
     <div class="mi-panel">
       <div class="mi-panel-head">CROSS-MARKET SIGNALS</div>
       <div class="mi-panel-sub">Markets showing unusual conviction across unrelated sectors. Macro patterns surfacing in micro signals.</div>
-      <div class="flip-board" id="mi-cross"><div style="color:var(--dim);font-size:10px;padding:8px 0">Loadingâ¦</div></div>
+      <div class="flip-board" id="mi-cross"><div style="color:var(--dim);font-size:10px;padding:8px 0">Loading…</div></div>
     </div>
   </div>
   <div class="sf-panel" style="margin-bottom:12px">
     <div class="sf-head" onclick="var b=this.nextElementSibling;b.classList.toggle('open')">
       SIGNAL FORENSICS <span class="mi-badge" id="sf-badge">0 signals</span>
-      <span style="margin-left:auto;color:var(--dim);font-size:9px">Click to expand âº</span>
+      <span style="margin-left:auto;color:var(--dim);font-size:9px">Click to expand ›</span>
     </div>
-    <div class="sf-body" id="sf-body"><div style="color:var(--dim);font-size:10px;padding:8px">Loadingâ¦</div></div>
+    <div class="sf-body" id="sf-body"><div style="color:var(--dim);font-size:10px;padding:8px">Loading…</div></div>
   </div>
   <div>
     <div class="mi-header" style="margin-top:8px">
@@ -1461,8 +1461,8 @@ fetchEvents();
       <span class="mi-badge" id="div-badge">0 markets</span>
       <span class="rdot" id="div-rdot"></span>
     </div>
-    <div class="mi-sub-label">Where prediction markets price outlier outcomes. Divergence Score D = |P â 0.5| Ã âVolume. High D = high-conviction minority view. Low D = uncertain consensus. The gap is where alpha hides.</div>
-    <div id="mi-divtable"><div style="color:var(--dim);font-size:10px;padding:8px 0">Loadingâ¦</div></div>
+    <div class="mi-sub-label">Where prediction markets price outlier outcomes. Divergence Score D = |P − 0.5| × √Volume. High D = high-conviction minority view. Low D = uncertain consensus. The gap is where alpha hides.</div>
+    <div id="mi-divtable"><div style="color:var(--dim);font-size:10px;padding:8px 0">Loading…</div></div>
   </div>
 </section>
 <script>
@@ -1497,8 +1497,8 @@ var __STOP=new Set('will the and for in to be is are was were has have had not t
 function extractKW(q){return q.toLowerCase().replace(/[^a-z0-9\s]/g,' ').split(/\s+/).filter(function(w){return w.length>2&&!__STOP.has(w);}).slice(0,7);}
 function topFilt(mkts){if(!__topActive||!__topKW.length)return mkts;var f=mkts.filter(function(m){var q=(m.question||'').toLowerCase();return __topKW.some(function(k){return q.indexOf(k)>=0;});});if(f.length<2)f=mkts.filter(function(m){return getCategory(m.question||'')==__topCat;});return f.length>=2?f:mkts;}
 function djb2(s){var h=5381;for(var i=0;i<s.length;i++)h=((h<<5)+h)^s.charCodeAt(i);return Math.abs(h);}
-function genInsight(m){var p=getP(m),vol=parseFloat(m.volume||0),pct=Math.round(p*100),dv=Math.abs(p-0.5),h=djb2(m.question||'');var T;if(p>=0.90)T=['Crowd priced in at '+pct+'% YES. Market has largely resolved this question.','Near-unanimous at '+pct+'%. The '+volFmt(vol)+' in volume reflects high confidence.','Dominant consensus at '+pct+'%. Only a major catalyst could reverse this pricing.'];else if(p<=0.10)T=['Near-zero probability at '+pct+'% YES. Crowd has effectively ruled this out.',pct+'% YES â market treats this as resolved. '+(100-pct)+'% backing the NO scenario.','Strong NO at '+(100-pct)+'%. Requires extraordinary development to shift.'];else if(p>=0.72)T=[pct+'% YES with '+volFmt(vol)+' behind it. Conviction building toward resolution.','Solid YES lean at '+pct+'%. Market pricing favorable odds with room to extend.','Growing YES consensus at '+pct+'%. Watch for a catalyst to push into certainty territory.'];else if(p<=0.28)T=[pct+'% YES â crowd pricing against this outcome. '+(100-pct)+'% NO lean growing.','Bearish read at '+pct+'% YES. '+volFmt(vol)+' positioned against the YES scenario.','Persistent NO tilt at '+(100-pct)+'%. Market trending toward rejection of this outcome.'];else if(dv<0.07)T=['Near-perfect deadlock at '+pct+'%. Any new signal will move this fast.','50/50 split at '+pct+'% YES. High-information event with binary resolution pending.','Maximum uncertainty at '+pct+'% YES â this market is waiting for a catalyst.'];else T=['Moderate '+(p>0.5?'YES':'NO')+' lean at '+pct+'%. Directional signal building but not decisive.',pct+'% YES on '+volFmt(vol)+' volume. Market positioning ahead of resolution.','Active conviction at '+pct+'%. '+(p>0.5?'YES side growing.':'NO side gaining ground.')+' Watch for acceleration.'];return T[h%T.length];}
-function setTopicFocus(q,cat){__topKW=extractKW(q);__topCat=cat||getCategory(q);__topLabel=(q||'').substring(0,50)+((q||'').length>50?'â¦':'');__topActive=true;updateTopicBar();reloadAllPanels();}
+function genInsight(m){var p=getP(m),vol=parseFloat(m.volume||0),pct=Math.round(p*100),dv=Math.abs(p-0.5),h=djb2(m.question||'');var T;if(p>=0.90)T=['Crowd priced in at '+pct+'% YES. Market has largely resolved this question.','Near-unanimous at '+pct+'%. The '+volFmt(vol)+' in volume reflects high confidence.','Dominant consensus at '+pct+'%. Only a major catalyst could reverse this pricing.'];else if(p<=0.10)T=['Near-zero probability at '+pct+'% YES. Crowd has effectively ruled this out.',pct+'% YES — market treats this as resolved. '+(100-pct)+'% backing the NO scenario.','Strong NO at '+(100-pct)+'%. Requires extraordinary development to shift.'];else if(p>=0.72)T=[pct+'% YES with '+volFmt(vol)+' behind it. Conviction building toward resolution.','Solid YES lean at '+pct+'%. Market pricing favorable odds with room to extend.','Growing YES consensus at '+pct+'%. Watch for a catalyst to push into certainty territory.'];else if(p<=0.28)T=[pct+'% YES — crowd pricing against this outcome. '+(100-pct)+'% NO lean growing.','Bearish read at '+pct+'% YES. '+volFmt(vol)+' positioned against the YES scenario.','Persistent NO tilt at '+(100-pct)+'%. Market trending toward rejection of this outcome.'];else if(dv<0.07)T=['Near-perfect deadlock at '+pct+'%. Any new signal will move this fast.','50/50 split at '+pct+'% YES. High-information event with binary resolution pending.','Maximum uncertainty at '+pct+'% YES — this market is waiting for a catalyst.'];else T=['Moderate '+(p>0.5?'YES':'NO')+' lean at '+pct+'%. Directional signal building but not decisive.',pct+'% YES on '+volFmt(vol)+' volume. Market positioning ahead of resolution.','Active conviction at '+pct+'%. '+(p>0.5?'YES side growing.':'NO side gaining ground.')+' Watch for acceleration.'];return T[h%T.length];}
+function setTopicFocus(q,cat){__topKW=extractKW(q);__topCat=cat||getCategory(q);__topLabel=(q||'').substring(0,50)+((q||'').length>50?'…':'');__topActive=true;updateTopicBar();reloadAllPanels();}
 function clearTopicFocus(){__topActive=false;__topKW=[];__topLabel='';updateTopicBar();reloadAllPanels();}
 function reloadAllPanels(){loadOpps();loadNarr();loadCross();loadDiv();}
 function updateTopicBar(){var bar=document.getElementById('topic-bar');if(!bar)return;if(__topActive){bar.style.display='flex';var lbl=bar.querySelector('.tb-label');if(lbl)lbl.textContent='FOCUS: '+__topLabel;}else{bar.style.display='none';}}
@@ -1512,7 +1512,7 @@ function renderOpps(markets){
     var title=(m.question||"").substring(0,55);
     html+='<div class="flip-row '+catBgClass(cat)+'" style="animation-delay:'+(i*80)+'ms;padding-left:6px">'
       +'<span class="'+catClass(cat)+'" style="font-family:var(--mono);font-size:8px;min-width:52px;font-weight:700">'+CAT_LABEL[cat]+'</span>'
-      +'<span style="flex:1;font-size:9.5px;line-height:1.3">'+title+(title.length<(m.question||"").length?"â¦":"")+'</span>'
+      +'<span style="flex:1;font-size:9.5px;line-height:1.3">'+title+(title.length<(m.question||"").length?"…":"")+'</span>'
       +probChip(p)
       +'<span style="font-family:var(--mono);font-size:8px;color:var(--dim);min-width:36px;text-align:right">'+volFmt(vol)+'</span>'
       +'<div class="ai-insight">'+genInsight(m)+'</div>'
@@ -1525,11 +1525,11 @@ function renderOpps(markets){
 }
 var NARR_ACTIONS={high_rising:"SURGING",high_stable:"LOCKED IN",high_falling:"FADING",low_rising:"REVERSING",low_stable:"DORMANT",low_falling:"COLLAPSING",mid:"CONTESTED"};
 function narrAction(p,prev){
-  if(p>0.7)return{label:"SURGING",bg:"rgba(34,197,94,.12)",c:"#22c55e",arrow:"â"};
-  if(p>0.55)return{label:"TRENDING",bg:"rgba(34,197,94,.07)",c:"#4ade80",arrow:"â"};
-  if(p<0.3)return{label:"COLLAPSING",bg:"rgba(239,68,68,.12)",c:"#ef4444",arrow:"â"};
-  if(p<0.45)return{label:"FADING",bg:"rgba(239,68,68,.07)",c:"#f87171",arrow:"â"};
-  return{label:"CONTESTED",bg:"rgba(107,122,153,.1)",c:"var(--dim)",arrow:"â"};
+  if(p>0.7)return{label:"SURGING",bg:"rgba(34,197,94,.12)",c:"#22c55e",arrow:"↑"};
+  if(p>0.55)return{label:"TRENDING",bg:"rgba(34,197,94,.07)",c:"#4ade80",arrow:"↗"};
+  if(p<0.3)return{label:"COLLAPSING",bg:"rgba(239,68,68,.12)",c:"#ef4444",arrow:"↓"};
+  if(p<0.45)return{label:"FADING",bg:"rgba(239,68,68,.07)",c:"#f87171",arrow:"↘"};
+  return{label:"CONTESTED",bg:"rgba(107,122,153,.1)",c:"var(--dim)",arrow:"↔"};
 }
 function renderNarr(markets){
   var el=document.getElementById("mi-narr");if(!el)return;
@@ -1541,7 +1541,7 @@ function renderNarr(markets){
     html+='<div class="narr-row" style="animation-delay:'+(i*90)+'ms">'
       +'<span class="narr-arrow" style="color:'+act.c+'">'+act.arrow+'</span>'
       +'<span class="narr-action" style="background:'+act.bg+';color:'+act.c+';border-color:'+act.c+'40">'+act.label+'</span>'
-      +'<span class="narr-title">'+title+(title.length<(m.question||"").length?"â¦":"")+'</span>'
+      +'<span class="narr-title">'+title+(title.length<(m.question||"").length?"…":"")+'</span>'
       +'<span class="'+catClass(cat)+'" style="font-family:var(--mono);font-size:8px;font-weight:700">'+CAT_LABEL[cat]+'</span>'
       +'<div class="ai-insight">'+genInsight(m)+'</div>'
       +'</div>';
@@ -1564,7 +1564,7 @@ function renderCross(markets){
     var scoreColor=item.score>3?"#22c55e":item.score>1.5?"#ffd700":"var(--dim)";
     html+='<div class="signal-row" style="animation-delay:'+(i*75)+'ms">'
       +'<span class="signal-score" style="color:'+scoreColor+'">'+scoreStr+'</span>'
-      +'<span class="signal-title">'+title+(title.length<(m.question||"").length?"â¦":"")+'</span>'
+      +'<span class="signal-title">'+title+(title.length<(m.question||"").length?"…":"")+'</span>'
       +'<span class="signal-badge '+catBgClass(cat)+' '+catClass(cat)+'" style="font-size:8px">'+CAT_LABEL[cat]+'</span>'
       +probChip(p)
       +'</div>';
@@ -1584,7 +1584,7 @@ function renderForensics(markets){
     var title=(m.question||"").substring(0,70);
     html+='<div class="sf-row">'
       +'<span class="'+catClass(cat)+'" style="font-family:var(--mono);font-size:8px;font-weight:700;min-width:52px">'+CAT_LABEL[cat]+'</span>'
-      +'<span style="flex:1;font-size:9px;line-height:1.4">'+title+(title.length<(m.question||"").length?"â¦":"")+'</span>'
+      +'<span style="flex:1;font-size:9px;line-height:1.4">'+title+(title.length<(m.question||"").length?"…":"")+'</span>'
       +probChip(p)
       +'<span style="font-family:var(--mono);font-size:8px;color:'+sc+';min-width:28px;text-align:right">'+signal+'</span>'
       +'<span style="font-family:var(--mono);font-size:8px;color:var(--dim);min-width:36px;text-align:right">'+volFmt(vol)+'</span>'
@@ -1606,13 +1606,13 @@ function renderDiv(markets){
     var fillColor=p>0.65?"#22c55e":p>0.55?"#4ade80":p<0.35?"#ef4444":p<0.45?"#f87171":"#a0aec0";
     var title=(m.question||"").substring(0,65);
     html+='<div class="div-bar-wrap">'
-      +'<div class="div-bar-title"><span class="'+catClass(cat)+'" style="font-family:var(--mono);font-size:8px;font-weight:700;margin-right:6px">'+CAT_LABEL[cat]+'</span>'+title+(title.length<(m.question||"").length?"â¦":"")+'</div>'
+      +'<div class="div-bar-title"><span class="'+catClass(cat)+'" style="font-family:var(--mono);font-size:8px;font-weight:700;margin-right:6px">'+CAT_LABEL[cat]+'</span>'+title+(title.length<(m.question||"").length?"…":"")+'</div>'
       +'<div class="div-bar-labels"><span>NO 0%</span><span style="color:var(--bright)">'+pct+'% YES</span><span>YES 100%</span></div>'
       +'<div class="div-bar-track">'
         +'<div class="div-bar-fill" style="width:'+pct+'%;background:'+fillColor+'"></div>'
         +'<div class="div-bar-center"></div>'
       +'</div>'
-      +'<div class="div-score-row"><span>D = |'+pct+'% â 50%| Ã â'+volFmt(vol).replace("$","")+'</span><span style="color:'+fillColor+'">D-SCORE: '+dScore+'</span></div>'
+      +'<div class="div-score-row"><span>D = |'+pct+'% − 50%| × √'+volFmt(vol).replace("$","")+'</span><span style="color:'+fillColor+'">D-SCORE: '+dScore+'</span></div>'
       +'<div class="ai-insight">'+genInsight(m)+'</div>'
       +'</div>';
   });
