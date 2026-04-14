@@ -2091,7 +2091,7 @@ window.runDeepDive=async function(market){
     var histData=results[2];
 
     var briefEl=document.getElementById('newsBrief');
-    if(briefEl) briefEl.innerHTML=generateBrief(market, articles, wikiMain);
+    if(briefEl) briefEl.innerHTML+=generateBrief(market, articles, wikiMain);
 
     var gridEl=document.getElementById('newsGrid');
     if(gridEl) gridEl.innerHTML=renderGrid(articles);
@@ -2108,7 +2108,7 @@ window.runDeepDive=async function(market){
   }catch(err){
     var msg='<div class="dd-err">⚠ Signal fetch error: '+err.message+'</div>';
     var briefEl=document.getElementById('newsBrief');
-    if(briefEl) briefEl.innerHTML=msg;
+    if(briefEl) briefEl.innerHTML+=msg;
     console.error('[INFERA] runDeepDive error:', err);
   }
 };
