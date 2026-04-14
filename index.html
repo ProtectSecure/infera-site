@@ -1132,7 +1132,7 @@ function renderContextualPerspective(data, mkts, analogs) {
 
 }
 async function fetchHistoricalSources(topic, desc) {
-  const shortQ = topic.split(' ').slice(0, 5).join(' ');
+  const _sw=new Set('will is are can could should do does did would a an the of in on at to for by with from and or but not be reach become happen occur there its whether'.split(' '));const shortQ=(topic.replace(/[?!.,"]/g,'').split(/\s+/).filter(function(w){return w.length>1&&!_sw.has(w.toLowerCase());}).slice(0,5).join(' '))||topic.split(' ').slice(0,5).join(' ');
   const [ctxRes, wikiRes, locRes, archRes, newsRes] = await Promise.allSettled([
     fetch('https://infera-api.onrender.com/context?q=' + encodeURIComponent(shortQ)).then(r => r.json()),
     fetchWikipedia(shortQ),
