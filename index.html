@@ -1133,7 +1133,8 @@ function renderContextualPerspective(data, mkts, analogs) {
 }
 async function fetchHistoricalSources(topic, desc) {
   const shortQ = topic.split(' ').slice(0, 5).join(' ');
-  const [wikiRes, locRes, archRes, newsRes] = await Promise.allSettled([
+  const [ctxRes, wikiRes, locRes, archRes, newsRes] = await Promise.allSettled([
+    fetch('https://infera-api.onrender.com/context?q=' + encodeURIComponent(shortQ)).then(r => r.json()),
     fetchWikipedia(shortQ),
     fetchLocNewspapers(shortQ),
     fetchInternetArchive(shortQ),
@@ -1145,16 +1146,28 @@ async function fetchHistoricalSources(topic, desc) {
     ...(archRes.status === 'fulfilled' ? archRes.value : []),
     ...(newsRes.status === 'fulfilled' ? newsRes.value : [])
   ];
-  const nl = String.fromCharCode(10);
-  const sourceCtx = sources.slice(0, 6).map((s, i) =>
-    '[' + (i + 1) + '] ' + s.source + ': "' + s.title + '"' + (s.date ? ' (' + s.date + ')' : '') + ' -- ' + s.excerpt.slice(0, 180)
-  ).join(nl);
-  const prompt = 'You are a senior historian and news analyst. Topic: "' + topic + '".' + (desc ? ' Context: ' + desc.slice(0, 200) + '.' : '') + ' Sources: ' + (sourceCtx || 'No external sources.') + ' Return ONLY valid JSON: {"deck":"One sentence core historical lesson","histIntro":"2-3 sentences on historical parallels and what resulted","outcomes":[{"icon":"📅","label":"Historical Parallel","text":"specific event"},{"icon":"📊","label":"Key Outcome","text":"what resulted"},{"icon":"💡","label":"Lesson","text":"what this tells us"}],"similarity":75}';
   let aiData = null;
   try {
-    const res  = await callClaude(prompt, 1200);
-    const text = (res.content && res.content.find(b => b.type === 'text') && res.content.find(b => b.type === 'text').text) || '';
-    aiData = JSON.parse(text.replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim());
+    if (ctxRes.status === 'fulfilled' && ctxRes.value && ctxRes.value.analogs) {
+      const ctx     = ctxRes.value;
+      const analogs = ctx.analogs || [];
+      const mq      = ctx.match_quality || {};
+      aiData = {
+        deck: mq.explanation || (analogs.length ? 'Found ' + analogs.length + ' historical parallel(s) — ' + (mq.label || 'moderate') + ' match quality.' : 'No strong historical parallels found.'),
+        histIntro: analogs.length
+          ? analogs.slice(0, 2).map(function(a) { return a.title + ' (' + a.date + '): ' + (a.what_followed || a.description || '').slice(0, 200); }).join(' ')
+          : (mq.explanation || 'No close historical parallels found for this topic.'),
+        outcomes: analogs.map(function(a) { return {
+          icon: '📅',
+          label: a.title + (a.date ? ' (' + a.date + ')' : ''),
+          text: (a.what_followed || a.description || '').slice(0, 300)
+        }; }),
+        similarity: mq.score ? Math.round(mq.score * 100) : 0
+      };
+      analogs.forEach(function(a) {
+        sources.push({ source: a.source || 'Wikipedia', sourceIcon: '📖', title: a.title, excerpt: (a.what_followed || a.description || '').slice(0, 300), url: a.source_url || '', date: a.date || null });
+      });
+    }
   } catch(e) {}
   return { aiData, sources };
 }
