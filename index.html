@@ -558,7 +558,7 @@ const GNEWS_KEY    = 'd29514c6f8b30d985172a4ac9625f598';    // https://gnews.io 
 const GUARDIAN_KEY = 'f1ce8a12-55ea-4d2e-86fb-505fba83540f'; // https://open-platform.theguardian.com — free
 const NEWSAPI_KEY  = 'fb9e64dffc1a4f3d926132e43bdada7e';      // https://newsapi.org — free 100/day
 const YOUTUBE_KEY  = 'YOUR_YOUTUBE_API_KEY';  // https://console.cloud.google.com — free 10k/day
-const ANTHROPIC_KEY = 'sk-ant-api03-rgGLemdZEt6FvVxioyyfkpcAkmvqm8PgD5EY06Ij8GXbfklEG7ulZJFM_dsYXGzYRCIYI0v1KT9ZqhxzhiXqOQ-EWGKyAAA';
+const ANTHROPIC_KEY = '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';
 // Reddit    — public JSON API, no key required — auto-fetched
 // Archive.ph — no key required — auto-linked on every article card
 
@@ -1016,11 +1016,11 @@ async function fetchInternetArchive(query) {
 }
 
 async function fetchNewsAPIHist(query) {
-  if (NEWSAPI_KEY === 'YOUR_NEWSAPI_KEY') return [];
+  if (!GNEWS_KEY) return [];
   try {
     const enc = encodeURIComponent(query);
-    const apiUrl = 'https://newsapi.org/v2/everything?q=' + enc + '&sortBy=relevancy&pageSize=6&apiKey=' + NEWSAPI_KEY;
-    const r = await fetch(PROXY + encodeURIComponent(apiUrl));
+    const apiUrl = 'https://gnews.io/api/v4/search?q=' + enc + '&lang=en&max=5&apikey=' + GNEWS_KEY;
+    const r = await fetch(apiUrl);
     const d = await r.json();
     return (d.articles || []).slice(0, 5).map(a => ({
       source: (a.source && a.source.name) || 'News', sourceIcon: '📰',
@@ -1028,7 +1028,7 @@ async function fetchNewsAPIHist(query) {
       excerpt: a.description || (a.content && a.content.slice(0, 280)) || '',
       url: a.url || '',
       date: a.publishedAt ? a.publishedAt.slice(0, 10) : null,
-      thumbnail: a.urlToImage || null
+      thumbnail: a.image || null
     }));
   } catch(e) { return []; }
 }
