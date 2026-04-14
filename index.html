@@ -527,6 +527,7 @@ const GNEWS_KEY    = 'd29514c6f8b30d985172a4ac9625f598';    // https://gnews.io 
 const GUARDIAN_KEY = 'f1ce8a12-55ea-4d2e-86fb-505fba83540f'; // https://open-platform.theguardian.com — free
 const NEWSAPI_KEY  = 'fb9e64dffc1a4f3d926132e43bdada7e';      // https://newsapi.org — free 100/day
 const YOUTUBE_KEY  = 'YOUR_YOUTUBE_API_KEY';  // https://console.cloud.google.com — free 10k/day
+const ANTHROPIC_KEY = 'YOUR_ANTHROPIC_KEY_HERE';
 // Reddit    — public JSON API, no key required — auto-fetched
 // Archive.ph — no key required — auto-linked on every article card
 
@@ -890,18 +891,28 @@ async function fetchAI(topic, desc) {
 
 // ─── CLAUDE API HELPER ─────────────────────────────────────────────────────
 async function callClaude(prompt, maxTokens) {
-  const res = await fetch('https://infera-api.onrender.com/ai', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'X-Infera-Token': 'y(H2qcJN6YDxwRIAb6_8qDQX8legTKYTDgwR8FNxHb4'
-    },
-    body: JSON.stringify({ prompt: prompt, max_tokens: maxTokens })
-  });
-  return res.json();
+  try {
+    const r = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'x-api-key': ANTHROPIC_KEY,
+        'anthropic-version': '2023-06-01',
+        'content-type': 'application/json',
+        'anthropic-dangerous-direct-browser-access': 'true'
+      },
+      body: JSON.stringify({
+        model: 'claude-haiku-4-5-20251001',
+        max_tokens: maxTokens,
+        messages: [{ role: 'user', content: prompt }]
+      })
+    });
+    const data = await r.json();
+    return data.content?.[0]?.text || null;
+  } catch(e) {
+    console.error('callClaude error:', e);
+    return null;
+  }
 }
-
-// ─── HISTORICAL SOURCES ──────────────────────────────────────────────────────
 async function fetchWikipedia(query) {
   try {
     const enc = encodeURIComponent(query);
