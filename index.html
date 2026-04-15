@@ -251,11 +251,11 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:14
 .sim-tag.low{background:rgba(61,139,255,.1);color:var(--blue);border:1px solid rgba(61,139,255,.2)}
 
 .outcome-block{background:var(--s2);border:1px solid var(--b2);border-radius:4px;overflow:hidden}
-.hist-synthesis{font-size:15px;line-height:1.7;color:var(--text);margin-bottom:1.2rem;padding:.9rem 1.1rem;border-left:3px solid var(--gold);background:var(--b2);border-radius:0 6px 6px 0}
+.hist-synthesis{font-size:15px;line-height:1.7;color:var(--text);font-family:var(--sans);margin-bottom:1.2rem;padding:.9rem 1.1rem;border-left:3px solid var(--gold);background:var(--b2);border-radius:0 6px 6px 0}
 .hist-outcomes{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:.8rem;margin-bottom:1.4rem}
 .outcome-card{background:var(--b2);border:1px solid rgba(255,255,255,.07);border-radius:8px;padding:.9rem 1rem;display:flex;flex-direction:column;gap:.35rem}
 .oc-icon{font-size:1.3rem;line-height:1}
-.oc-label{font-size:.68rem;text-transform:uppercase;letter-spacing:.1em;color:var(--gold);font-family:var(--mono)}
+.oc-label{font-size:.68rem;text-transform:uppercase;letter-spacing:.1em;color:var(--gold);font-family:var(--sans)}
 .oc-text{font-size:13px;color:var(--text);line-height:1.5;margin:0}
 .hist-src-title{font-size:.68rem;text-transform:uppercase;letter-spacing:.12em;color:var(--gold);font-family:var(--mono);margin:1.3rem 0 .65rem}
 .hist-sources{display:flex;flex-direction:column;gap:3px;margin-top:4px}
@@ -776,11 +776,28 @@ async function runDeepDive(ev) {
 
 // ─── BUILD INVESTIGATIVE BRIEF ─────────────────────────────────────────────
 async function buildBrief(topic, desc) {
-  const prompt = 'You are an investigative editor at a major international news desk.\n\nA topic is drawing global attention: "' + topic + '"\n' + (desc ? 'Context: ' + desc + '\n' : '') + '\nGenerate a structured search brief to fetch the most targeted, relevant news articles — not random headlines, but pieces that directly bear on the specific outcome.\n\nReturn ONLY valid JSON, no markdown:\n\n{"coreQuestion":"The single most important journalistic question this topic raises","investigativeAngles":[{"question":"Specific investigative question","why":"Why this angle matters to the outcome","keywords":["keyword1","keyword2","keyword3"],"guardianSection":"politics","timeWindow":"30d"},{"question":"...","why":"...","keywords":["..."],"guardianSection":"world","timeWindow":"7d"},{"question":"...","why":"...","keywords":["..."],"guardianSection":"business","timeWindow":"30d"},{"question":"...","why":"...","keywords":["..."],"guardianSection":"us-news","timeWindow":"90d"}],"mustInclude":["critical term 1","critical term 2"],"relevanceTest":"One sentence: what makes an article directly relevant to this specific outcome"}\n\nRules: 4 distinct angles (policy, reaction, background, stakeholder). Keywords must be precise. guardianSection must be one of: politics|world|business|technology|us-news|environment|science|society|sport|culture. timeWindow: 7d|30d|90d.';
-
-  const res  = await callClaude(prompt, 4000);
-  const text = res.content?.find(b => b.type === 'text')?.text || '';
-  return JSON.parse(text.replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim());
+  const _sw=new Set('will is are can could should do does did would a an the of in on at to for by with from and or but not be reach become happen occur there its whether has have had been being get got'.split(' '));
+  const words=topic.replace(/[?!.,"']/g,'').split(/\s+/).filter(function(w){return w.length>1&&!_sw.has(w.toLowerCase());});
+  const kw=words.slice(0,6);
+  const q=kw.slice(0,4).join(' ');
+  try {
+    const r=await fetch('https://infera-api.onrender.com/brief?q='+encodeURIComponent(q)+'&topic='+encodeURIComponent(topic.slice(0,120)));
+    if(r.ok){const d=await r.json();if(d&&d.coreQuestion)return d;}
+  } catch(e){}
+  const k0=kw[0]||topic.split(' ')[0];
+  const pair=kw.slice(0,2).join(' ');
+  const trio=kw.slice(0,3).join(' ');
+  return {
+    coreQuestion: topic.replace(/\?+$/,'').trim()+'?',
+    investigativeAngles: [
+      {question:'What is the latest verified development directly bearing on '+pair+'?',why:'The most recent confirmed events are the strongest leading indicator of near-term resolution',keywords:[trio,k0+' 2026',k0+' latest'],guardianSection:'world',timeWindow:'7d'},
+      {question:'Which institutions or decision-makers hold direct authority over '+pair+'?',why:'Formal action requires specific actors — identifying who holds leverage reveals how close resolution is',keywords:[pair+' policy',k0+' government',pair+' agreement'],guardianSection:'politics',timeWindow:'30d'},
+      {question:'What economic or market signals reflect the probability of '+pair+'?',why:'Markets price in forward-looking probability — significant moves indicate informed expectation shifts',keywords:[pair+' market',k0+' economy',pair+' forecast'],guardianSection:'business',timeWindow:'30d'},
+      {question:'What historical precedents most closely predict how '+pair+' resolves?',why:'Base rates from comparable past events provide the most reliable prior for outcome probability',keywords:[pair+' history',k0+' precedent',pair+' past'],guardianSection:'world',timeWindow:'90d'}
+    ],
+    mustInclude:kw.slice(0,2),
+    relevanceTest:'Does this article directly address the specific outcome or probability of: '+topic
+  };
 }
 
 // ─── FETCH ARTICLES PER ANGLE ──────────────────────────────────────────────
@@ -1050,11 +1067,24 @@ async function fetchAnalogs(topic) {
 }
 
 async function fetchContextualPerspective(topic, desc) {
-  const prompt = 'You are an expert analyst synthesizing geopolitics, economics, technology, and culture. Topic: "' + topic + '".' + (desc ? ' Context: ' + desc.slice(0,200) + '.' : '') + ' Return ONLY valid JSON (no markdown): {"overview":"2-3 sentences on the current situation, significance, and key forces at play","branches":[{"icon":"emoji","path":"one-word trajectory e.g. Escalation","title":"evocative headline max 9 words","detail":"1-2 sentences how this path plays out"},{"icon":"emoji","path":"label","title":"headline","detail":"detail"},{"icon":"emoji","path":"label","title":"headline","detail":"detail"}]}';
+  const _sw=new Set('will is are can could should do does did would a an the of in on at to for by with from and or but not be'.split(' '));
+  const kw=topic.replace(/[?!.,"']/g,'').split(/\s+/).filter(function(w){return w.length>1&&!_sw.has(w.toLowerCase());}).slice(0,4).join(' ');
   try {
-    const res = await callClaude(prompt, 600);
-    const text = (res.content && res.content.find(b => b.type === 'text') && res.content.find(b => b.type === 'text').text) || '';
-    return JSON.parse(text.split('```json').join('').split('```').join('').trim());
+    const r=await fetch('https://infera-api.onrender.com/context?q='+encodeURIComponent(kw));
+    if(!r.ok)return null;
+    const ctx=await r.json();
+    const analogs=ctx.analogs||[];
+    if(!analogs.length)return null;
+    const toplines=analogs.map(function(a){
+      const pts=[];
+      if(a.what_followed)pts.push(a.what_followed.slice(0,180));
+      else if(a.description)pts.push(a.description.slice(0,180));
+      return{headline:a.title+(a.date?' ('+a.date+')':''),source:a.source||'Wikipedia',url:a.source_url||'',points:pts};
+    });
+    if(ctx.match_quality&&ctx.match_quality.explanation){
+      toplines.unshift({headline:'Intelligence Assessment',source:'INFERA AI',url:'',points:[ctx.match_quality.explanation],isAssessment:true});
+    }
+    return{toplines:toplines};
   } catch(e) { return null; }
 }
 
@@ -1090,46 +1120,26 @@ function startEvolutionPolling(scenarioTree, query, el) {
 }
 
 function renderContextualPerspective(data, mkts, analogs) {
-  const el = document.getElementById('context-body');
+  var el = document.getElementById('context-body');
   if (!el) return;
   if (!data) { el.innerHTML = '<p style="color:var(--dim);font-size:13px;padding:12px 0">Analysis unavailable.</p>'; return; }
-  const bHtml = (data.branches||[]).slice(0,3).map(b => '<div class="branch-card"><div class="branch-icon">' + (b.icon||'') + '</div><div class="branch-path">' + (b.path||'Path') + '</div><div class="branch-title">' + (b.title||'') + '</div><div class="branch-detail">' + (b.detail||'') + '</div></div>').join('');
-  const mHtml = (mkts&&mkts.length) ? '<div class="mkt-signals">' + mkts.slice(0,4).map(m => '<div class="mkt-row"><span class="mkt-q">' + m.question + '</span><div class="mkt-bar-wrap"><div class="mkt-bar" style="width:' + Math.round(m.probability*100) + '%"></div></div><span class="mkt-pct">' + Math.round(m.probability*100) + '%</span><span class="mkt-src">' + m.source + '</span></div>').join('') + '</div>' : '';
-  const CC = {recession:'#ff6b6b',recovery:'#51cf66',escalation:'#ff9f43',policy:'#6b7cff',conflict:'#e84393'};
-  let aHtml = '', sigHtml = '';
-  if (analogs && analogs.analogs && analogs.analogs.length) {
-    sigHtml = (analogs.confidence!=null?'<div class="confidence-row"><span class="confidence-label">Pattern confidence</span><div class="confidence-bar-wrap"><div class="confidence-bar" style="width:'+Math.round(analogs.confidence*100)+'%"></div></div><span class="confidence-label">'+Math.round(analogs.confidence*100)+'%</span></div><p class="conf-desc">Cluster match strength — how closely this event’s keyword signature aligns with historical pattern databases across signal dimensions.</p>':'')
-    +(analogs.signal_vector?(()=>{const sv=analogs.signal_vector;const dims=[['geo','GEO',sv.geo||0],['market','MKT',sv.market||0],['macro','MACRO',sv.macro||0],['policy','POL',sv.policy||0]];const active=dims.filter(d=>d[2]>0.05).sort((a,b)=>b[2]-a[2]);return active.length?'<div class="sig-profile">'+active.map(d=>'<span class="sig-badge '+d[0]+'">'+d[1]+' '+Math.round(d[2]*100)+'%</span>').join('')+'</div>':'';})():'')
-    aHtml = '<div class="analog-section"><div class="analog-cards">' + analogs.analogs.map(a => '<div class="analog-card"><span class="analog-name">' + a.name + '</span><span class="analog-year">' + a.year + '</span><div class="analog-outcome">' + a.outcome + '</div><div class="analog-sim-wrap"><div class="analog-sim-bar"><div class="analog-sim-fill" style="width:' + Math.round(a.similarity*100) + '%"></div></div><span class="analog-sim-pct">' + Math.round(a.similarity*100) + '%</span>'+(a.differs&&a.differs.length?'<div class="differs-label">Differs: '+a.differs.join(', ')+'</div>':'')+'</div></div>').join('') + '</div></div>';
+  if (data.toplines && data.toplines.length) {
+    var mHtml = (mkts && mkts.length) ? '<div class="mkt-signals" style="margin-bottom:16px">' + mkts.slice(0,3).map(function(m){return '<div class="mkt-row"><span class="mkt-q">'+m.question+'</span><div class="mkt-bar-wrap"><div class="mkt-bar" style="width:'+Math.round(m.probability*100)+'%"></div></div><span class="mkt-pct">'+Math.round(m.probability*100)+'%</span></div>';}).join('') + '</div>' : '';
+    var tlHtml = data.toplines.map(function(t) {
+      var isAssess = t.isAssessment;
+      var hTag = t.url
+        ? '<a href="'+t.url+'" target="_blank" rel="noopener" style="font-size:'+(isAssess?'11':'13')+'px;font-weight:'+(isAssess?'400':'600')+';color:'+(isAssess?'var(--teal)':'var(--bright)')+';line-height:1.35;display:block;margin-bottom:5px;text-decoration:none'+(isAssess?';font-style:italic':'')+'">' + t.headline + '</a>'
+        : '<div style="font-size:'+(isAssess?'11':'13')+'px;font-weight:'+(isAssess?'400':'600')+';color:'+(isAssess?'var(--teal)':'var(--bright)')+';line-height:1.35;margin-bottom:5px'+(isAssess?';font-style:italic':'')+'">' + t.headline + '</div>';
+      var srcTag = (t.source && !isAssess) ? '<span style="font-size:9px;font-family:var(--mono);letter-spacing:.1em;color:var(--dim);text-transform:uppercase;display:block;margin-bottom:5px">' + t.source + '</span>' : '';
+      var ptsHtml = (t.points && t.points.length) ? '<ul style="margin:4px 0 0 0;padding-left:0;list-style:none">' + t.points.map(function(p){return '<li style="font-size:12px;color:var(--text);line-height:1.5;margin-bottom:4px;padding-left:10px;border-left:2px solid var(--b2)">'+p+'</li>';}).join('') + '</ul>' : '';
+      return '<div style="margin-bottom:14px;padding-bottom:14px;border-bottom:1px solid var(--b1)">' + hTag + srcTag + ptsHtml + '</div>';
+    }).join('');
+    el.innerHTML = mHtml + '<div style="margin-top:4px">' + tlHtml + '</div>';
+    return;
   }
-  let stHtml = '';
-  if (analogs && analogs.scenario_tree && analogs.scenario_tree.length) {
-    const tp = analogs.scenario_tree.reduce((s,x) => s + x.probability, 0) || 1;
-    stHtml = '<div class="scenario-tree"><div class="scenario-tree-header">Scenario Probabilities</div>' + analogs.scenario_tree.map(s => '<div class="scenario-row"><span class="scenario-label">' + s.path + '</span><div class="scenario-bar-wrap"><div class="scenario-bar" style="width:' + Math.round(s.probability/tp*100) + '%;background:' + (CC[s.cluster]||'var(--teal)') + '"></div></div><span class="scenario-pct">' + Math.round(s.probability/tp*100) + '%</span><div class="scenario-sub">~' + s.timeframe_months + ' mo &bull; ' + s.anchor + '</div></div>').join('') + (analogs.avg_time_months ? '<div class="time-forecast">Avg. resolution across analogs: ~' + analogs.avg_time_months + ' months</div>' : '') +(analogs.evolution?'<div class="evolution-arc">'+analogs.evolution.pattern+' &mdash; onset '+analogs.evolution.onset+'% &rarr; peak '+analogs.evolution.peak+'%</div>':'')+'</div>';
-  }
-    el.innerHTML = '<div class="context-overview">' + (data.overview||'') + '</div>' + stHtml + sigHtml + mHtml + '<div class="context-branches">' + bHtml + '</div>';
-  if (analogs && analogs.weighted_confidence != null) {
-    const sigProf = el.querySelector('.sig-profile');
-    if (sigProf) {
-      const sv = analogs.signal_vector || {};
-      const newsW = Math.round(((sv.policy||0)+(sv.macro||0))/2*100);
-      const socW  = Math.round(((sv.geo||0)+(sv.policy||0))/2*100);
-      const mktW  = Math.round(((sv.market||0)+(sv.macro||0))/2*100);
-      const wc = Math.round(analogs.weighted_confidence*100);
-      const weightRow = document.createElement('div');
-      weightRow.className = 'signal-weights';
-      weightRow.innerHTML = '<span class="sw-label">SIGNAL WEIGHT</span>'
-        + '<span class="sw-seg" title="News & Policy">NEWS <b>' + newsW + '%</b></span>'
-        + '<span class="sw-seg" title="Social & Geo">SOC <b>' + socW + '%</b></span>'
-        + '<span class="sw-seg" title="Market & Economic">MKT <b>' + mktW + '%</b></span>'
-        + '<span class="sw-conf">' + wc + '% composite</span>';
-      sigProf.after(weightRow);
-    }
-  }
-  if (analogs && analogs.scenario_tree && analogs.scenario_tree.length) {
-    startEvolutionPolling(analogs.scenario_tree, data.query||data.title||'', el);
-  } const _hI=document.getElementById('histIntro'); if(_hI&&aHtml){const _e=document.getElementById('analogsInHist');if(_e)_e.remove();const _d=document.createElement('div');_d.id='analogsInHist';_d.innerHTML=aHtml;_hI.insertAdjacentElement('afterend',_d);}
-
+  var bHtml = (data.branches||[]).slice(0,3).map(function(b){return '<div class="branch-card"><div class="branch-icon">'+(b.icon||'')+'</div><div class="branch-path">'+(b.path||'Path')+'</div><div class="branch-title">'+(b.title||'')+'</div><div class="branch-detail">'+(b.detail||'')+'</div></div>';}).join('');
+  var mHtml2 = (mkts&&mkts.length) ? '<div class="mkt-signals">'+mkts.slice(0,4).map(function(m){return '<div class="mkt-row"><span class="mkt-q">'+m.question+'</span><div class="mkt-bar-wrap"><div class="mkt-bar" style="width:'+Math.round(m.probability*100)+'%"></div></div><span class="mkt-pct">'+Math.round(m.probability*100)+'%</span><span class="mkt-src">'+m.source+'</span></div>';}).join('')+'</div>' : '';
+  el.innerHTML = '<div class="context-overview">'+(data.overview||'')+'</div>' + mHtml2 + '<div class="context-branches">'+bHtml+'</div>';
 }
 async function fetchHistoricalSources(topic, desc) {
   const _sw=new Set('will is are can could should do does did would a an the of in on at to for by with from and or but not be reach become happen occur there its whether'.split(' '));const shortQ=(topic.replace(/[?!.,"]/g,'').split(/\s+/).filter(function(w){return w.length>1&&!_sw.has(w.toLowerCase());}).slice(0,5).join(' '))||topic.split(' ').slice(0,5).join(' ');
@@ -1234,8 +1244,8 @@ function renderBrief(brief) {
         '<div style="font-size:12px;color:var(--bright);font-weight:500;margin-bottom:3px;line-height:1.4">' + a.question + '</div>' +
         '<div style="font-size:11px;color:var(--dim);line-height:1.45;margin-bottom:6px">' + a.why + '</div>' +
         '<div style="display:flex;flex-wrap:wrap;gap:4px">' +
-          (a.keywords || []).map(k => '<span style="font-family:var(--mono).font-size:8px;background:rgba(0,201,167,.07);color:var(--teal);border:1px solid rgba(0,201,167,.18);padding:1px 6px;border-radius:2px">' + k + '</span>').join('') +
-          '<span style="font-family:var(--mono).font-size:8px;background:rgba(61,139,255,.07);color:var(--blue);border:1px solid rgba(61,139,255,.18);padding:1px 6px;border-radius:2px">' + (a.guardianSection || '') + '</span>' +
+          (a.keywords || []).map(function(k){return '<a href="https://www.theguardian.com/search?q='+encodeURIComponent(k)+'" target="_blank" style="font-family:var(--sans);font-size:9px;background:rgba(0,201,167,.09);color:var(--teal);border:1px solid rgba(0,201,167,.25);padding:2px 8px;border-radius:3px;text-decoration:none;display:inline-block;margin-bottom:2px" title="Search: '+k+'">'+k+'</a>';}).join('') +
+          '<a href="https://www.theguardian.com/'+(a.guardianSection||'world')+'" target="_blank" style="font-family:var(--sans);font-size:9px;background:rgba(61,139,255,.09);color:var(--blue);border:1px solid rgba(61,139,255,.25);padding:2px 8px;border-radius:3px;text-decoration:none;display:inline-block;margin-bottom:2px">'+(a.guardianSection||'')+'</a>' +
           '<span style="font-family:var(--mono);font-size:8px;background:var(--s2);color:var(--dim);border:1px solid var(--b1);padding:1px 6px;border-radius:2px">' + (a.timeWindow || '30d') + '</span>' +
         '</div>' +
       '</div>' +
