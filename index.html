@@ -2014,13 +2014,28 @@ function generateBrief(market, articles, wikiData){
     }
   }
 
+  // Clickable article signals
   var sigs=articles.slice(0,5).map(function(a,i){
-    return '<div class="brief-signal">'
-      +'<span class="bsig-n">'+(i+1)+'</span>'
-      +'<span class="bsig-t">'+a.title.substring(0,95)+(a.title.length>95?'…':'')+'</span>'
-      +'<span class="bsig-s">'+a.source+'</span>'
-    +'</div>';
+    var safeUrl=(a.url||'').replace(/["'<>]/g,function(c){return{'"':'&quot;',"'":'&#39;','<':'&lt;','>':'&gt;'}[c];});
+    return (safeUrl
+      ?'<a href="'+safeUrl+'" target="_blank" rel="noopener" style="text-decoration:none;display:block">'
+      :'<div>')
+      +'<div class="brief-signal" style="cursor:'+(safeUrl?'pointer':'default')+'">'
+        +'<span class="bsig-n">'+(i+1)+'</span>'
+        +'<span class="bsig-t">'+a.title.substring(0,95)+(a.title.length>95?'…':'')+'</span>'
+        +'<span class="bsig-s">'+a.source+'</span>'
+      +'</div>'
+    +(safeUrl?'</a>':'</div>');
   }).join('');
+
+  // AI synopsis: synthesize 3-4 sentences from article descriptions
+  var synParts=[];
+  articles.slice(0,5).forEach(function(a){
+    var d=(a.description||'').replace(/<[^>]+>/g,'').trim();
+    if(d.length>60){var s=d.slice(0,210).trim();if(!/[.!?]$/.test(s))s+='.';synParts.push(s);}
+  });
+  if(!synParts.length){articles.slice(0,4).forEach(function(a){var t=(a.title||'').trim();if(t)synParts.push(t+'.');});}
+  var synopsis=synParts.slice(0,4).join(' ');
 
   var srcs=[...new Set(articles.slice(0,4).map(function(a){ return a.source||''; }).filter(Boolean))];
   var srcStr=srcs.length ? 'Sources: '+srcs.join(' · ') : 'Scanning live intelligence feeds…';
@@ -2031,10 +2046,11 @@ function generateBrief(market, articles, wikiData){
       +'<span class="ib-pct">'+pctStr+'</span>'
     +'</div>'
     +'<div class="ib-bias">'+bias+'</div>'
-    +(ctx ? '<div class="ib-ctx">'+ctx+'</div>' : '')
     +(sigs
-      ? '<div class="ib-signals">'+sigs+'</div>'
-      : '<div class="ib-nosig">No signals found for this topic — try a broader market.</div>')
+      ?'<div class="ib-signals">'+sigs+'</div>'
+      :'<div class="ib-nosig">No signals found for this topic — try a broader market.</div>')
+    +(synopsis?'<div class="ib-synopsis" style="font-size:12px;color:var(--text);line-height:1.65;margin:10px 0 6px;padding:10px 12px;background:rgba(255,255,255,.03);border-radius:3px;border-left:2px solid rgba(0,201,167,.3)"><span style="font-family:var(--mono);font-size:8px;letter-spacing:.12em;text-transform:uppercase;color:var(--teal);display:block;margin-bottom:5px">&#x2713; Article synthesis</span>'+synopsis+'</div>':'')
+    +(ctx ? '<div class="ib-ctx">'+ctx+'</div>' : '')
     +'<div class="ib-src">'+srcStr+'</div>'
   +'</div>';
 }
@@ -2044,9 +2060,10 @@ function renderGrid(articles){
   if(!articles.length) return '<div class="ng-empty">No live signals found. Broadening query scope…</div>';
   return articles.map(function(a){
     var date=a.publishedAt ? new Date(a.publishedAt).toLocaleDateString('en-US',{month:'short',day:'numeric'}) : '';
-    return '<a class="ng-card" href="'+(a.url||'#')+'" target="_blank" rel="noopener">'
-      +'<div class="ng-src">'+a.source+'<span class="ng-date">'+date+'</span></div>'
-      +'<div class="ng-title">'+a.title.substring(0,100)+(a.title.length>100?'…':'')+'</div>'
+    var url=a.url||'';
+    return '<a class="ng-card" href="'+(url||'#')+'" target="_blank" rel="noopener" style="cursor:pointer">'
+      +'<div class="ng-src" style="display:flex;justify-content:space-between;align-items:center">'+a.source+'<span class="ng-date">'+date+'</span>'+(url?'<span style="margin-left:auto;font-family:var(--mono);font-size:7px;color:var(--teal);letter-spacing:.08em">&#8599; OPEN</span>':'')+'</div>'
+      +'<div class="ng-title" style="color:var(--bright);text-decoration:underline;text-decoration-color:rgba(0,201,167,.25);text-underline-offset:2px">'+a.title.substring(0,100)+(a.title.length>100?'…':'')+'</div>'
       +(a.description ? '<div class="ng-desc">'+a.description.substring(0,130)+'</div>' : '')
     +'</a>';
   }).join('');
