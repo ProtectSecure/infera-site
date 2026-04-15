@@ -781,7 +781,7 @@ async function buildBrief(topic, desc) {
   const kw=words.slice(0,6);
   const q=kw.slice(0,4).join(' ');
   try {
-    const r=await fetch('https://infera-api.onrender.com/brief?q='+encodeURIComponent(q)+'&topic='+encodeURIComponent(topic.slice(0,120)));
+    const ac=new AbortController();const tid=setTimeout(()=>ac.abort(),5000);let r;try{r=await fetch('https://infera-api.onrender.com/brief?q='+encodeURIComponent(q)+'&topic='+encodeURIComponent(topic.slice(0,120)),{signal:ac.signal});}finally{clearTimeout(tid);}
     if(r.ok){const d=await r.json();if(d&&d.coreQuestion)return d;}
   } catch(e){}
   const k0=kw[0]||topic.split(' ')[0];
