@@ -526,7 +526,6 @@ function checkPass(){
         <div class="ai-brief-label">Investigative framework · targeted article search · relevance scored by AI</div>
         <div class="ai-brief-body" id="newsBrief"><div class="loading-row"><div class="spinner" style="border-top-color:var(--gold)"></div><span>Building investigative search brief…</span></div></div>
       </div>
-      <div id="newsGrid"></div>
     </div>
 
     <!-- HISTORICAL -->
@@ -2199,8 +2198,7 @@ window.runDeepDive=async function(market){
     var briefEl=document.getElementById('newsBrief');
     if(briefEl) briefEl.innerHTML+=generateBrief(market, articles, wikiMain);
 
-    var gridEl=document.getElementById('newsGrid');
-    if(gridEl) gridEl.innerHTML=renderGrid(articles);
+    
 
     var introEl=document.getElementById('histIntro');
     var evEl=document.getElementById('histEvents');
