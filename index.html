@@ -85,6 +85,11 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:14
 .ab-d.md{background:var(--gold)}
 .ab-d.lo{background:var(--teal)}
 .vol-tag{font-family:var(--mono);font-size:8px;color:var(--teal)}
+/* ── SIDEBAR TICKER ── */
+.event-list-ticker{overflow:hidden;position:relative;height:340px}
+.event-list-ticker::after{content:'';position:absolute;bottom:0;left:0;right:0;height:80px;background:linear-gradient(transparent,var(--bg));pointer-events:none;z-index:5}
+.tk-slot{display:block}
+.event-list-ticker .event-row{height:68px;overflow:hidden;box-sizing:border-box}
 .new-badge{font-family:var(--mono);font-size:7px;color:var(--accent);background:rgba(232,64,64,.1);border:1px solid rgba(232,64,64,.22);padding:1px 5px;border-radius:2px;letter-spacing:.12em;text-transform:uppercase;animation:hb 1.4s ease-in-out infinite}
 
 .tap-tooltip{position:fixed;background:var(--s3);border:1px solid var(--b2);border-radius:4px;padding:5px 10px;font-family:var(--mono);font-size:9px;color:var(--teal);letter-spacing:.1em;pointer-events:none;z-index:999;opacity:0;transition:opacity .2s;white-space:nowrap}
@@ -610,7 +615,7 @@ async function fetchEvents() {
   }
   eventMap = {};
   allEvents.forEach(ev => { if (ev.id) eventMap[String(ev.id)] = ev; });
-  renderList();
+  initTicker();
   buildTicker();
   document.getElementById('eventCount').textContent = allEvents.length + ' live';
 }
@@ -628,6 +633,1734 @@ function mockEvents() {
   ];
 }
 
+
+// ─── SIDEBAR TICKER ENGINE ────────────────────────────────────────────────
+var _tkPool=[],_tkOff=0,_tkTimer=null,_tkSliding=false,_tkBound=false;
+var TK_VIS=5,TK_H=68,TK_MS=2200;
+function initTicker(){
+  _tkPool=allEvents.slice().sort(function(a,b){return (b.volume24hr||0)-(a.volume24hr||0);}).slice(0,15);
+  if(_tkPool.length<2){renderList();return;}
+  var el=document.getElementById('eventList');
+  if(!el)return;
+  el.classList.add('event-list-ticker');
+  _tkOff=0;
+  _buildTkDOM();
+  _startTk();
+  if(!_tkBound){
+    _tkBound=true;
+    el.addEventListener('mouseenter',function(){_stopTk();});
+    el.addEventListener('mouseleave',function(){if(document.getElementById('eventList').classList.contains('event-list-ticker'))_startTk();});
+  }
+}
+function stopTicker(){
+  _stopTk();
+  var el=document.getElementById('eventList');
+  if(el)el.classList.remove('event-list-ticker');
+}
+function _buildTkDOM(){
+  var el=document.getElementById('eventList');if(!el)return;
+  var n=_tkPool.length,html='<div class="tk-slot" id="tkSlot">';
+  for(var j=0;j<=TK_VIS;j++){var ev=_tkPool[(_tkOff+j)%n];html+=_tkRow(ev,j<3);}
+  html+='</div>';
+  el.innerHTML=html;
+}
+function _tkRow(ev,hot){
+  var vol=ev.volume24hr||0,lvl=vol>5e6?'hi':vol>1e6?'md':'lo',dots=vol>5e6?5:vol>2e6?3:1;
+  var cat=ev.category||getTagCat(ev.tags)||'',id=String(ev.id);
+  return '<div class="event-row" id="row-'+id+'" onclick="rowClick(event,''+id+'')" ontouchend="rowTouch(event,''+id+'')">' +
+    '<div style="flex:1;min-width:0"><div class="ev-q">'+(ev.title||'Untitled')+'</div>' +
+    '<div class="ev-meta"><span class="ev-cat">'+cat+'</span>' +
+    '<div class="ab">'+[1,2,3,4,5].map(function(d){return '<div class="ab-d '+(d<=dots?lvl:'')+'"></div>';}).join('')+'</div>' +
+    (vol>0?'<span class="vol-tag">
+function renderList(cat, q) {
+  cat = cat || 'all'; q = q || '';
+  let evs = allEvents;
+  if (cat !== 'all') evs = evs.filter(e => (e.category||'').toLowerCase().includes(cat.toLowerCase()) || (e.tags||[]).some(t => (t.label||'').toLowerCase().includes(cat.toLowerCase())));
+  if (q) { const ql = q.toLowerCase(); evs = evs.filter(e => (e.title||'').toLowerCase().includes(ql)); }
+  if (!evs.length) { document.getElementById('eventList').innerHTML = '<div style="padding:20px;text-align:center;color:var(--dim);font-family:var(--mono);font-size:10px">NO TOPICS FOUND</div>'; return; }
+
+  document.getElementById('eventList').innerHTML = evs.map((ev, i) => {
+    const vol  = ev.volume24hr || 0;
+    const lvl  = vol > 5e6 ? 'hi' : vol > 1e6 ? 'md' : 'lo';
+    const dots = vol > 5e6 ? 5 : vol > 2e6 ? 3 : 1;
+    const cat  = ev.category || getTagCat(ev.tags) || 'General';
+    const sel  = selectedEvent && selectedEvent.id == ev.id;
+    const id   = String(ev.id);
+    return '<div class="event-row' + (sel ? ' selected' : '') + '" id="row-' + id + '" onclick="rowClick(event,\'' + id + '\')" ontouchend="rowTouch(event,\'' + id + '\')">' +
+      (ev.image ? '<img class="ev-img" src="' + ev.image + '" onerror="this.style.display=\'none\'" alt="">' : '') +
+      '<div style="flex:1;min-width:0">' +
+        '<div class="ev-q">' + (ev.title || 'Untitled') + '</div>' +
+        '<div class="ev-meta">' +
+          '<span class="ev-cat">' + cat + '</span>' +
+          '<div class="ab">' + [1,2,3,4,5].map(d => '<div class="ab-d ' + (d <= dots ? lvl : '') + '"></div>').join('') + '</div>' +
+          (vol > 0 ? '<span class="vol-tag">$' + fmtVol(vol) + '</span>' : '') +
+          (i < 3 ? '<span class="new-badge">ACTIVE</span>' : '') +
+        '</div>' +
+      '</div></div>';
+  }).join('');
+}
+
+// ─── DOUBLE-TAP ────────────────────────────────────────────────────────────
+function rowClick(e, id) {
+  e.stopPropagation();
+  const ev = eventMap[id];
+  if (!ev) return;
+  const now = Date.now();
+  if (lastTapId === id && (now - lastTapTime) < DBL_MS) {
+    lastTapId = null; lastTapTime = 0;
+    hideTip();
+    openDeepDive(ev);
+    if(window.setTopicFocus)window.setTopicFocus(ev.question||ev.title||'');
+  } else {
+    lastTapId = id; lastTapTime = now;
+    selectPreview(ev, e);
+  }
+}
+function rowTouch(e, id) { e.preventDefault(); rowClick(e, id); }
+
+function selectPreview(ev, e) {
+  selectedEvent = ev;
+  document.querySelectorAll('.event-row').forEach(r => r.classList.remove('selected'));
+  const row = document.getElementById('row-' + ev.id);
+  if (row) { row.classList.add('selected'); row.classList.add('flash'); setTimeout(() => row.classList.remove('flash'), 400); }
+  showTip(e);
+  document.getElementById('emptyState').style.display = 'none';
+  document.getElementById('previewCard').classList.add('visible');
+  const cat = ev.category || getTagCat(ev.tags) || 'General';
+  const vol = ev.volume24hr || 0;
+  const lvl = vol > 5e6 ? 'Very High' : vol > 1e6 ? 'Moderate' : 'Low';
+  document.getElementById('pc-cat').textContent = cat.toUpperCase();
+  document.getElementById('pc-title').textContent = ev.title || '';
+  document.getElementById('pc-attention').innerHTML = 'This topic has <strong>' + lvl.toLowerCase() + ' global attention</strong> right now. Surfaced as a journalistic signal.';
+  document.getElementById('pc-desc').textContent = ev.description || 'No description available.';
+  document.getElementById('rightPanel').scrollTop = 0;
+}
+
+let tipTO;
+function showTip(e) {
+  const tt = document.getElementById('tapTooltip');
+  const x = (e && e.clientX) ? e.clientX : window.innerWidth / 2;
+  const y = (e && e.clientY) ? e.clientY : 200;
+  tt.style.left = Math.min(x + 12, window.innerWidth - 200) + 'px';
+  tt.style.top  = Math.max(y - 30, 60) + 'px';
+  tt.classList.add('show');
+  clearTimeout(tipTO);
+  tipTO = setTimeout(hideTip, 2200);
+}
+function hideTip() { document.getElementById('tapTooltip').classList.remove('show'); }
+
+// ─── OPEN DEEP DIVE ────────────────────────────────────────────────────────
+function openDeepDive(ev) {
+  const target = ev || selectedEvent;
+  if (!target) return;
+  selectedEvent = target;
+
+  document.getElementById('feedView').classList.remove('active');
+  document.getElementById('deepView').classList.add('active');
+  document.getElementById('tapHint').style.display = 'none';
+  window.scrollTo(0, 0);
+
+  const cat  = target.category || getTagCat(target.tags) || 'General';
+  const vol  = target.volume24hr || 0;
+  const aKey = vol > 5e6 ? 'hi' : vol > 1e6 ? 'md' : 'lo';
+  const aTxt = { hi:'Very High', md:'Moderate', lo:'Low' }[aKey];
+  const aPct = Math.min(95, Math.max(8, Math.log10(Math.max(vol, 1)) * 12));
+  const endD = target.endDate ? new Date(target.endDate).toLocaleDateString('en-US', { month:'long', day:'numeric', year:'numeric' }) : 'Ongoing';
+
+  document.getElementById('dh-cat').textContent         = cat.toUpperCase();
+  document.getElementById('dh-title-crumb').textContent = target.title || '';
+  document.getElementById('dh-source').textContent      = target.resolutionSource || 'Public Records';
+  document.getElementById('dh-eyebrow').textContent     = cat.toUpperCase() + ' · WORLD INTELLIGENCE';
+  document.getElementById('dh-headline').textContent    = target.title || '';
+  document.getElementById('dh-deck').textContent        = target.description || '';
+  document.getElementById('dh-body').innerHTML          = '<div class="loading-row"><div class="spinner"></div><span>Loading context…</span></div>';
+  document.getElementById('ap-text').innerHTML          = 'This topic has <strong>' + aTxt.toLowerCase() + ' global attention</strong>. Used here as a journalistic triage signal — not as financial data.';
+  document.getElementById('apg-fill').style.width       = aPct + '%';
+  document.getElementById('apg-level').textContent      = aTxt;
+  document.getElementById('apg-level').className        = 'apg-level ' + aKey;
+  document.getElementById('ap-enddate').textContent     = endD;
+  document.getElementById('newsBrief').innerHTML        = '<div class="loading-row"><div class="spinner" style="border-top-color:var(--gold)"></div><span>Building investigative search brief…</span></div>';
+  document.getElementById('newsGrid').innerHTML         = '';
+  document.getElementById('news-sub').textContent       = '';
+  document.getElementById('histIntro').innerHTML        = '<div class="loading-row"><div class="spinner" style="border-top-color:var(--gold)"></div><span>Finding historical parallels…</span></div>';
+  document.getElementById('histEvents').innerHTML       = '';
+
+  runDeepDive(target);
+}
+
+// ─── DEEP DIVE ORCHESTRATOR ────────────────────────────────────────────────
+async function runDeepDive(ev) {
+  const topic = ev.title || '';
+  const desc  = ev.description || '';
+  const keysSet = GNEWS_KEY !== 'YOUR_GNEWS_API_KEY' || GUARDIAN_KEY !== 'YOUR_GUARDIAN_API_KEY' || NEWSAPI_KEY !== 'YOUR_NEWSAPI_KEY';
+
+  // Step 1 — AI brief + historical in parallel
+  const [briefRes, aiRes, ctxRes, mktsRes, analogsRes] = await Promise.allSettled([
+    buildBrief(topic, desc),
+    fetchHistoricalSources(topic, desc),
+    fetchContextualPerspective(topic, desc),
+    fetchPredictionMarkets(topic),
+    fetchAnalogs(topic)
+  ]);
+
+  const brief = briefRes.status === 'fulfilled' ? briefRes.value : null;
+  const ai    = aiRes.status   === 'fulfilled' ? aiRes.value   : null;
+  const ctx   = ctxRes.status  === 'fulfilled' ? ctxRes.value  : null;
+  const mkts  = mktsRes.status  === 'fulfilled' ? mktsRes.value  : [];
+  const analogs = analogsRes.status === 'fulfilled' ? analogsRes.value : null;
+
+  // Show investigative questions immediately
+  if (brief) renderBrief(brief);
+  if (ai) renderHistoricalSection(ai);
+  renderContextualPerspective(ctx, mkts, analogs);
+
+  // Step 2 — fetch articles + social in parallel
+  let articles = [];
+  const q = (topic + ' ' + (desc || '')).slice(0, 120);
+  const socialKws = brief && brief.investigativeAngles
+    ? brief.investigativeAngles.flatMap(a => a.keywords || []).slice(0, 8)
+    : [topic];
+  const [articlesRes, socialRes] = await Promise.allSettled([
+    (async () => {
+      if (!brief || !keysSet) return [];
+      const from = new Date(Date.now() - 30 * 86400000).toISOString().split('T')[0];
+      const fetched = await Promise.allSettled(brief.investigativeAngles.map(a => fetchAngle(a, from)));
+      let arts = [];
+      fetched.forEach(r => { if (r.status === 'fulfilled') arts = arts.concat(r.value); });
+      const seen = new Set();
+      return arts.filter(a => {
+        const k = (a.title || '').toLowerCase().slice(0, 50);
+        if (seen.has(k)) return false;
+        seen.add(k); return true;
+      });
+    })(),
+    fetchSocialPosts(socialKws)
+  ]);
+  const articlesData = articlesRes.status === 'fulfilled' ? articlesRes.value : [];
+  renderNewsGrid(articlesData, brief, keysSet);
+  const socialData = socialRes.status === 'fulfilled' ? socialRes.value : [];
+  renderSocialFeed(socialData, topic);
+}
+
+// ─── BUILD INVESTIGATIVE BRIEF ─────────────────────────────────────────────
+async function buildBrief(topic, desc) {
+  const _sw=new Set('will is are can could should do does did would a an the of in on at to for by with from and or but not be reach become happen occur there its whether has have had been being get got'.split(' '));
+  const words=topic.replace(/[?!.,"']/g,'').split(/\s+/).filter(function(w){return w.length>1&&!_sw.has(w.toLowerCase());});
+  const kw=words.slice(0,6);
+  const q=kw.slice(0,4).join(' ');
+  try {
+    const ac=new AbortController();const tid=setTimeout(()=>ac.abort(),5000);let r;try{r=await fetch('https://infera-api.onrender.com/brief?q='+encodeURIComponent(q)+'&topic='+encodeURIComponent(topic.slice(0,120)),{signal:ac.signal});}finally{clearTimeout(tid);}
+    if(r.ok){const d=await r.json();if(d&&d.coreQuestion)return d;}
+  } catch(e){}
+  const k0=kw[0]||topic.split(' ')[0];
+  const pair=kw.slice(0,2).join(' ');
+  const trio=kw.slice(0,3).join(' ');
+  return {
+    coreQuestion: topic.replace(/\?+$/,'').trim()+'?',
+    investigativeAngles: [
+      {question:'What is the latest verified development directly bearing on '+pair+'?',why:'The most recent confirmed events are the strongest leading indicator of near-term resolution',keywords:[trio,k0+' 2026',k0+' latest'],guardianSection:'world',timeWindow:'7d'},
+      {question:'Which institutions or decision-makers hold direct authority over '+pair+'?',why:'Formal action requires specific actors — identifying who holds leverage reveals how close resolution is',keywords:[pair+' policy',k0+' government',pair+' agreement'],guardianSection:'politics',timeWindow:'30d'},
+      {question:'What economic or market signals reflect the probability of '+pair+'?',why:'Markets price in forward-looking probability — significant moves indicate informed expectation shifts',keywords:[pair+' market',k0+' economy',pair+' forecast'],guardianSection:'business',timeWindow:'30d'},
+      {question:'What historical precedents most closely predict how '+pair+' resolves?',why:'Base rates from comparable past events provide the most reliable prior for outcome probability',keywords:[pair+' history',k0+' precedent',pair+' past'],guardianSection:'world',timeWindow:'90d'}
+    ],
+    mustInclude:kw.slice(0,2),
+    relevanceTest:'Does this article directly address the specific outcome or probability of: '+topic
+  };
+}
+
+// ─── FETCH ARTICLES PER ANGLE ──────────────────────────────────────────────
+async function fetchAngle(angle, from) {
+  const q    = (angle.keywords || []).slice(0, 3).join(' ');
+  const wFrom = getWindowFrom(angle.timeWindow);
+  const results = await Promise.allSettled([
+    fetchGNews(q, wFrom),
+    fetchGuardian(q, wFrom, angle.guardianSection),
+    fetchNewsAPI(q, wFrom)
+  ]);
+  let arts = [];
+  results.forEach(r => { if (r.status === 'fulfilled') arts = arts.concat(r.value); });
+  return arts.map(a => Object.assign({}, a, { _angle: angle.question, _why: angle.why }));
+}
+
+async function fetchNewsAPI(q, from) {
+  if (NEWSAPI_KEY === 'YOUR_NEWSAPI_KEY') return [];
+  try {
+    const url = PROXY + encodeURIComponent('https://newsapi.org/v2/everything?q=' + encodeURIComponent(q) + '&from=' + from + '&sortBy=relevancy&pageSize=6&language=en&apiKey=' + NEWSAPI_KEY);
+    const res  = await fetch(url);
+    const data = await res.json();
+    return (data.articles || []).filter(a => a.title && !a.title.includes('[Removed]')).map(a => ({
+      title: a.title, description: a.description || a.content || '', source: (a.source && a.source.name) || 'NewsAPI',
+      url: a.url, publishedAt: a.publishedAt, _src: 'newsapi'
+    }));
+  } catch(_) { return []; }
+}
+
+async function fetchHackerNews(query) {
+  try {
+    const q = encodeURIComponent(query.slice(0, 150));
+    const url = 'https://hn.algolia.com/api/v1/search?query=' + q + '&tags=story&hitsPerPage=20&numericFilters=points>1';
+    const res  = await fetch(url);
+    const data = await res.json();
+    return (data.hits || []).filter(h => h.title).map(h => ({
+      title: h.title || '',
+      url: h.url || ('https://news.ycombinator.com/item?id=' + h.objectID),
+      author: h.author || '',
+      handle: 'by ' + (h.author || 'anon') + ' on HN',
+      likes: h.points || 0,
+      reposts: 0,
+      replies: h.num_comments || 0,
+      publishedAt: h.created_at || '',
+      platform: 'Hacker News', _src: 'hackernews'
+    }));
+  } catch(_) { return []; }
+}
+
+async function fetchBluesky(query) {
+  try {
+    const url = 'https://public.api.bsky.app/xrpc/app.bsky.feed.searchPosts?q=' + encodeURIComponent(query) + '&limit=15&sort=latest';
+    const res  = await fetch(url);
+    const data = await res.json();
+    return (data.posts || []).map(p => ({
+      title: (p.record && p.record.text) || '',
+      url: 'https://bsky.app/profile/' + ((p.author && p.author.handle) || '') + '/post/' + ((p.uri || '').split('/').pop()),
+      author: (p.author && (p.author.displayName || p.author.handle)) || '',
+      handle: '@' + ((p.author && p.author.handle) || ''),
+      likes: p.likeCount || 0,
+      reposts: p.repostCount || 0,
+      replies: p.replyCount || 0,
+      publishedAt: (p.record && p.record.createdAt) || p.indexedAt || '',
+      platform: 'Bluesky', _src: 'bluesky'
+    }));
+  } catch(_) { return []; }
+}
+
+async function fetchSocialPosts(keywords) {
+  // Build short focused queries (first 3 words of each keyword) — avoids over-specific HN misses
+  const queries = [...new Set(
+    keywords.slice(0, 4).map(k => k.split(' ').slice(0, 3).join(' ')).filter(Boolean)
+  )];
+  if (!queries.length) return [];
+  const hnResults = await Promise.allSettled(queries.map(q => fetchHackerNews(q)));
+  const seen = new Set();
+  const posts = [];
+  for (const r of hnResults) {
+    if (r.status !== 'fulfilled') continue;
+    for (const p of r.value) {
+      if (!seen.has(p.url)) { seen.add(p.url); posts.push(p); }
+    }
+  }
+  return posts.sort((a, b) => new Date(b.publishedAt) - new Date(a.publishedAt));
+}
+
+async function fetchGNews(q, from) {
+  if (GNEWS_KEY === 'YOUR_GNEWS_API_KEY') return [];
+  try {
+    const url = PROXY + encodeURIComponent('https://gnews.io/api/v4/search?q=' + encodeURIComponent(q) + '&lang=en&max=6&from=' + from + 'T00:00:00Z&sortby=relevance&token=' + GNEWS_KEY);
+    const res  = await fetch(url);
+    const data = await res.json();
+    return (data.articles || []).map(a => ({ title: a.title, description: a.description || '', source: (a.source && a.source.name) || 'GNews', url: a.url, publishedAt: a.publishedAt, _src: 'gnews' }));
+  } catch(_) { return []; }
+}
+
+async function fetchGuardian(q, from, section) {
+  if (GUARDIAN_KEY === 'YOUR_GUARDIAN_API_KEY') return [];
+  try {
+    const sec = section ? '&section=' + section : '';
+    const url = PROXY + encodeURIComponent('https://content.guardianapis.com/search?q=' + encodeURIComponent(q) + '&from-date=' + from + '&order-by=relevance&page-size=6&show-fields=trailText,headline' + sec + '&api-key=' + GUARDIAN_KEY);
+    const res  = await fetch(url);
+    const data = await res.json();
+    return ((data.response && data.response.results) || []).map(a => ({ title: (a.fields && a.fields.headline) || a.webTitle, description: (a.fields && a.fields.trailText) || '', source: 'The Guardian', url: a.webUrl, publishedAt: a.webPublicationDate, _src: 'guardian' }));
+  } catch(_) { return []; }
+}
+
+function getWindowFrom(tw) {
+  const days = tw === '7d' ? 7 : tw === '90d' ? 90 : 30;
+  return new Date(Date.now() - days * 86400000).toISOString().split('T')[0];
+}
+
+// ─── SCORE ARTICLES ────────────────────────────────────────────────────────
+async function scoreArticles(articles, brief) {
+  const list = articles.slice(0, 28).map((a, i) => i + ': "' + a.title + '" — ' + (a.description || '').replace(/<[^>]+>/g, '').slice(0, 100)).join('\n');
+  const prompt = 'Score these news articles for relevance to an investigative topic.\n\nCORE QUESTION: "' + brief.coreQuestion + '"\nRELEVANCE TEST: "' + brief.relevanceTest + '"\n\nArticles:\n' + list + '\n\nReturn ONLY a JSON array, sorted by score descending, include only score >= 5:\n[{"index":0,"score":9,"relevanceNote":"Why this is relevant in 1 sentence","tag":"key-evidence"},{"index":1,"score":7,"relevanceNote":"...","tag":"background"},...]\n\ntag must be one of: key-evidence|background|reaction|analysis';
+
+  try {
+    const res    = await callClaude(prompt, 600);
+    const text   = res.content?.find(b => b.type === 'text')?.text || '';
+    const scores = JSON.parse(text.replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim());
+    return scores
+      .filter(s => s.score >= 5 && s.index < articles.length)
+      .map(s => Object.assign({}, articles[s.index], { _score: s.score, _note: s.relevanceNote, _tag: s.tag }))
+      .sort((a, b) => b._score - a._score);
+  } catch(_) {
+    return articles.map(a => Object.assign({}, a, { _score: 5, _tag: 'background' }));
+  }
+}
+
+// ─── FETCH AI ANALYSIS ─────────────────────────────────────────────────────
+async function fetchAI(topic, desc) {
+  const prompt = 'You are a senior international news editor and historian.\n\nTOPIC: "' + topic + '"\n' + (desc ? 'CONTEXT: ' + desc + '\n' : '') + '\nReturn ONLY valid JSON, no markdown:\n\n{"deck":"One sentence — key tension/stakes written like a Reuters lede","leadParagraphs":["paragraph 1","paragraph 2","paragraph 3"],"histIntro":"2 sentences explaining why historical comparison matters here","historicalEvents":[{"year":"YYYY","era":"Era name","title":"Short title","description":"2-3 sentences what happened and why comparable","fullContext":["deeper para 1","deeper para 2"],"outcomes":[{"icon":"📉","label":"Economic Impact","text":"Documented fact"},{"icon":"🌍","label":"Geopolitical Shift","text":"How world order changed"},{"icon":"⏱","label":"Timeline","text":"How long it lasted and resolved"},{"icon":"🔑","label":"Key Lesson","text":"Most important lesson for today"}],"similarity":"high"},{"year":"...","era":"...","title":"...","description":"...","fullContext":["...","..."],"outcomes":[{"icon":"📊","label":"...","text":"..."},{"icon":"🌐","label":"...","text":"..."},{"icon":"⏱","label":"Timeline","text":"..."},{"icon":"🔑","label":"Key Lesson","text":"..."}],"similarity":"medium"},{"year":"...","era":"...","title":"...","description":"...","fullContext":["...","..."],"outcomes":[{"icon":"💼","label":"...","text":"..."},{"icon":"🗺","label":"...","text":"..."},{"icon":"⏱","label":"Timeline","text":"..."},{"icon":"🔑","label":"Key Lesson","text":"..."}],"similarity":"low"}]}\n\nRULES: No odds. No betting. Historical events = real, documented. Outcomes = what actually happened.';
+
+  const res  = await callClaude(prompt, 1000);
+  const text = res.content?.find(b => b.type === 'text')?.text || '';
+  return JSON.parse(text.replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim());
+}
+
+// ─── CLAUDE API HELPER ─────────────────────────────────────────────────────
+async function callClaude(prompt, maxTokens) {
+  try {
+    const r = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'x-api-key': ANTHROPIC_KEY,
+        'anthropic-version': '2023-06-01',
+        'content-type': 'application/json',
+        'anthropic-dangerous-direct-browser-access': 'true'
+      },
+      body: JSON.stringify({
+        model: 'claude-haiku-4-5-20251001',
+        max_tokens: maxTokens,
+        messages: [{ role: 'user', content: prompt }]
+      })
+    });
+    const data = await r.json();
+    return data.content?.[0]?.text || null;
+  } catch(e) {
+    console.error('callClaude error:', e);
+    return null;
+  }
+}
+async function fetchWikipedia(query) {
+  try {
+    const enc = encodeURIComponent(query);
+    const r = await fetch('https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=' + enc + '&format=json&origin=*&srlimit=8&srprop=snippet');
+    const d = await r.json();
+    const stop = new Set(['the','a','an','in','on','of','and','or','for','to','at','by','is','are','was','were','it','this','that','be','will','have','has','had','what','how','when','why','who','its','their']);
+    const kws = query.toLowerCase().split(/\W+/).filter(w => w.length > 3 && !stop.has(w));
+    const scored = ((d.query && d.query.search) || []).map(h => {
+      const text = (h.title + ' ' + h.snippet).toLowerCase().replace(/<[^>]+>/g, '');
+      return { h, score: kws.filter(w => text.includes(w)).length };
+    }).filter(x => kws.length === 0 || x.score > 0).sort((a, b) => b.score - a.score).slice(0, 3);
+    const results = [];
+    for (const {h} of scored) {
+      try {
+        const sr = await fetch('https://en.wikipedia.org/api/rest_v1/page/summary/' + encodeURIComponent(h.title));
+        const s = await sr.json();
+        if (s.extract) results.push({
+          source: 'Wikipedia', sourceIcon: '📖',
+          title: s.title,
+          excerpt: s.extract.slice(0, 320),
+          url: (s.content_urls && s.content_urls.desktop && s.content_urls.desktop.page) || 'https://en.wikipedia.org/wiki/' + encodeURIComponent(h.title),
+          date: null,
+          thumbnail: (s.thumbnail && s.thumbnail.source) || null
+        });
+      } catch(e) {}
+    }
+    return results;
+  } catch(e) { return []; }
+}
+
+async function fetchLocNewspapers(query) {
+  try {
+    const enc = encodeURIComponent(query);
+    const r = await fetch('https://chroniclingamerica.loc.gov/search/pages/results/?format=json&rows=6&proxtext=' + enc);
+    const d = await r.json();
+    return (d.items || []).slice(0, 4).map(item => ({
+      source: 'Library of Congress', sourceIcon: '🏛️',
+      title: item.title_normal || item.title || 'Historical Newspaper Article',
+      excerpt: item.ocr_eng ? item.ocr_eng.slice(0, 280) + '…' : 'Historical newspaper from the Chronicling America collection.',
+      url: item.url ? 'https://chroniclingamerica.loc.gov' + item.url : 'https://chroniclingamerica.loc.gov',
+      date: item.date ? String(item.date).slice(0,4) : null,
+      thumbnail: null
+    }));
+  } catch(e) { return []; }
+}
+
+async function fetchInternetArchive(query) {
+  try {
+    const enc = encodeURIComponent(query);
+    const r = await fetch('https://openlibrary.org/search.json?q=' + enc + '&fields=key,title,first_publish_year,subject,author_name&limit=12');
+    const d = await r.json();
+    const stop = new Set(['the','a','an','in','on','of','and','or','for','to','at','by','is','are','was','were','it','this','that','be','will','have','has','had','what','how','when','why','who','its','their']);
+    const kws = query.toLowerCase().split(/\W+/).filter(w => w.length > 3 && !stop.has(w));
+    return (d.docs || []).map(doc => {
+      const text = ((doc.title || '') + ' ' + ((doc.subject || []).join(' '))).toLowerCase();
+      return { doc, score: kws.filter(w => text.includes(w)).length };
+    }).filter(x => kws.length === 0 || x.score > 0).sort((a, b) => b.score - a.score).slice(0, 3).map(({doc}) => ({
+      source: 'Open Library', sourceIcon: '📚',
+      title: doc.title || 'Untitled',
+      excerpt: [
+        doc.author_name ? 'By ' + doc.author_name.slice(0, 2).join(', ') : '',
+        doc.first_publish_year ? 'First published ' + doc.first_publish_year : '',
+        doc.subject ? 'Topics: ' + doc.subject.slice(0, 3).join(', ') : ''
+      ].filter(Boolean).join(' · '),
+      url: 'https://openlibrary.org' + doc.key,
+      date: doc.first_publish_year ? String(doc.first_publish_year) : null,
+      thumbnail: null
+    }));
+  } catch(e) { return []; }
+}
+
+async function fetchNewsAPIHist(query) {
+  if (!GNEWS_KEY) return [];
+  try {
+    const enc = encodeURIComponent(query);
+    const apiUrl = 'https://gnews.io/api/v4/search?q=' + enc + '&lang=en&max=5&apikey=' + GNEWS_KEY;
+    const r = await fetch(apiUrl);
+    const d = await r.json();
+    return (d.articles || []).slice(0, 5).map(a => ({
+      source: (a.source && a.source.name) || 'News', sourceIcon: '📰',
+      title: a.title || '',
+      excerpt: a.description || (a.content && a.content.slice(0, 280)) || '',
+      url: a.url || '',
+      date: a.publishedAt ? a.publishedAt.slice(0, 10) : null,
+      thumbnail: a.image || null
+    }));
+  } catch(e) { return []; }
+}
+
+async function fetchPredictionMarkets(topic) {
+  try {
+    const r = await fetch('https://infera-api.onrender.com/markets?q=' + encodeURIComponent(topic));
+    if (!r.ok) return [];
+    return await r.json();
+  } catch(e) { return []; }
+}
+
+async function fetchAnalogs(topic) {
+  try {
+    const r = await fetch('https://infera-api.onrender.com/analogs?q=' + encodeURIComponent(topic));
+    if (!r.ok) return null;
+    return await r.json();
+  } catch(e) { return null; }
+}
+
+async function fetchContextualPerspective(topic, desc) {
+  const _sw=new Set('will is are can could should do does did would a an the of in on at to for by with from and or but not be'.split(' '));
+  const kw=topic.replace(/[?!.,"']/g,'').split(/\s+/).filter(function(w){return w.length>1&&!_sw.has(w.toLowerCase());}).slice(0,4).join(' ');
+  try {
+    const r=await fetch('https://infera-api.onrender.com/context?q='+encodeURIComponent(kw));
+    if(!r.ok)return null;
+    const ctx=await r.json();
+    const analogs=ctx.analogs||[];
+    if(!analogs.length)return null;
+    const toplines=analogs.map(function(a){
+      const pts=[];
+      if(a.what_followed)pts.push(a.what_followed.slice(0,180));
+      else if(a.description)pts.push(a.description.slice(0,180));
+      return{headline:a.title+(a.date?' ('+a.date+')':''),source:a.source||'Wikipedia',url:a.source_url||'',points:pts};
+    });
+    if(ctx.match_quality&&ctx.match_quality.explanation){
+      toplines.unshift({headline:'Intelligence Assessment',source:'INFERA AI',url:'',points:[ctx.match_quality.explanation],isAssessment:true});
+    }
+    return{toplines:toplines};
+  } catch(e) { return null; }
+}
+
+function startEvolutionPolling(scenarioTree, query, el) {
+  if (window._evoInterval) clearInterval(window._evoInterval);
+  let currentProbs = {};
+  scenarioTree.forEach(b => { currentProbs[b.cluster] = (b.probability||0); });
+  window._evoInterval = setInterval(async () => {
+    const latestSignal = Array.from(document.querySelectorAll('.live-post-title'))
+      .slice(0,3).map(e=>e.textContent).join(' ') || query;
+    try {
+      const res = await fetch('https://infera-api.onrender.com/evolution', {
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({probs: currentProbs, signal: latestSignal, delta: 0.04})
+      });
+      const data = await res.json();
+      if (data.any_change) {
+        currentProbs = data.updated_probs;
+        Object.entries(data.deltas).forEach(([cluster, delta]) => {
+          if (Math.abs(delta) < 0.005) return;
+          el.querySelectorAll('.scenario-branch').forEach(branch => {
+            if (branch.dataset.cluster === cluster) {
+              const bar = branch.querySelector('.scenario-bar-fill');
+              const pct = branch.querySelector('.scenario-pct');
+              if (bar) { bar.style.transition='width 1.2s ease'; bar.style.width=(data.updated_probs[cluster]*100)+'%'; }
+              if (pct) { pct.textContent=Math.round(data.updated_probs[cluster]*100)+'%'; pct.classList.add('prob-delta'); setTimeout(()=>pct.classList.remove('prob-delta'),1600); }
+            }
+          });
+        });
+      }
+    } catch(e) { /* silent */ }
+  }, 90000);
+}
+
+function renderContextualPerspective(data, mkts, analogs) {
+  var el = document.getElementById('context-body');
+  if (!el) return;
+  if (!data) { el.innerHTML = '<p style="color:var(--dim);font-size:13px;padding:12px 0">Analysis unavailable.</p>'; return; }
+  if (data.toplines && data.toplines.length) {
+    var mHtml = (mkts && mkts.length) ? '<div class="mkt-signals" style="margin-bottom:16px">' + mkts.slice(0,3).map(function(m){return '<div class="mkt-row"><span class="mkt-q">'+m.question+'</span><div class="mkt-bar-wrap"><div class="mkt-bar" style="width:'+Math.round(m.probability*100)+'%"></div></div><span class="mkt-pct">'+Math.round(m.probability*100)+'%</span></div>';}).join('') + '</div>' : '';
+    var tlHtml = data.toplines.map(function(t) {
+      var isAssess = t.isAssessment;
+      var hTag = t.url
+        ? '<a href="'+t.url+'" target="_blank" rel="noopener" style="font-size:'+(isAssess?'11':'13')+'px;font-weight:'+(isAssess?'400':'600')+';color:'+(isAssess?'var(--teal)':'var(--bright)')+';line-height:1.35;display:block;margin-bottom:5px;text-decoration:none'+(isAssess?';font-style:italic':'')+'">' + t.headline + '</a>'
+        : '<div style="font-size:'+(isAssess?'11':'13')+'px;font-weight:'+(isAssess?'400':'600')+';color:'+(isAssess?'var(--teal)':'var(--bright)')+';line-height:1.35;margin-bottom:5px'+(isAssess?';font-style:italic':'')+'">' + t.headline + '</div>';
+      var srcTag = (t.source && !isAssess) ? '<span style="font-size:9px;font-family:var(--mono);letter-spacing:.1em;color:var(--dim);text-transform:uppercase;display:block;margin-bottom:5px">' + t.source + '</span>' : '';
+      var ptsHtml = (t.points && t.points.length) ? '<ul style="margin:4px 0 0 0;padding-left:0;list-style:none">' + t.points.map(function(p){return '<li style="font-size:12px;color:var(--text);line-height:1.5;margin-bottom:4px;padding-left:10px;border-left:2px solid var(--b2)">'+p+'</li>';}).join('') + '</ul>' : '';
+      return '<div style="margin-bottom:14px;padding-bottom:14px;border-bottom:1px solid var(--b1)">' + hTag + srcTag + ptsHtml + '</div>';
+    }).join('');
+    el.innerHTML = mHtml + '<div style="margin-top:4px">' + tlHtml + '</div>';
+    return;
+  }
+  var bHtml = (data.branches||[]).slice(0,3).map(function(b){return '<div class="branch-card"><div class="branch-icon">'+(b.icon||'')+'</div><div class="branch-path">'+(b.path||'Path')+'</div><div class="branch-title">'+(b.title||'')+'</div><div class="branch-detail">'+(b.detail||'')+'</div></div>';}).join('');
+  var mHtml2 = (mkts&&mkts.length) ? '<div class="mkt-signals">'+mkts.slice(0,4).map(function(m){return '<div class="mkt-row"><span class="mkt-q">'+m.question+'</span><div class="mkt-bar-wrap"><div class="mkt-bar" style="width:'+Math.round(m.probability*100)+'%"></div></div><span class="mkt-pct">'+Math.round(m.probability*100)+'%</span><span class="mkt-src">'+m.source+'</span></div>';}).join('')+'</div>' : '';
+  el.innerHTML = '<div class="context-overview">'+(data.overview||'')+'</div>' + mHtml2 + '<div class="context-branches">'+bHtml+'</div>';
+}
+async function fetchHistoricalSources(topic, desc) {
+  const _sw=new Set('will is are can could should do does did would a an the of in on at to for by with from and or but not be reach become happen occur there its whether'.split(' '));const shortQ=(topic.replace(/[?!.,"]/g,'').split(/\s+/).filter(function(w){return w.length>1&&!_sw.has(w.toLowerCase());}).slice(0,5).join(' '))||topic.split(' ').slice(0,5).join(' ');
+  const [ctxRes, wikiRes, locRes, archRes, newsRes] = await Promise.allSettled([
+    fetch('https://infera-api.onrender.com/context?q=' + encodeURIComponent(shortQ)).then(r => r.json()),
+    fetchWikipedia(shortQ),
+    fetchLocNewspapers(shortQ),
+    fetchInternetArchive(shortQ),
+    fetchNewsAPIHist(shortQ)
+  ]);
+  const sources = [
+    ...(wikiRes.status === 'fulfilled' ? wikiRes.value : []),
+    ...(locRes.status  === 'fulfilled' ? locRes.value  : []),
+    ...(archRes.status === 'fulfilled' ? archRes.value : []),
+    ...(newsRes.status === 'fulfilled' ? newsRes.value : [])
+  ];
+  let aiData = null;
+  try {
+    if (ctxRes.status === 'fulfilled' && ctxRes.value && ctxRes.value.analogs) {
+      const ctx     = ctxRes.value;
+      const analogs = ctx.analogs || [];
+      const mq      = ctx.match_quality || {};
+      aiData = {
+        deck: mq.explanation || (analogs.length ? 'Found ' + analogs.length + ' historical parallel(s) — ' + (mq.label || 'moderate') + ' match quality.' : 'No strong historical parallels found.'),
+        histIntro: analogs.length
+          ? analogs.slice(0, 2).map(function(a) { return a.title + ' (' + a.date + '): ' + (a.what_followed || a.description || '').slice(0, 200); }).join(' ')
+          : (mq.explanation || 'No close historical parallels found for this topic.'),
+        outcomes: analogs.map(function(a) { return {
+          icon: '📅',
+          label: a.title + (a.date ? ' (' + a.date + ')' : ''),
+          text: (a.what_followed || a.description || '').slice(0, 300)
+        }; }),
+        similarity: mq.score ? Math.round(mq.score * 100) : 0
+      };
+      analogs.forEach(function(a) {
+        sources.push({ source: a.source || 'Wikipedia', sourceIcon: '📖', title: a.title, excerpt: (a.what_followed || a.description || '').slice(0, 300), url: a.source_url || '', date: a.date || null });
+      });
+    }
+  } catch(e) {}
+  return { aiData, sources };
+}
+
+// ─── RENDER SOCIAL FEED ──────────────────────────────────────────────────────
+function renderSocialFeed(posts, topic) {
+  const grid = document.getElementById('socialGrid');
+  const sub  = document.getElementById('social-sub');
+  if (!grid) return;
+
+  if (window._socialInterval) { clearInterval(window._socialInterval); window._socialInterval = null; }
+
+  if (!posts || !posts.length) {
+    grid.innerHTML = '<div style="padding:12px;color:var(--dim);font-size:12px;font-family:var(--mono)">No live social posts found for this topic</div>';
+    if (sub) sub.textContent = 'Live social context';
+    return;
+  }
+
+  const bskyCount  = posts.filter(p => p._src === 'bluesky').length;
+  const mastoCount = posts.filter(p => p._src === 'mastodon').length;
+  if (sub) sub.textContent = posts.length + ' live posts · ' + bskyCount + ' Bluesky · ' + mastoCount + ' Mastodon · refreshes every 5s';
+
+  window._socialPosts = posts;
+  window._socialIdx   = 0;
+  const VISIBLE = 6;
+
+  function renderSlice() {
+    const idx = window._socialIdx;
+    let html = '<div class="social-grid">';
+    for (let i = 0; i < VISIBLE; i++) {
+      const p = posts[(idx + i) % posts.length];
+      const isBsky = p._src === 'bluesky';
+      const col  = isBsky ? '#0085ff' : '#6364ff';
+      const bg   = isBsky ? 'rgba(0,133,255,.1)' : 'rgba(99,100,255,.1)';
+      const brd  = isBsky ? 'rgba(0,133,255,.25)' : 'rgba(99,100,255,.25)';
+      const time = p.publishedAt ? new Date(p.publishedAt).toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'}) : '';
+      const safeUrl = (p.url || '').replace(/"/g, '&quot;');
+      html +=
+        '<div class="social-card" data-url="' + safeUrl + '" onclick="window.open(this.dataset.url,\'_blank\')">' +
+          '<div class="sc-platform" style="display:flex;align-items:center;gap:6px;margin-bottom:6px">' +
+            '<span class="sc-platform-badge" style="background:' + bg + ';color:' + col + ';border:1px solid ' + brd + '">' + p.platform + '</span>' +
+            '<span style="font-size:10px;color:var(--dim);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1">' + (p.handle || '') + '</span>' +
+            (time ? '<span style="font-size:10px;color:var(--dim);flex-shrink:0">' + time + '</span>' : '') +
+          '</div>' +
+          '<div class="sc-title" style="font-size:12px;line-height:1.45;margin-bottom:6px">' + (p.title || '').replace(/</g,'&lt;').slice(0, 220) + '</div>' +
+          '<div class="sc-meta"><span class="sc-score">♥ ' + (p.likes||0) + ' ↺ ' + (p.reposts||0) + (p.replies ? ' 💬 ' + p.replies : '') + '</span></div>' +
+        '</div>';
+    }
+    html += '</div>';
+    grid.innerHTML = html;
+    window._socialIdx = (window._socialIdx + 1) % posts.length;
+  }
+
+  renderSlice();
+  window._socialInterval = setInterval(renderSlice, 5000);
+}
+
+// ─── RENDER BRIEF ──────────────────────────────────────────────────────────
+function renderBrief(brief) {
+  const angles = (brief.investigativeAngles || []).map((a, i) =>
+    '<div style="background:var(--s1);border:1px solid var(--b1);border-radius:4px;padding:10px 12px;display:flex;gap:12px;align-items:flex-start;margin-bottom:8px">' +
+      '<div style="font-family:var(--mono);font-size:9px;color:var(--dim);background:var(--s2);border:1px solid var(--b2);border-radius:2Kx;padding:2px 6px;flex-shrink:0;margin-top:1px">Q' + (i+1) + '</div>' +
+      '<div style="flex:1;min-width:0">' +
+        '<div style="font-size:12px;color:var(--bright);font-weight:500;margin-bottom:3px;line-height:1.4">' + a.question + '</div>' +
+        '<div style="font-size:11px;color:var(--dim);line-height:1.45;margin-bottom:6px">' + a.why + '</div>' +
+        '<div style="display:flex;flex-wrap:wrap;gap:4px">' +
+          (a.keywords || []).map(function(k){return '<a href="https://www.theguardian.com/search?q='+encodeURIComponent(k)+'" target="_blank" style="font-family:var(--sans);font-size:9px;background:rgba(0,201,167,.09);color:var(--teal);border:1px solid rgba(0,201,167,.25);padding:2px 8px;border-radius:3px;text-decoration:none;display:inline-block;margin-bottom:2px" title="Search: '+k+'">'+k+'</a>';}).join('') +
+          '<a href="https://www.theguardian.com/'+(a.guardianSection||'world')+'" target="_blank" style="font-family:var(--sans);font-size:9px;background:rgba(61,139,255,.09);color:var(--blue);border:1px solid rgba(61,139,255,.25);padding:2px 8px;border-radius:3px;text-decoration:none;display:inline-block;margin-bottom:2px">'+(a.guardianSection||'')+'</a>' +
+          '<span style="font-family:var(--mono);font-size:8px;background:var(--s2);color:var(--dim);border:1px solid var(--b1);padding:1px 6px;border-radius:2px">' + (a.timeWindow || '30d') + '</span>' +
+        '</div>' +
+      '</div>' +
+    '</div>'
+  ).join('');
+
+  document.getElementById('newsBrief').innerHTML =
+    '<div style="background:rgba(240,180,41,.06);border:1px solid rgba(240,180,41,.18);border-left:3px solid var(--gold);border-radius:0 4px 4px 0;padding:12px 14px;margin-bottom:12px">' +
+      '<div style="font-family:var(--mono);font-size:8px;letter-spacing:.15em;text-transform:uppercase;color:var(--dim);margin-bottom:5px">Core Question</div>' +
+      '<div style="font-size:14px;color:var(--bright);font-family:var(--serif);font-style:italic;line-height:1.5">"' + brief.coreQuestion + '"</div>' +
+    '</div>' +
+    angles +
+    (brief.relevanceTest ? '<div style="margin-top:8px;padding:8px 12px;background:var(--s1);border:1px solid var(--b1);border-radius:3px;font-size:11px;color:var(--dim);font-family:var(--mono);font-style:italic">Relevance test: "' + brief.relevanceTest + '"</div>' : '') +
+    '<div class="loading-row" id="fetchStatus" style="margin-top:12px"><div class="spinner"></div><span>Fetching targeted articles across investigative angles…</span></div>';
+}
+
+// ─── RENDER NEWS GRID ──────────────────────────────────────────────────────
+function renderNewsGrid(articles, brief, keysSet) {
+  const fs = document.getElementById('fetchStatus');
+  if (fs) fs.remove();
+
+  const grid = document.getElementById('newsGrid');
+  const sub  = document.getElementById('news-sub');
+
+  if (!keysSet) {
+    grid.innerHTML =
+      '<div style="background:rgba(240,180,41,.06);border:1px solid rgba(240,180,41,.2);border-radius:4px;padding:14px 16px;margin-top:8px">' +
+        '<div style="font-family:var(--mono);font-size:9px;letter-spacing:.15em;color:var(--gold);text-transform:uppercase;margin-bottom:8px">⚙ Add API Keys to Activate Live Articles</div>' +
+        '<div style="font-family:var(--mono);font-size:11px;background:var(--s3);padding:10px 12px;border-radius:3px;line-height:2;color:var(--teal)">' +
+          'GNEWS_KEY — <a href="https://gnews.io" target="_blank" style="color:var(--gold)">gnews.io</a> · free 100/day<br>' +
+          'GUARDIAN_KEY — <a href="https://open-platform.theguardian.com" target="_blank" style="color:var(--gold)">open-platform.theguardian.com</a> · free unlimited<br>' +
+          'NEWSAPI_KEY — <a href="https://newsapi.org" target="_blank" style="color:var(--gold)">newsapi.org</a> · free 100/day<br>' +
+          'YOUTUBE_KEY — <a href="https://console.cloud.google.com" target="_blank" style="color:var(--gold)">Google Cloud Console</a> · free 10k/day<br>' +
+          '<span style="color:var(--purple)">Archive.ph</span> · auto-linked on every article — <span style="color:var(--dim)">no key needed</span><br>' +
+          '<span style="color:var(--purple)">Reddit</span> · social discussions auto-fetched — <span style="color:var(--dim)">no key needed</span>' +
+        '</div>' +
+        '<p style="margin-top:10px;color:var(--dim);font-size:12px">Articles are fetched per investigative angle, scored by AI, and grouped by quality. Reddit discussions and Archive.ph snapshots load automatically for every topic.</p>' +
+      '</div>';
+    sub.textContent = 'API keys needed';
+    return;
+  }
+
+  if (!articles.length) {
+    grid.innerHTML = '<div style="padding:16px;color:var(--dim);font-size:13px">No articles matched the investigative brief. The topic may be too recent or niche for these sources.</div>';
+    sub.textContent = '0 relevant articles';
+    return;
+  }
+
+  const key  = articles.filter(a => a._score >= 8);
+  const supp = articles.filter(a => a._score >= 6 && a._score < 8);
+  const ctx  = articles.filter(a => a._score < 6);
+
+  sub.textContent = articles.length + ' articles · ' + key.length + ' key evidence · scored by AI';
+
+  function group(label, icon, items, color) {
+    if (!items.length) return '';
+    return '<div style="margin-bottom:24px">' +
+      '<div style="font-family:var(--mono);font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:' + color + ';margin-bottom:12px;display:flex;align-items:center;gap:8px">' +
+        '<span style="width:3px;height:12px;background:' + color + ';border-radius:1px;display:inline-block"></span>' +
+        icon + ' ' + label + ' <span style="color:var(--dim);font-size:8px">(' + items.length + ')</span>' +
+      '</div>' +
+      '<div class="news-grid">' + items.map(renderCard).join('') + '</div>' +
+    '</div>';
+  }
+
+  grid.innerHTML = group('Key Evidence', '🔴', key, 'var(--accent)') + group('Supporting', '🟡', supp, 'var(--gold)') + group('Context', '⚪', ctx, 'var(--dim)');
+}
+
+function renderCard(a) {
+  const date    = new Date(a.publishedAt);
+  const dateStr = date.toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' });
+  const srcClr  = a._src === 'guardian' ? 'var(--blue)' : 'var(--teal)';
+  const tagColors = { 'key-evidence': ['rgba(232,64,64,.1)','var(--accent)','rgba(232,64,64,.2)'], 'background': ['rgba(240,180,41,.1)','var(--gold)','rgba(240,180,41,.2)'], 'reaction': ['rgba(255,107,53,.1)','var(--orange)','rgba(255,107,53,.2)'], 'analysis': ['rgba(155,109,255,.1)','var(--purple)','rgba(155,109,255,.2)'] };
+  const [bg, txt, brd] = tagColors[a._tag] || tagColors['background'];
+  const safeUrl = (a.url || '').replace(/'/g, "\\'");
+
+  const archiveUrl = 'https://archive.ph/newest/' + encodeURIComponent(a.url || '');
+  return '<div class="news-card" onclick="window.open(\'' + safeUrl + '\',\'_blank\')">' +
+    '<div class="nc-meta"><span class="nc-source" style="color:' + srcClr + '">' + (a.source || '') + '</span><span class="nc-dot">·</span><span class="nc-date">' + dateStr + '</span></div>' +
+    '<div class="nc-hl">' + (a.title || '') + '</div>' +
+    (a.description ? '<div class="nc-body">' + a.description.replace(/<[^>]+>/g, '').slice(0, 160) + '…</div>' : '') +
+    (a._note ? '<div style="font-size:11px;color:var(--teal);margin-top:5px;line-height:1.45;font-style:italic;padding-left:8px;border-left:2px solid rgba(0,201,167,.3)">' + a._note + '</div>' : '') +
+    '<div style="display:flex;align-items:center;justify-content:space-between;margin-top:6px;padding-top:6px;border-top:1px solid var(--b1)">' +
+      (a._angle ? '<div style="font-family:var(--mono);font-size:8px;color:var(--dim);letter-spacing:.04em;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">↳ ' + a._angle.slice(0,60) + '</div>' : '<div></div>') +
+      '<a class="nc-archive" href="' + archiveUrl + '" target="_blank" onclick="event.stopPropagation()" title="View archived snapshot">⊞ Archive</a>' +
+    '</div>' +
+    (a._angle ? '<div style="font-family:var(--mono);font-size:8px;color:var(--dim);letter-spacing:.06em;margin-top:0px;padding-top:0px;border-top:1px solid var(--b1);display:flex;align-items:flex-start;gap:4px"><span style="color:var(--gold);flex-shrink:0">↳</span><span>' + a._angle + '</span></div>' : '') +
+    (a._score ? '<div style="display:flex;align-items:center;gap:6px;margin-top:7px"><div style="font-family:var(--mono);font-size:8px;color:var(--dim)">relevance</div><div style="flex:1;height:3px;background:var(--b1);border-radius:2px;overflow:hidden"><div style="height:100%;width:' + (a._score * 10) + '%;background:linear-gradient(90deg,var(--teal),var(--accent));border-radius:2px"></div></div><div style="font-family:var(--mono);font-size:8px;color:var(--bright);font-weight:600">' + a._score + '/10</div></div>' : '') +
+    '<div style="display:flex;align-items:center;justify-content:space-between;margin-top:7px">' +
+      '<span style="font-family:var(--mono);font-size:8px;letter-spacing:.09em;text-transform:uppercase;padding:2px 6px;border-radius:2px;background:' + bg + ';color:' + txt + ';border:1px solid ' + brd + '">' + (a._tag || 'background') + '</span>' +
+      '<span style="font-family:var(--mono);font-size:8px;color:var(--dim)">↗ Read</span>' +
+    '</div>' +
+  '</div>';
+}
+
+// ─── RENDER AI ANALYSIS ────────────────────────────────────────────────────
+function renderHistoricalSection(data) {
+  var introEl  = document.getElementById('histIntro');
+  var eventsEl = document.getElementById('histEvents');
+  if (!data) {
+    if (introEl) introEl.innerHTML = '<p style="color:var(--dim)">Historical context unavailable.</p>';
+    return;
+  }
+  var aiData  = data.aiData  !== undefined ? data.aiData  : data;
+  var sources = data.sources !== undefined ? data.sources : [];
+  var deckEl  = document.getElementById('dh-deck');
+  if (deckEl && aiData && aiData.deck) deckEl.textContent = aiData.deck;
+  if (introEl) introEl.innerHTML = '';
+  var html = '';
+  if (aiData && Array.isArray(aiData.outcomes) && aiData.outcomes.length) {
+    html += '<div class="hist-signals">';
+    aiData.outcomes.forEach(function(o,i){
+      var rawLabel = o.label || '';
+      var yearMatch = rawLabel.match(/\((\d{4})\)/);
+      var year = yearMatch ? yearMatch[1] : '';
+      var cleanLabel = rawLabel.replace(/\s*\(\d{4}\)\s*/g,'').replace(/^\d{4}\s+/,'').trim() || rawLabel;
+      var fullText = (o.text||'').replace(/<[^>]+>/g,'').trim();
+      var shortText = fullText.length>180 ? fullText.substring(0,180).trim()+'…' : fullText;
+      html += '<div class="hist-signal" id="hs-'+i+'" onclick="toggleHsig('+i+')">';
+      html += '<div class="hsig-era">';
+      if(year){html += '<div class="hsig-year">\''+year.slice(2)+'</div><div class="hsig-era-tag">'+year+'</div>';}
+      else{html += '<div class="hsig-n">'+(i+1)+'</div>';}
+      html += '</div><div class="hsig-body"><div class="hsig-title">'+cleanLabel+'</div><div class="hsig-text">'+shortText+'</div>';
+      if(fullText.length>180) html += '<div class="hsig-detail">'+fullText+'</div>';
+      html += '</div><div class="hsig-chevron">&#9660;</div></div>';
+    });
+    html += '</div>';
+  }
+  var arcRaw = (aiData && aiData.histIntro) ? String(aiData.histIntro).replace(/<[^>]+>/g,'').trim() : '';
+  if(arcRaw){
+    html += '<div class="hist-arc"><div class="hist-arc-label">&#8635;&nbsp; AI narrative · from origin to now</div><div class="hist-arc-text">'+arcRaw+'</div></div>';
+  }
+  if (sources && sources.length) {
+    html += '<div class="hist-src-title">📋 Sources &amp; Historical References</div><div class="hist-sources">';
+    for(var k=0;k<Math.min(sources.length,9);k++){
+      var sv=sources[k];
+      html += '<details class="ref-link"><summary><span class="ref-badge">'+(sv.source||'SRC')+'</span>'
+            + '<span class="ref-title">'+(sv.title||'')+'</span>'
+            + '<span class="ref-toggle">&#9660;</span>'
+            + '<div class="ref-synopsis">'+(sv.excerpt?sv.excerpt.slice(0,280)+(sv.excerpt.length>280?'…':''):'');
+      html += ' <a href="'+(sv.url||'#')+'" target="_blank" rel="noopener">Read more ↗</a></div></details>';
+    }
+    html += '</div>';
+  }
+  if(!html) html='<p style="color:var(--dim);padding:.8rem 0">No historical sources found for this topic.</p>';
+  if(eventsEl) eventsEl.innerHTML = html;
+}
+function toggleHist(i){document.getElementById('he-'+i).classList.toggle('open');}
+function toggleHsig(i){var el=document.getElementById('hs-'+i);if(el)el.classList.toggle('hs-open');}
+
+// ─── NAVIGATION ────────────────────────────────────────────────────────────
+function goBack() {
+  document.getElementById('deepView').classList.remove('active');
+  document.getElementById('feedView').classList.add('active');
+  document.getElementById('tapHint').style.display = '';
+  window.scrollTo(0, 0);
+}
+function goHome() {
+  goBack();
+  selectedEvent = null;
+  document.getElementById('emptyState').style.display = '';
+  document.getElementById('previewCard').classList.remove('visible');
+  document.querySelectorAll('.event-row').forEach(r => r.classList.remove('selected'));
+}
+
+// ─── SEARCH ────────────────────────────────────────────────────────────────
+let searchTO;
+document.getElementById('searchInput').addEventListener('input', function() {
+  clearTimeout(searchTO);
+  const q = this.value.trim();
+  if (!q) { document.getElementById('searchResults').classList.remove('open'); return; }
+  searchTO = setTimeout(async () => {
+    const local = allEvents.filter(e => (e.title || '').toLowerCase().includes(q.toLowerCase())).slice(0, 8);
+    let api = [];
+    try {
+      const url = PROXY + encodeURIComponent(GAMMA + '/markets?active=true&closed=false&limit=8&_pq=' + encodeURIComponent(q));
+      const res = await fetch(url);
+      if (res.ok) api = await res.json();
+    } catch(_) {}
+    const combined = local.slice();
+    api.forEach(r => { if (!combined.find(c => c.id == r.id)) combined.push(r); });
+    renderSearch(combined.slice(0, 8));
+  }, 280);
+});
+
+function renderSearch(results) {
+  const box = document.getElementById('searchResults');
+  if (!results.length) { box.innerHTML = '<div style="padding:14px;text-align:center;color:var(--dim);font-family:var(--mono);font-size:10px">No topics found</div>'; box.classList.add('open'); return; }
+  box.innerHTML = results.map(r => {
+    const vol = r.volume24hr || 0;
+    const cat = r.category || getTagCat(r.tags) || '';
+    const id  = String(r.id || '');
+    // Store in map so it's accessible
+    if (id) eventMap[id] = r;
+    return '<div class="s-item" onclick="searchPick(\'' + id + '\')">' +
+      (r.image ? '<img style="width:28px;height:28px;border-radius:3px;object-fit:cover;flex-shrink:0;background:var(--s3)" src="' + r.image + '" onerror="this.style.display=\'none\'" alt="">' : '') +
+      '<div style="flex:1;min-width:0"><div class="si-title">' + (r.title || r.question || '') + '</div><div class="si-cat">' + cat + '</div></div>' +
+      (vol > 0 ? '<span class="si-vol">$' + fmtVol(vol) + '</span>' : '') +
+    '</div>';
+  }).join('');
+  box.classList.add('open');
+}
+
+function searchPick(id) {
+  document.getElementById('searchResults').classList.remove('open');
+  document.getElementById('searchInput').value = '';
+  const ev = eventMap[id];
+  if (!ev) return;
+  if (!allEvents.find(e => String(e.id) === id)) { allEvents.unshift(ev); }
+  selectPreview(ev, null);
+  openDeepDive(ev);
+}
+
+document.addEventListener('click', e => { if (!e.target.closest('.hdr-search')) document.getElementById('searchResults').classList.remove('open'); });
+
+// ─── CATEGORY FILTERS ──────────────────────────────────────────────────────
+document.getElementById('catFilters').addEventListener('click', e => {
+  const btn = e.target.closest('.cat-btn');
+  if (!btn) return;
+  document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  activeCategory = btn.dataset.cat;
+  if(activeCategory==='all'){initTicker();}else{stopTicker();renderList(activeCategory);}
+});
+
+// ─── TICKER ────────────────────────────────────────────────────────────────
+function buildTicker() {
+  const items = allEvents.slice(0, 16).map(ev => {
+    const vol = ev.volume24hr || 0;
+    const cls = vol > 5e6 ? 'color:var(--accent)' : 'color:var(--teal)';
+    const lbl = vol > 5e6 ? '🔥' : '●';
+    return '<span class="tk"><span class="tk-name">' + (ev.title || '').slice(0, 52) + (ev.title && ev.title.length > 52 ? '…' : '') + '</span><span style="' + cls + '">' + lbl + '</span></span>';
+  });
+  const t = document.getElementById('tickerTrack');
+  t.innerHTML = items.concat(items).join('');
+}
+
+// ─── UTILS ─────────────────────────────────────────────────────────────────
+function fmtVol(n) { return n >= 1e6 ? (n/1e6).toFixed(1)+'M' : n >= 1e3 ? Math.round(n/1e3)+'K' : String(n); }
+function getTagCat(tags) { return (tags && tags[0]) ? (tags[0].label || tags[0].slug || '') : ''; }
+
+// ─── REFRESH TIMER ─────────────────────────────────────────────────────────
+setInterval(() => { if (--countdown <= 0) { fetchEvents(); countdown = 60; } }, 1000);
+
+// ─── INIT ──────────────────────────────────────────────────────────────────
+fetchEvents();
+</script>
+
+<!-- MARKET INTELLIGENCE PANELS -->
+<section class="mi-section hub-glow">
+  <div class="mi-header">
+    <span class="mi-section-title">TODAY'S INTELLIGENCE</span>
+    <span class="mi-badge">AI-Scored · Live</span>
+    <span class="rdot" id="mi-rdot"></span>
+    <span class="mi-ts" id="mi-ts"></span>
+  </div>
+  <div id="topic-bar" style="display:none;align-items:center;gap:8px;padding:5px 14px;background:rgba(0,201,167,.07);border-bottom:1px solid rgba(0,201,167,.2);font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:.1em"><span style="color:var(--teal)">&#9672;</span><span class="tb-label" style="color:var(--bright);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:60vw">FOCUS:</span><span style="color:var(--dim);margin-left:4px">ALL PANELS FILTERED</span><button onclick="clearTopicFocus()" style="background:none;border:1px solid rgba(0,201,167,.25);color:var(--teal);font-family:'JetBrains Mono',monospace;font-size:7px;letter-spacing:.08em;padding:2px 8px;cursor:pointer;border-radius:2px;margin-left:8px">&#x2715; RESET</button></div>
+  <div class="mi-sub-label">Real-time probability-weighted prediction market signals. Higher conviction = greater deviation from 50% consensus. Surface the edge before the crowd catches up.</div>
+  <div class="mi-grid">
+    <div class="mi-panel">
+      <div class="mi-panel-head">TOP OPPORTUNITIES</div>
+      <div class="mi-panel-sub">Highest-volume markets ranked by conviction strength. Color-coded by sector for instant pattern recognition.</div>
+      <div class="flip-board" id="mi-opps"><div style="color:var(--dim);font-size:10px;padding:8px 0">Loading…</div></div>
+    </div>
+    <div class="mi-panel">
+      <div class="mi-panel-head">NARRATIVE SHIFTS</div>
+      <div class="mi-panel-sub">Fast-moving markets showing momentum divergence. Tracks velocity of probability changes — where the story is changing.</div>
+      <div id="mi-narr"><div style="color:var(--dim);font-size:10px;padding:8px 0">Loading…</div></div>
+    </div>
+    <div class="mi-panel">
+      <div class="mi-panel-head">CROSS-MARKET SIGNALS</div>
+      <div class="mi-panel-sub">Markets showing unusual conviction across unrelated sectors. Macro patterns surfacing in micro signals.</div>
+      <div class="flip-board" id="mi-cross"><div style="color:var(--dim);font-size:10px;padding:8px 0">Loading…</div></div>
+    </div>
+  </div>
+  <div class="sf-panel" style="margin-bottom:12px">
+    <div class="sf-head" onclick="var b=this.nextElementSibling;b.classList.toggle('open')">
+      SIGNAL FORENSICS <span class="mi-badge" id="sf-badge">0 signals</span>
+      <span style="margin-left:auto;color:var(--dim);font-size:9px">Click to expand ›</span>
+    </div>
+    <div class="sf-body" id="sf-body"><div style="color:var(--dim);font-size:10px;padding:8px">Loading…</div></div>
+  </div>
+  <div>
+    <div class="mi-header" style="margin-top:8px">
+      <span class="mi-section-title">CROSS-PLATFORM DIVERGENCE</span>
+      <span class="mi-badge" id="div-badge">0 markets</span>
+      <span class="rdot" id="div-rdot"></span>
+    </div>
+    <div class="mi-sub-label">Where prediction markets price outlier outcomes. Divergence Score D = |P − 0.5| × √Volume. High D = high-conviction minority view. Low D = uncertain consensus. The gap is where alpha hides.</div>
+    <div id="mi-divtable"><div style="color:var(--dim);font-size:10px;padding:8px 0">Loading…</div></div>
+  </div>
+</section>
+<script>
+(function(){
+var __cache=null,__ts=0;
+function pFetch(u){
+  var pu="https://api.codetabs.com/v1/proxy?quest="+encodeURIComponent(u);
+  var ctrl=new AbortController(),tid=setTimeout(function(){ctrl.abort();},9000);
+  return fetch(pu,{signal:ctrl.signal}).then(function(r){clearTimeout(tid);return r.ok?r.json():null;}).catch(function(){clearTimeout(tid);return null;});
+}
+function getP(m){try{var op=JSON.parse(m.outcomePrices||"null");return op?parseFloat(op[0]):parseFloat(m.bestAsk||0.5);}catch(e){return parseFloat(m.bestAsk||0.5);}}
+function volFmt(v){if(!v)return"$0";if(v>=1e6)return"$"+(v/1e6).toFixed(1)+"M";if(v>=1e3)return"$"+(v/1e3).toFixed(0)+"K";return"$"+Math.round(v);}
+function probChip(p){var pct=Math.round(p*100),cls=p>0.65?"prob-high":p>0.35?"prob-mid":"prob-low";return'<span class="prob-chip '+cls+'">'+pct+'%</span>';}
+function flash(id){var d=document.getElementById(id);if(!d)return;d.classList.add("on");setTimeout(function(){d&&d.classList.remove("on");},2000);}
+function getCategory(t){
+  t=t.toLowerCase();
+  if(/bitcoin|crypto|eth|solana|btc|defi|nft|coin|blockchain|token/.test(t))return"crypto";
+  if(/election|president|senate|congress|democrat|republican|vote|ballot|trump|biden|harris|political/.test(t))return"politics";
+  if(/nfl|nba|mlb|nhl|soccer|football|basketball|baseball|sport|championship|tournament|league|cup|team|player/.test(t))return"sports";
+  if(/fed|rate|gdp|inflation|recession|market|stock|bond|yield|economy|economic|trade|tariff/.test(t))return"econ";
+  if(/ai|tech|software|apple|google|microsoft|openai|startup|ipo|chip|semiconductor/.test(t))return"tech";
+  if(/covid|cancer|vaccine|health|drug|fda|disease|hospital|medical/.test(t))return"health";
+  if(/war|ukraine|russia|china|nato|military|conflict|geopolitical/.test(t))return"world";
+  return"other";
+}
+function catClass(c){return"cat-"+c;}
+function catBgClass(c){return"cat-"+c+"-bg";}
+var CAT_LABEL={crypto:"CRYPTO",politics:"POLITICS",sports:"SPORTS",econ:"ECON",tech:"TECH",health:"HEALTH",world:"WORLD",other:"OTHER"};
+
+var __topKW=[],__topCat='all',__topLabel='',__topActive=false;
+var __STOP=new Set('will the and for in to be is are was were has have had not that this with from they their there than then more when what who which how any all can would could should does did been being make over under about after before during within without above below between against through because also both each most other some such into itself'.split(' '));
+function extractKW(q){return q.toLowerCase().replace(/[^a-z0-9\s]/g,' ').split(/\s+/).filter(function(w){return w.length>2&&!__STOP.has(w);}).slice(0,7);}
+function topFilt(mkts){if(!__topActive||!__topKW.length)return mkts;var f=mkts.filter(function(m){var q=(m.question||'').toLowerCase();return __topKW.some(function(k){return q.indexOf(k)>=0;});});if(f.length<2)f=mkts.filter(function(m){return getCategory(m.question||'')==__topCat;});return f.length>=2?f:mkts;}
+function djb2(s){var h=5381;for(var i=0;i<s.length;i++)h=((h<<5)+h)^s.charCodeAt(i);return Math.abs(h);}
+function genInsight(m){var p=getP(m),vol=parseFloat(m.volume||0),pct=Math.round(p*100),dv=Math.abs(p-0.5),h=djb2(m.question||'');var T;if(p>=0.90)T=['Crowd priced in at '+pct+'% YES. Market has largely resolved this question.','Near-unanimous at '+pct+'%. The '+volFmt(vol)+' in volume reflects high confidence.','Dominant consensus at '+pct+'%. Only a major catalyst could reverse this pricing.'];else if(p<=0.10)T=['Near-zero probability at '+pct+'% YES. Crowd has effectively ruled this out.',pct+'% YES — market treats this as resolved. '+(100-pct)+'% backing the NO scenario.','Strong NO at '+(100-pct)+'%. Requires extraordinary development to shift.'];else if(p>=0.72)T=[pct+'% YES with '+volFmt(vol)+' behind it. Conviction building toward resolution.','Solid YES lean at '+pct+'%. Market pricing favorable odds with room to extend.','Growing YES consensus at '+pct+'%. Watch for a catalyst to push into certainty territory.'];else if(p<=0.28)T=[pct+'% YES — crowd pricing against this outcome. '+(100-pct)+'% NO lean growing.','Bearish read at '+pct+'% YES. '+volFmt(vol)+' positioned against the YES scenario.','Persistent NO tilt at '+(100-pct)+'%. Market trending toward rejection of this outcome.'];else if(dv<0.07)T=['Near-perfect deadlock at '+pct+'%. Any new signal will move this fast.','50/50 split at '+pct+'% YES. High-information event with binary resolution pending.','Maximum uncertainty at '+pct+'% YES — this market is waiting for a catalyst.'];else T=['Moderate '+(p>0.5?'YES':'NO')+' lean at '+pct+'%. Directional signal building but not decisive.',pct+'% YES on '+volFmt(vol)+' volume. Market positioning ahead of resolution.','Active conviction at '+pct+'%. '+(p>0.5?'YES side growing.':'NO side gaining ground.')+' Watch for acceleration.'];return T[h%T.length];}
+function setTopicFocus(q,cat){__topKW=extractKW(q);__topCat=cat||getCategory(q);__topLabel=(q||'').substring(0,50)+((q||'').length>50?'…':'');__topActive=true;updateTopicBar();reloadAllPanels();}
+function clearTopicFocus(){__topActive=false;__topKW=[];__topLabel='';updateTopicBar();reloadAllPanels();}
+function reloadAllPanels(){loadOpps();loadNarr();loadCross();loadDiv();}
+function updateTopicBar(){var bar=document.getElementById('topic-bar');if(!bar)return;if(__topActive){bar.style.display='flex';var lbl=bar.querySelector('.tb-label');if(lbl)lbl.textContent='FOCUS: '+__topLabel;}else{bar.style.display='none';}}
+window.setTopicFocus=setTopicFocus;window.clearTopicFocus=clearTopicFocus;
+function renderOpps(markets){
+  var el=document.getElementById("mi-opps");if(!el)return;
+  var top=topFilt(markets).slice(0,8);
+  var html="";
+  top.forEach(function(m,i){
+    var p=getP(m),cat=getCategory(m.question||""),vol=parseFloat(m.volume||0),pct=Math.round(p*100);
+    var title=(m.question||"").substring(0,55);
+    html+='<div class="flip-row '+catBgClass(cat)+'" style="animation-delay:'+(i*80)+'ms;padding-left:6px">'
+      +'<span class="'+catClass(cat)+'" style="font-family:var(--mono);font-size:8px;min-width:52px;font-weight:700">'+CAT_LABEL[cat]+'</span>'
+      +'<span style="flex:1;font-size:9.5px;line-height:1.3">'+title+(title.length<(m.question||"").length?"…":"")+'</span>'
+      +probChip(p)
+      +'<span style="font-family:var(--mono);font-size:8px;color:var(--dim);min-width:36px;text-align:right">'+volFmt(vol)+'</span>'
+      +'<div class="ai-insight">'+genInsight(m)+'</div>'
+      +'</div>';
+  });
+  el.innerHTML=html||'<div style="color:var(--dim);font-size:10px;padding:8px 0">No data</div>';
+  var ts=document.getElementById("mi-ts");
+  if(ts)ts.textContent="Updated "+new Date().toLocaleTimeString("en-US",{hour:"2-digit",minute:"2-digit"});
+  flash("mi-rdot");
+}
+var NARR_ACTIONS={high_rising:"SURGING",high_stable:"LOCKED IN",high_falling:"FADING",low_rising:"REVERSING",low_stable:"DORMANT",low_falling:"COLLAPSING",mid:"CONTESTED"};
+function narrAction(p,prev){
+  if(p>0.7)return{label:"SURGING",bg:"rgba(34,197,94,.12)",c:"#22c55e",arrow:"↑"};
+  if(p>0.55)return{label:"TRENDING",bg:"rgba(34,197,94,.07)",c:"#4ade80",arrow:"↗"};
+  if(p<0.3)return{label:"COLLAPSING",bg:"rgba(239,68,68,.12)",c:"#ef4444",arrow:"↓"};
+  if(p<0.45)return{label:"FADING",bg:"rgba(239,68,68,.07)",c:"#f87171",arrow:"↘"};
+  return{label:"CONTESTED",bg:"rgba(107,122,153,.1)",c:"var(--dim)",arrow:"↔"};
+}
+function renderNarr(markets){
+  var el=document.getElementById("mi-narr");if(!el)return;
+  var sorted=topFilt(markets).slice().sort(function(a,b){return Math.abs(getP(b)-0.5)-Math.abs(getP(a)-0.5);}).slice(0,7);
+  var html="";
+  sorted.forEach(function(m,i){
+    var p=getP(m),act=narrAction(p),cat=getCategory(m.question||"");
+    var title=(m.question||"").substring(0,50);
+    html+='<div class="narr-row" style="animation-delay:'+(i*90)+'ms">'
+      +'<span class="narr-arrow" style="color:'+act.c+'">'+act.arrow+'</span>'
+      +'<span class="narr-action" style="background:'+act.bg+';color:'+act.c+';border-color:'+act.c+'40">'+act.label+'</span>'
+      +'<span class="narr-title">'+title+(title.length<(m.question||"").length?"…":"")+'</span>'
+      +'<span class="'+catClass(cat)+'" style="font-family:var(--mono);font-size:8px;font-weight:700">'+CAT_LABEL[cat]+'</span>'
+      +'<div class="ai-insight">'+genInsight(m)+'</div>'
+      +'</div>';
+  });
+  el.innerHTML=html||'<div style="color:var(--dim);font-size:10px;padding:8px 0">No data</div>';
+}
+
+function renderCross(markets){
+  var el=document.getElementById("mi-cross");if(!el)return;
+  // Score each market by "signal strength" = divergence from 0.5 * log(volume)
+  var scored=topFilt(markets).map(function(m){
+    var p=getP(m),vol=Math.max(parseFloat(m.volume||1),1),div=Math.abs(p-0.5);
+    return{m:m,p:p,div:div,score:div*Math.log(vol)};
+  }).sort(function(a,b){return b.score-a.score;}).slice(0,7);
+  var html="";
+  scored.forEach(function(item,i){
+    var m=item.m,p=item.p,cat=getCategory(m.question||"");
+    var scoreStr=(item.score).toFixed(1);
+    var title=(m.question||"").substring(0,48);
+    var scoreColor=item.score>3?"#22c55e":item.score>1.5?"#ffd700":"var(--dim)";
+    html+='<div class="signal-row" style="animation-delay:'+(i*75)+'ms">'
+      +'<span class="signal-score" style="color:'+scoreColor+'">'+scoreStr+'</span>'
+      +'<span class="signal-title">'+title+(title.length<(m.question||"").length?"…":"")+'</span>'
+      +'<span class="signal-badge '+catBgClass(cat)+' '+catClass(cat)+'" style="font-size:8px">'+CAT_LABEL[cat]+'</span>'
+      +probChip(p)
+      +'</div>';
+  });
+  el.innerHTML=html||'<div style="color:var(--dim);font-size:10px;padding:8px 0">No data</div>';
+}
+function renderForensics(markets){
+  var el=document.getElementById("sf-body"),badge=document.getElementById("sf-badge");
+  if(!el)return;
+  var top=markets.slice(0,14);
+  if(badge)badge.textContent=top.length+" signals";
+  var html="";
+  top.forEach(function(m){
+    var p=getP(m),vol=parseFloat(m.volume||0),cat=getCategory(m.question||"");
+    var div=Math.abs(p-0.5),signal=div>0.3?"HIGH":div>0.15?"MED":"LOW";
+    var sc=signal==="HIGH"?"#22c55e":signal==="MED"?"#ffd700":"var(--dim)";
+    var title=(m.question||"").substring(0,70);
+    html+='<div class="sf-row">'
+      +'<span class="'+catClass(cat)+'" style="font-family:var(--mono);font-size:8px;font-weight:700;min-width:52px">'+CAT_LABEL[cat]+'</span>'
+      +'<span style="flex:1;font-size:9px;line-height:1.4">'+title+(title.length<(m.question||"").length?"…":"")+'</span>'
+      +probChip(p)
+      +'<span style="font-family:var(--mono);font-size:8px;color:'+sc+';min-width:28px;text-align:right">'+signal+'</span>'
+      +'<span style="font-family:var(--mono);font-size:8px;color:var(--dim);min-width:36px;text-align:right">'+volFmt(vol)+'</span>'
+      +'<div class="ai-insight">'+genInsight(m)+'</div>'
+      +'</div>';
+  });
+  el.innerHTML=html||'<div style="color:var(--dim);font-size:10px;padding:8px">No data</div>';
+}
+
+function renderDiv(markets){
+  var el=document.getElementById("mi-divtable"),badge=document.getElementById("div-badge");
+  if(!el)return;
+  var top=topFilt(markets).slice(0,12);
+  if(badge)badge.textContent=top.length+" markets";
+  var html="";
+  top.forEach(function(m){
+    var p=getP(m),vol=Math.max(parseFloat(m.volume||1),1),cat=getCategory(m.question||"");
+    var pct=Math.round(p*100),div=Math.abs(p-0.5),dScore=(div*Math.sqrt(vol)).toFixed(0);
+    var fillColor=p>0.65?"#22c55e":p>0.55?"#4ade80":p<0.35?"#ef4444":p<0.45?"#f87171":"#a0aec0";
+    var title=(m.question||"").substring(0,65);
+    html+='<div class="div-bar-wrap">'
+      +'<div class="div-bar-title"><span class="'+catClass(cat)+'" style="font-family:var(--mono);font-size:8px;font-weight:700;margin-right:6px">'+CAT_LABEL[cat]+'</span>'+title+(title.length<(m.question||"").length?"…":"")+'</div>'
+      +'<div class="div-bar-labels"><span>NO 0%</span><span style="color:var(--bright)">'+pct+'% YES</span><span>YES 100%</span></div>'
+      +'<div class="div-bar-track">'
+        +'<div class="div-bar-fill" style="width:'+pct+'%;background:'+fillColor+'"></div>'
+        +'<div class="div-bar-center"></div>'
+      +'</div>'
+      +'<div class="div-score-row"><span>D = |'+pct+'% − 50%| × √'+volFmt(vol).replace("$","")+'</span><span style="color:'+fillColor+'">D-SCORE: '+dScore+'</span></div>'
+      +'<div class="ai-insight">'+genInsight(m)+'</div>'
+      +'</div>';
+  });
+  el.innerHTML=html||'<div style="color:var(--dim);font-size:10px;padding:8px 0">No data</div>';
+  flash("div-rdot");
+}
+async function fetchMarkets(){
+  var now=Date.now();
+  if(__cache&&(now-__ts)<25000)return __cache;
+  var base="https://gamma-api.polymarket.com/markets?closed=false&limit=30&order=volume&ascending=false&active=true";
+  var data=await pFetch(base);
+  if(data&&data.length){__cache=data;__ts=now;}
+  return __cache;
+}
+async function loadOpps(){var m=await fetchMarkets();if(m)renderOpps(m);}
+async function loadNarr(){var m=await fetchMarkets();if(m)renderNarr(m);}
+async function loadCross(){var m=await fetchMarkets();if(m)renderCross(m);}
+async function loadFor(){var m=await fetchMarkets();if(m)renderForensics(m);}
+async function loadDiv(){var m=await fetchMarkets();if(m)renderDiv(m);}
+async function loadAll(){
+  var m=await fetchMarkets();
+  if(!m){
+    ["mi-opps","mi-narr","mi-cross","sf-body","mi-divtable"].forEach(function(id){
+      var e=document.getElementById(id);
+      if(e)e.innerHTML='<div style="color:var(--dim);font-size:10px;padding:8px 0">No data available</div>';
+    });
+    return;
+  }
+  renderOpps(m);renderNarr(m);renderCross(m);renderForensics(m);renderDiv(m);
+}
+// Per-section independent refresh intervals
+setInterval(loadOpps,30000);
+setInterval(loadNarr,20000);
+setInterval(loadCross,45000);
+setInterval(loadFor,60000);
+setInterval(loadDiv,90000);
+// Initial load
+if(document.readyState!=="loading"){loadAll();}
+else{document.addEventListener("DOMContentLoaded",loadAll);}
+})();
+</script>
+
+<script>
+
+// INFERA Deep Dive Intelligence Engine v3.1
+// Sources: HackerNews Algolia + The Guardian API + GDELT + Wikipedia REST
+// v3 fixes: prediction-verb stop words, phrase-based wiki queries,
+//           topHits threshold for relevance, richer historical context
+// v3.1 adds: Guardian (free key, CORS-ok in production) + GDELT (keyless, AP/Reuters/CNN/BBC)
+(function(){
+'use strict';
+
+// ── STOP WORDS ───────────────────────────────────────────────────────────────
+var STOP = (typeof __STOP!=='undefined') ? __STOP : new Set(
+  'will the and for in to be is are was were has have had not that this with from they their there than then more when what who which how any all can would could should does did been being make over under about after before during within without above below between against through because also both each most other some such into itself'.split(' ')
+);
+// Prediction-market verbs + numeric years that dilute entity keywords
+var PRED_STOP = new Set(
+  'reach achieve happen occur become pass win lose gain fall rise stay remain end begin start complete finish reach get hit cross exceed surpass drop decline increase decrease grow shrink'.split(' ')
+);
+
+// ── CATEGORY CONTEXT EXPANSION ───────────────────────────────────────────────
+var CAT_CTX = {
+  crypto:    ['bitcoin','cryptocurrency','blockchain','digital asset','crypto market'],
+  sports:    ['championship','tournament','match','league','playoff'],
+  politics:  ['election','vote','policy','government','legislation','senate'],
+  econ:      ['federal reserve','inflation','GDP','interest rate','recession','monetary'],
+  economics: ['trade','tariff','GDP','monetary policy','fiscal','sanctions'],
+  world:     ['international','diplomacy','conflict','treaty','relations'],
+  climate:   ['temperature','climate','hurricane','emissions','fossil fuel'],
+  tech:      ['technology','AI','software','startup','innovation'],
+  other:     ['market','forecast','analysis','trend','outlook']
+};
+
+// ── KEYWORD EXTRACTOR v3 ─────────────────────────────────────────────────────
+// Filters stop words, prediction verbs, and pure numerics for clean entity terms
+function kw(q){
+  var words=(q||'').toLowerCase()
+    .replace(/[^a-z0-9\s$%]/g,' ')
+    .split(/\s+/)
+    .filter(function(w){
+      return w.length>2
+        && !STOP.has(w)
+        && !PRED_STOP.has(w)
+        && !/^\d{4}$/.test(w)    // strip years like 2026
+        && !/^\d+$/.test(w);     // strip pure numbers
+    });
+  var seen=new Set(); var out=[];
+  words.forEach(function(w){ if(!seen.has(w)){ seen.add(w); out.push(w); } });
+  return out.slice(0,8);
+}
+
+// ── MULTI-QUERY BUILDER ──────────────────────────────────────────────────────
+// K = keyword vector (stop-filtered, entity-focused)
+// C = category context expansion vector
+// Q_set = {
+//   Q0: K[0..2].join(' ')       ← primary entity phrase (e.g. "china trade deal")
+//   Q1: K[1..3].join(' ')       ← shifted entity phrase  (e.g. "trade deal tariff")
+//   Q2: K[0] + ' ' + C[0]      ← contextual expansion   (e.g. "china tariff")
+//   Q3: literal title stripped  ← natural language form
+// }
+function buildQuerySet(question, category){
+  var K=kw(question);
+  var cat=category.toLowerCase();
+  var ctx=(CAT_CTX[cat]||CAT_CTX.other)[0];
+  var literal=question.replace(/^will |^is |^are |^does |^can /i,'')
+    .replace(/\?.*$/,'').trim().substring(0,55);
+  var queries=[
+    K.slice(0,3).join(' '),
+    K.slice(1,4).join(' '),
+    (K[0]||'')+' '+ctx,
+    literal
+  ].map(function(q){ return q.trim(); })
+   .filter(function(q){ return q.length>3; });
+  var seen=new Set();
+  return queries.filter(function(q){
+    var k=q.toLowerCase();
+    if(seen.has(k)) return false;
+    seen.add(k); return true;
+  }).slice(0,4);
+}
+
+// ── RELEVANCE SCORER v3 ──────────────────────────────────────────────────────
+// score(a,K) = [Σ_i (n-i)/n · I(K_i∈text)] · exp(-λ·age_days)
+// v3 adds: topHits gate — must match ≥1 of top-3 keywords or be rejected
+// λ = 0.08 → half-life ≈ 8.7 days
+var LAMBDA=0.08;
+function scoreArticle(article, keywords){
+  var text=((article.title||'')+' '+(article.description||article.story_text||'')).toLowerCase();
+  var n=keywords.length||1;
+  var rel=0;
+  var topHits=0;  // hits among top 3 highest-weight keywords
+  keywords.forEach(function(w,i){
+    if(text.indexOf(w)>=0){
+      rel+=(n-i)/n;
+      if(i<3) topHits++;
+    }
+  });
+  // Gate: require at least 1 top-3 keyword hit to prevent off-topic articles
+  if(topHits===0) return 0;
+  var ts=article.publishedAt||article.created_at||0;
+  var age=ts ? (Date.now()-new Date(typeof ts==='number'?ts*1000:ts))/86400000 : 3;
+  return rel * Math.exp(-LAMBDA * Math.max(0, age));
+}
+
+// ── DEDUPLICATION (word-overlap cosine-lite) ─────────────────────────────────
+function isSimilar(t1,t2){
+  var s1=new Set(t1.toLowerCase().split(/\s+/).filter(function(w){ return w.length>3; }));
+  var s2=t2.toLowerCase().split(/\s+/).filter(function(w){ return w.length>3; });
+  if(!s1.size) return false;
+  var overlap=s2.filter(function(w){ return s1.has(w); }).length;
+  return (overlap/Math.max(s1.size,s2.length))>0.5;
+}
+function dedup(articles){
+  var out=[];
+  articles.forEach(function(a){
+    var title=a.title||'';
+    if(!out.some(function(b){ return isSimilar(title,b.title||''); })) out.push(a);
+  });
+  return out;
+}
+
+// ── SOURCE 1: HackerNews via Algolia (keyless, CORS-ok) ──────────────────────
+async function fetchHN(query){
+  try{
+    var since=Math.floor((Date.now()-45*86400000)/1000); // 45-day window
+    var u='https://hn.algolia.com/api/v1/search?query='+encodeURIComponent(query)
+      +'&tags=story&hitsPerPage=8&numericFilters=created_at_i>'+since;
+    var r=await fetch(u);
+    if(!r.ok) return [];
+    var d=await r.json();
+    return (d.hits||[]).filter(function(h){ return h.title; }).map(function(h){
+      return {
+        title: h.title,
+        description: h.story_text ? h.story_text.replace(/<[^>]+>/g,'').substring(0,200) : '',
+        url: h.url||('https://news.ycombinator.com/item?id='+h.objectID),
+        source: 'HackerNews',
+        publishedAt: new Date(h.created_at_i*1000).toISOString(),
+        created_at: h.created_at_i
+      };
+    });
+  }catch(e){ return []; }
+}
+
+// ── SOURCE 2: The Guardian Open Platform (free key, CORS-ok on production) ───
+async function fetchGuardian(query){
+  try{
+    var u='https://content.guardianapis.com/search?q='+encodeURIComponent(query)
+      +'&api-key=3065ee76-7de6-414f-899e-58b95c3f3705'
+      +'&show-fields=trailText&order-by=newest&page-size=5';
+    var r=await fetch(u);
+    if(!r.ok) return [];
+    var d=await r.json();
+    return ((d.response&&d.response.results)||[]).map(function(a){
+      return {
+        title: a.webTitle||'',
+        description: (a.fields&&a.fields.trailText)||'',
+        url: a.webUrl||'',
+        source: 'The Guardian',
+        publishedAt: a.webPublicationDate||''
+      };
+    });
+  }catch(e){ return []; }
+}
+
+// ── SOURCE 3: GDELT (keyless, indexes AP/Reuters/CNN/BBC/etc.) ───────────────
+async function fetchGDELT(query){
+  try{
+    var u='https://api.gdeltproject.org/api/v2/doc/doc?query='
+      +encodeURIComponent(query)+'&mode=artlist&maxrecords=10&format=json&timespan=3d';
+    var r=await fetch(u);
+    if(!r.ok) return [];
+    var d=await r.json();
+    return ((d.articles)||[]).filter(function(a){ return a.title; }).map(function(a){
+      return {
+        title: a.title||'',
+        description: '',
+        url: a.url||'',
+        source: a.domain||'GDELT',
+        publishedAt: a.seendate||''
+      };
+    });
+  }catch(e){ return []; }
+}
+
+// ── SOURCE 4: Wikipedia REST (keyless, CORS-ok) ──────────────────────────────
+// v3: full-text search API for phrase queries, direct lookup for single entities
+// Full-text search finds "China–United States trade war" from "china trade"
+// whereas opensearch only finds "China trade" (weak disambiguation)
+async function fetchWikiSummary(term){
+  if(!term||!term.trim()) return null;
+  try{
+    var isPhrase = term.trim().indexOf(' ')>-1;
+    // Step 1: direct slug lookup (best for single entities like "China", "Bitcoin")
+    var slug=term.trim().replace(/\s+/g,'_');
+    var r=await fetch('https://en.wikipedia.org/api/rest_v1/page/summary/'+encodeURIComponent(slug));
+    if(r.ok){
+      var d=await r.json();
+      if(d.extract && d.extract.length>80 && !/may refer to:|disambiguation/i.test(d.extract)){
+        return { extract:d.extract, title:d.title||'', url:d.content_urls&&d.content_urls.desktop&&d.content_urls.desktop.page };
+      }
+    }
+    // Step 2: full-text search API (far better than opensearch for multi-word phrases)
+    // Finds "China–United States trade war" from "china trade", "US-China trade" etc.
+    var fts=await fetch('https://en.wikipedia.org/w/api.php?action=query&list=search'
+      +'&srsearch='+encodeURIComponent(term)+'&srlimit=3&format=json&origin=*');
+    if(!fts.ok) return null;
+    var ftd=await fts.json();
+    var hits=(ftd.query&&ftd.query.search)||[];
+    for(var i=0;i<hits.length;i++){
+      var slug2=encodeURIComponent(hits[i].title.replace(/\s+/g,'_'));
+      var r2=await fetch('https://en.wikipedia.org/api/rest_v1/page/summary/'+slug2);
+      if(!r2.ok) continue;
+      var d2=await r2.json();
+      if(d2.extract && d2.extract.length>80 && !/may refer to:|disambiguation/i.test(d2.extract)){
+        return { extract:d2.extract, title:d2.title||'', url:d2.content_urls&&d2.content_urls.desktop&&d2.content_urls.desktop.page };
+      }
+    }
+    return null;
+  }catch(e){ return null; }
+}
+
+// ── AGGREGATOR ───────────────────────────────────────────────────────────────
+async function fetchAllNews(question, category){
+  var queries=buildQuerySet(question,category);
+  var keywords=kw(question);
+  // Fire all three sources in parallel for each query
+  var allCalls=[];
+  queries.forEach(function(q){
+    allCalls.push(fetchHN(q));
+    allCalls.push(fetchGuardian(q));
+    allCalls.push(fetchGDELT(q));
+  });
+  var settled=await Promise.allSettled(allCalls);
+  var raw=[];
+  settled.forEach(function(r){ if(r.status==='fulfilled') raw=raw.concat(r.value||[]); });
+
+  var withScores=raw.map(function(a){ return {a:a, s:scoreArticle(a,keywords)}; });
+  var scored=withScores.filter(function(x){ return x.s>0; })
+    .sort(function(a,b){ return b.s-a.s; });
+
+  var result=dedup(scored.map(function(x){ return x.a; }));
+  // Fallback: if weak coverage, pad with recency-sorted high-scoring articles
+  if(result.length<3 && raw.length>0){
+    // Relax threshold: accept any article with ≥1 keyword match (no topHits gate)
+    var relaxed=raw.filter(function(a){
+      var text=((a.title||'')+' '+(a.description||'')).toLowerCase();
+      return keywords.some(function(w){ return text.indexOf(w)>=0; });
+    }).sort(function(a,b){ return (b.created_at||0)-(a.created_at||0); });
+    relaxed.forEach(function(a){
+      if(result.length>=8) return;
+      if(!result.some(function(r){ return r.title===a.title; })) result.push(a);
+    });
+  }
+  return result.slice(0,8);
+}
+
+// ── BRIEF GENERATOR ──────────────────────────────────────────────────────────
+function generateBrief(market, articles, wikiData){
+  var p = market.probability != null ? market.probability
+        : market.p != null ? market.p
+        : null;
+  var q=market.question||market.title||'';
+  var K=kw(q);
+
+  // Probability frame
+  var frame,col,bias,pctStr;
+  if(p===null){
+    frame='MARKET SIGNAL'; col='var(--teal)'; pctStr='LIVE';
+    bias='Crowd attention signal active on this market. Positioning reflects real-money conviction.';
+  } else {
+    var pct=Math.round(p*100);
+    pctStr=pct+'% YES';
+    if(p>=0.88)      {frame='STRONG YES CONSENSUS'; col='var(--teal)';
+      bias='Crowd has nearly fully priced this in. A reversal requires a high-sigma catalyst — black swan territory.';}
+    else if(p>=0.65) {frame='YES LEAN'; col='var(--teal)';
+      bias='Market pricing YES at a premium. Narrative momentum favors the outcome, but mean-reversion risk is live.';}
+    else if(p<=0.12) {frame='STRONG NO CONSENSUS'; col='var(--dim)';
+      bias='Crowd has effectively ruled this out. Only a structural regime change would reprice above 20%.';}
+    else if(p<=0.35) {frame='NO LEAN'; col='var(--dim)';
+      bias='Skepticism dominates. Macro or structural catalysts needed to push into contested territory.';}
+    else             {frame='PRICE DISCOVERY'; col='#f5a623';
+      bias='Market in contested equilibrium. Both scenarios live. High sensitivity to new information flow.';}
+  }
+
+  // Wiki context snippet (2 sentences, filtered for relevance)
+  var ctx='';
+  if(wikiData&&wikiData.extract&&wikiData.extract.length>80){
+    // Check wiki is actually relevant — must share a keyword with our query
+    var wikiLow=(wikiData.extract||'').toLowerCase();
+    var relevant=K.slice(0,3).some(function(w){ return wikiLow.indexOf(w)>=0; });
+    if(relevant){
+      ctx=wikiData.extract.split('. ').slice(0,2).join('. ')+'.';
+    }
+  }
+
+  // Clickable article signals
+  var sigs=articles.slice(0,5).map(function(a,i){
+    var safeUrl=(a.url||'').replace(/["'<>]/g,function(c){return{'"':'&quot;',"'":'&#39;','<':'&lt;','>':'&gt;'}[c];});
+    return (safeUrl
+      ?'<a href="'+safeUrl+'" target="_blank" rel="noopener" style="text-decoration:none;display:block">'
+      :'<div>')
+      +'<div class="brief-signal" style="cursor:'+(safeUrl?'pointer':'default')+'">'
+        +'<span class="bsig-n">'+(i+1)+'</span>'
+        +'<span class="bsig-t">'+a.title.substring(0,95)+(a.title.length>95?'…':'')+'</span>'
+        +'<span class="bsig-s">'+a.source+'</span>'
+      +'</div>'
+    +(safeUrl?'</a>':'</div>');
+  }).join('');
+
+  // AI synopsis: synthesize 3-4 sentences from article descriptions
+  var synParts=[];
+  articles.slice(0,5).forEach(function(a){
+    var d=(a.description||'').replace(/<[^>]+>/g,'').trim();
+    if(d.length>60){var s=d.slice(0,210).trim();if(!/[.!?]$/.test(s))s+='.';synParts.push(s);}
+  });
+  if(!synParts.length){articles.slice(0,4).forEach(function(a){var t=(a.title||'').trim();if(t)synParts.push(t+'.');});}
+  var synopsis=synParts.slice(0,4).join(' ');
+
+  var srcs=[...new Set(articles.slice(0,4).map(function(a){ return a.source||''; }).filter(Boolean))];
+  var srcStr=srcs.length ? 'Sources: '+srcs.join(' · ') : 'Scanning live intelligence feeds…';
+
+  return '<div class="inv-brief">'
+    +'<div class="ib-head">'
+      +'<span class="ib-frame" style="color:'+col+'">'+frame+'</span>'
+      +'<span class="ib-pct">'+pctStr+'</span>'
+    +'</div>'
+    +'<div class="ib-bias">'+bias+'</div>'
+    +(sigs
+      ?'<div class="ib-signals">'+sigs+'</div>'
+      :'<div class="ib-nosig">No signals found for this topic — try a broader market.</div>')
+    +(synopsis?'<div class="ib-synopsis" style="font-size:12px;color:var(--text);line-height:1.65;margin:10px 0 6px;padding:10px 12px;background:rgba(255,255,255,.03);border-radius:3px;border-left:2px solid rgba(0,201,167,.3)"><span style="font-family:var(--mono);font-size:8px;letter-spacing:.12em;text-transform:uppercase;color:var(--teal);display:block;margin-bottom:5px">&#x2713; Article synthesis</span>'+synopsis+'</div>':'')
+    +(ctx ? '<div class="ib-ctx">'+ctx+'</div>' : '')
+    +'<div class="ib-src">'+srcStr+'</div>'
+  +'</div>';
+}
+
+// ── NEWS GRID RENDERER ───────────────────────────────────────────────────────
+function renderGrid(articles){
+  if(!articles.length) return '<div class="ng-empty">No live signals found. Broadening query scope…</div>';
+  return articles.map(function(a){
+    var date=a.publishedAt ? new Date(a.publishedAt).toLocaleDateString('en-US',{month:'short',day:'numeric'}) : '';
+    var url=a.url||'';
+    return '<a class="ng-card" href="'+(url||'#')+'" target="_blank" rel="noopener" style="cursor:pointer">'
+      +'<div class="ng-src" style="display:flex;justify-content:space-between;align-items:center">'+a.source+'<span class="ng-date">'+date+'</span>'+(url?'<span style="margin-left:auto;font-family:var(--mono);font-size:7px;color:var(--teal);letter-spacing:.08em">&#8599; OPEN</span>':'')+'</div>'
+      +'<div class="ng-title" style="color:var(--bright);text-decoration:underline;text-decoration-color:rgba(0,201,167,.25);text-underline-offset:2px">'+a.title.substring(0,100)+(a.title.length>100?'…':'')+'</div>'
+      +(a.description ? '<div class="ng-desc">'+a.description.substring(0,130)+'</div>' : '')
+    +'</a>';
+  }).join('');
+}
+
+// ── HISTORICAL CONTEXT BUILDER v3 ────────────────────────────────────────────
+// v3: phrase-based Wikipedia queries instead of single keywords
+// "china trade deal" → US-China trade deal article (not generic "China" article)
+async function buildHistorical(market){
+  var q=market.question||market.title||'';
+  var K=kw(q);
+  var cat=(market.category||'other').toLowerCase();
+
+  // Build phrase queries from entity keyword combinations
+  // K for "Will the US and China reach a trade deal in 2026?" → ["china","trade","deal","us"]
+  // Phrases: "china trade deal", "china trade", "us china trade", "trade deal"
+  var phrases=[];
+  if(K.length>=3) phrases.push(K.slice(0,3).join(' '));   // e.g. "china trade deal"
+  if(K.length>=2) phrases.push(K.slice(0,2).join(' '));   // e.g. "china trade"
+  if(K.length>=2) phrases.push(K[1]+' '+K[0]);            // e.g. "trade china" (reversed for variety)
+  if(K.length>=1) phrases.push(K[0]);                      // e.g. "china" (fallback)
+
+  // Dedup phrases
+  var seenP=new Set();
+  phrases=phrases.filter(function(p){
+    var k=p.toLowerCase().trim();
+    if(seenP.has(k)||k.length<3) return false;
+    seenP.add(k); return true;
+  }).slice(0,3);
+
+  var settled=await Promise.allSettled(phrases.map(function(p){ return fetchWikiSummary(p); }));
+  var wikiResults=[];
+  settled.forEach(function(r,i){
+    if(r.status==='fulfilled'&&r.value&&r.value.extract&&r.value.extract.length>80){
+      // Relevance check: wiki article must share entity keyword with query
+      var wLow=r.value.extract.toLowerCase();
+      var isRelevant=K.slice(0,4).some(function(w){ return wLow.indexOf(w)>=0; });
+      if(isRelevant) wikiResults.push({wiki:r.value, phrase:phrases[i]||''});
+    }
+  });
+
+  // Build analyst-style intro paragraph
+  var topPhrase=K.slice(0,3).join(' ');
+  var nodeCount=wikiResults.length;
+  var catLabel=(CAT_CTX[cat]||CAT_CTX.other)[0]||cat;
+  var introHTML='<p class="hist-intro">'
+    +'CONTEXT INTELLIGENCE · "'+topPhrase+'" · '+nodeCount+' knowledge node'+(nodeCount!==1?'s':'')+' · '+(market.category||'General').toUpperCase()
+  +'</p>';
+
+  // Build event cards — show 3-sentence extracts with entity framing
+  var eventsHTML='';
+  if(wikiResults.length===0){
+    eventsHTML='<div class="hist-event"><div class="hist-body">Expanding semantic search for historical context on this topic. Check sources directly for precedent analysis.</div></div>';
+  } else {
+    eventsHTML=wikiResults.slice(0,3).map(function(item){
+      var w=item.wiki;
+      var sentences=w.extract.split('. ').filter(function(s){ return s.trim().length>20; });
+      // Take first 3 sentences for context richness
+      var body=sentences.slice(0,3).join('. ')+(sentences.length>0?'.':'');
+      // Highlight relevance: find which keyword matched
+      var matchedKw=K.slice(0,4).filter(function(kw){
+        return body.toLowerCase().indexOf(kw)>=0;
+      });
+      var tag=matchedKw.length ? matchedKw.slice(0,2).join(' · ').toUpperCase() : w.title.toUpperCase();
+      return '<div class="hist-event">'
+        +'<div class="hist-title">'+tag+'</div>'
+        +'<div class="hist-body">'+body+'</div>'
+        +(w.url ? '<div class="hist-src"><a href="'+w.url+'" target="_blank" rel="noopener" style="color:var(--teal);font-size:8px;text-decoration:none;font-family:\'JetBrains Mono\',monospace;letter-spacing:.05em">Wikipedia ↗</a></div>' : '')
+      +'</div>';
+    }).join('');
+  }
+
+  return { intro:introHTML, events:eventsHTML };
+}
+
+// ── LOADING STATE ────────────────────────────────────────────────────────────
+function setLoading(){
+  var spinner='<div class="dd-loading"><span>◌</span> scanning intelligence feeds…</div>';
+  ['newsGrid','histIntro','histEvents'].forEach(function(id){
+    var el=document.getElementById(id);
+    if(el) el.innerHTML=spinner;
+  });
+}
+
+// ── MAIN ENTRY POINT ─────────────────────────────────────────────────────────
+window.runDeepDive=async function(market){
+  if(!market) return;
+  if(typeof market==='string') market={question:market,title:market,probability:null,category:'other'};
+  var q=market.question||market.title||'';
+  var cat=(market.category||'other').toLowerCase();
+  var K=kw(q);
+  var queries=buildQuerySet(q,cat);
+
+  setLoading();
+  // Investigative framework (old engine)
+  var _ddTopic=market.question||market.title||'';
+  var _ddDesc=market.description||market.context||'';
+  buildBrief(_ddTopic,_ddDesc).then(function(brief){
+    if(!brief)return;
+    var nb=document.getElementById('newsBrief');
+    if(!nb)return;
+    var ms='';
+    nb.querySelectorAll('.inv-brief').forEach(function(el){ms+=el.outerHTML;});
+    renderBrief(brief);
+    if(ms)nb.innerHTML+=ms;
+// Step 2 -- articles per angle + renderNewsGrid
+    var _ks=GNEWS_KEY!=='YOUR_GNEWS_API_KEY'||GUARDIAN_KEY!=='YOUR_GUARDIAN_API_KEY'||NEWSAPI_KEY!=='YOUR_NEWSAPI_KEY';
+    var _from=new Date(Date.now()-30*86400000).toISOString().split('T')[0];
+    Promise.allSettled(brief.investigativeAngles&&_ks?brief.investigativeAngles.map(function(a){return fetchAngle(a,_from);}): []).then(function(fetched){
+      var arts=[];fetched.forEach(function(r){if(r.status==='fulfilled')arts=arts.concat(r.value);});
+      var seen=new Set();
+      renderNewsGrid(arts.filter(function(a){var k=(a.title||'').toLowerCase().slice(0,50);if(seen.has(k))return false;seen.add(k);return true;}),brief,_ks);
+    });
+  }).catch(function(e){console.warn('brief:',e);});
+  // Historical section (old engine)
+  fetchHistoricalSources(_ddTopic,_ddDesc).then(function(data){
+    if(data)renderHistoricalSection(data);
+  }).catch(function(e){console.warn('hist:',e);});
+
+  try{
+    // Primary wiki query: first 2 entity keywords as a phrase (e.g. "china trade")
+    var wikiQuery=K.slice(0,2).join(' ');
+
+    var results=await Promise.all([
+      fetchAllNews(q, cat),
+      fetchWikiSummary(wikiQuery),
+      buildHistorical(market)
+    ]);
+    var articles=results[0];
+    var wikiMain=results[1];
+    var histData=results[2];
+
+    var briefEl=document.getElementById('newsBrief');
+    if(briefEl) briefEl.innerHTML+=generateBrief(market, articles, wikiMain);
+
+    
+
+    var introEl=document.getElementById('histIntro');
+    var evEl=document.getElementById('histEvents');
+    if(introEl) introEl.innerHTML=histData.intro;
+    if(evEl) evEl.innerHTML=histData.events;
+
+    // Update signal counter
+    var subEl=document.getElementById('news-sub');
+    if(subEl) subEl.textContent=articles.length+' signals · '+queries.length+' queries · '+K.slice(0,3).join(', ');
+
+  }catch(err){
+    var msg='<div class="dd-err">⚠ Signal fetch error: '+err.message+'</div>';
+    var briefEl=document.getElementById('newsBrief');
+    if(briefEl) briefEl.innerHTML+=msg;
+    console.error('[INFERA] runDeepDive error:', err);
+  }
+};
+
+// ── CSS ──────────────────────────────────────────────────────────────────────
+(function injectCSS(){
+  var s=document.createElement('style');
+  s.textContent=
+    '.inv-brief{padding:8px 0}'
+    +'.ib-head{display:flex;align-items:center;gap:10px;margin-bottom:6px}'
+    +'.ib-frame{font-family:"JetBrains Mono",monospace;font-size:9px;letter-spacing:.12em;font-weight:700}'
+    +'.ib-pct{font-family:"JetBrains Mono",monospace;font-size:9px;color:var(--dim);letter-spacing:.05em}'
+    +'.ib-bias{font-size:11px;color:var(--bright);line-height:1.65;margin-bottom:7px}'
+    +'.ib-ctx{font-size:10px;color:var(--text);line-height:1.7;margin-bottom:8px;padding:5px 8px;border-left:2px solid rgba(0,201,167,.3);font-style:italic}'
+    +'.ib-signals{display:flex;flex-direction:column;gap:3px;margin-bottom:7px}'
+    +'.brief-signal{display:flex;align-items:flex-start;gap:6px;padding:4px 0;border-bottom:1px solid rgba(255,255,255,.04)}'
+    +'.bsig-n{font-family:"JetBrains Mono",monospace;font-size:8px;color:var(--teal);min-width:14px;padding-top:1px}'
+    +'.bsig-t{font-size:10px;color:var(--bright);flex:1;line-height:1.5}'
+    +'.bsig-s{font-family:"JetBrains Mono",monospace;font-size:7px;color:var(--dim);margin-left:5px;white-space:nowrap;padding-top:2px}'
+    +'.ib-src{font-family:"JetBrains Mono",monospace;font-size:7px;color:var(--dim);letter-spacing:.05em;margin-top:3px}'
+    +'.ib-nosig{font-size:10px;color:var(--dim);font-style:italic}'
+    +'.ng-card{display:block;padding:8px 10px;border:1px solid rgba(255,255,255,.06);border-radius:3px;margin-bottom:6px;text-decoration:none;transition:border-color .15s;color:inherit}'
+    +'.ng-card:hover{border-color:rgba(0,201,167,.3)}'
+    +'.ng-src{font-family:"JetBrains Mono",monospace;font-size:7px;color:var(--teal);letter-spacing:.08em;margin-bottom:3px;display:flex;justify-content:space-between}'
+    +'.ng-date{color:var(--dim)}'
+    +'.ng-title{font-size:11px;color:var(--bright);line-height:1.5;margin-bottom:3px}'
+    +'.ng-desc{font-size:9px;color:var(--dim);line-height:1.5}'
+    +'.ng-empty{font-size:10px;color:var(--dim);font-style:italic;padding:10px 0}'
+    +'.hist-intro{font-family:"JetBrains Mono",monospace;font-size:8px;color:var(--dim);letter-spacing:.04em;margin-bottom:8px;line-height:1.5}'
+    +'.hist-event{padding:8px 0;border-bottom:1px solid rgba(255,255,255,.05)}'
+    +'.hist-title{font-family:"JetBrains Mono",monospace;font-size:8px;color:var(--teal);letter-spacing:.1em;margin-bottom:4px}'
+    +'.hist-body{font-size:10px;color:var(--text);line-height:1.7}'
+    +'.hist-src{margin-top:3px}'
+    +'.dd-loading{font-family:"JetBrains Mono",monospace;font-size:9px;color:var(--dim);letter-spacing:.1em;padding:12px 0;animation:ddpulse 1.4s ease-in-out infinite}'
+    +'.dd-err{font-size:9px;color:#e05c5c;font-family:"JetBrains Mono",monospace;padding:8px 0}'
+    +'@keyframes ddpulse{0%,100%{opacity:.3}50%{opacity:1}}';
+  document.head.appendChild(s);
+})();
+
+console.log('[INFERA] DD engine v3.1 ready — HackerNews + Guardian + GDELT + Wikipedia');
+})();
+
+</script>
+</body>>
++fmtVol(vol)+'</span>':'') +
+    (hot?'<span class="new-badge">ACTIVE</span>':'')+
+    '</div></div></div>';
+}
+function _startTk(){_stopTk();_tkTimer=setInterval(_tkAdvance,TK_MS);}
+function _stopTk(){if(_tkTimer){clearInterval(_tkTimer);_tkTimer=null;}}
+function _tkAdvance(){
+  if(_tkSliding)return;
+  var slot=document.getElementById('tkSlot');if(!slot)return;
+  _tkSliding=true;
+  slot.style.transition='transform .42s cubic-bezier(.25,.46,.45,.94)';
+  slot.style.transform='translateY(-'+TK_H+'px)';
+  setTimeout(function(){
+    var s=document.getElementById('tkSlot');
+    if(!s){_tkSliding=false;return;}
+    if(s.firstChild)s.removeChild(s.firstChild);
+    _tkOff=(_tkOff+1)%_tkPool.length;
+    var nextIdx=(_tkOff+TK_VIS)%_tkPool.length;
+    var tmp=document.createElement('div');
+    tmp.innerHTML=_tkRow(_tkPool[nextIdx],nextIdx<3);
+    if(tmp.firstChild)s.appendChild(tmp.firstChild);
+    s.style.transition='none';s.style.transform='translateY(0)';
+    void s.offsetHeight;
+    s.style.transition='';
+    _tkSliding=false;
+  },440);
+}
 // ─── RENDER LIST ───────────────────────────────────────────────────────────
 function renderList(cat, q) {
   cat = cat || 'all'; q = q || '';
